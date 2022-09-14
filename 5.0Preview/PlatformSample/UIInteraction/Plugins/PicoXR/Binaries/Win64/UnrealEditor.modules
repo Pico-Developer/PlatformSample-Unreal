@@ -1,0 +1,11 @@
+{
+	"BuildId": "19505902",
+	"Modules": 
+	{
+		"PicoXRDPHMD": "UnrealEditor-PicoXRDPHMD.dll",
+		"PicoXRDPInput": "UnrealEditor-PicoXRDPInput.dll",
+		"PicoXRHMD": "UnrealEditor-PicoXRHMD.dll",
+		"PicoXRInput": "UnrealEditor-PicoXRInput.dll",
+		"PicoXRMRC": "UnrealEditor-PicoXRMRC.dll"
+	}
+}

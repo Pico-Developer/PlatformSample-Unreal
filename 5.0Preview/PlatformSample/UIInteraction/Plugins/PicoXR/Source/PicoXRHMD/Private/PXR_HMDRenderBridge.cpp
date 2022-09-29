@@ -88,36 +88,61 @@ int FPicoXRRenderBridge::GetSystemRecommendedMSAA() const
 	return msaa;
 }
 
-void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& RHICmdList, FRHITexture* DstTexture, FRHITexture* SrcTexture, FIntRect DstRect, FIntRect SrcRect, bool bPremultiply, bool bNoAlpha,bool bIsMRCLayer, bool bReverse, bool sRGBSource) const
+void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& RHICmdList, FRHITexture* DstTexture, FRHITexture* SrcTexture, FIntRect DstRect, FIntRect SrcRect,
+	bool bAlphaPremultiply, bool bNoAlphaWrite, bool bIsMRCLayer, bool bInvertY, bool sRGBSource, bool bInvertAlpha) const
 {
     check(IsInRenderingThread());
 
-    FIntPoint SrcSize;
-    FIntPoint DstSize;
-    if (SrcTexture->GetTexture2D() && DstTexture->GetTexture2D()) {
-        SrcSize = FIntPoint(SrcTexture->GetTexture2D()->GetSizeX(), SrcTexture->GetTexture2D()->GetSizeY());
-        DstSize = FIntPoint(DstTexture->GetTexture2D()->GetSizeX(), DstTexture->GetTexture2D()->GetSizeY());
-    } else {
-        PXR_LOGD(PxrUnreal, "TransferImage Texture Is None");
-        return;
-    }
+	FRHITexture2D* DstTexture2D = DstTexture->GetTexture2D();
+	FRHITextureCube* DstTextureCube = DstTexture->GetTextureCube();
+	FRHITexture2D* SrcTexture2D = SrcTexture->GetTexture2DArray() ? SrcTexture->GetTexture2DArray() : SrcTexture->GetTexture2D();
+	FRHITextureCube* SrcTextureCube = SrcTexture->GetTextureCube();
 
-    if (SrcRect.IsEmpty()) {
-        SrcRect = FIntRect(FIntPoint::ZeroValue, SrcSize);
-    }
+	FIntPoint DstSize;
+	FIntPoint SrcSize;
 
-    if (DstRect.IsEmpty()) {
-        DstRect = FIntRect(FIntPoint::ZeroValue, DstSize);
-    }
+	if (DstTexture2D && SrcTexture2D)
+	{
+		DstSize = FIntPoint(DstTexture2D->GetSizeX(), DstTexture2D->GetSizeY());
+		SrcSize = FIntPoint(SrcTexture2D->GetSizeX(), SrcTexture2D->GetSizeY());
+	}
+	else if (DstTextureCube && SrcTextureCube)
+	{
+		DstSize = FIntPoint(DstTextureCube->GetSize(), DstTextureCube->GetSize());
+		SrcSize = FIntPoint(SrcTextureCube->GetSize(), SrcTextureCube->GetSize());
+	}
+	else
+	{
+		return;
+	}
 
-    const uint32 viewportWidth = DstRect.Width();
-    const uint32 viewportHeight = DstRect.Height();
-    float U = SrcRect.Min.X / static_cast<float>(SrcSize.X);
-    float V = SrcRect.Min.Y / static_cast<float>(SrcSize.Y);
-    float USize = SrcRect.Width() / static_cast<float>(SrcSize.X);
-    float VSize = SrcRect.Height() / static_cast<float>(SrcSize.Y);
+	if (DstRect.IsEmpty())
+	{
+		DstRect = FIntRect(FIntPoint::ZeroValue, DstSize);
+	}
 
-    FRHITexture* SrcTextureRHI = SrcTexture;
+	if (SrcRect.IsEmpty())
+	{
+		SrcRect = FIntRect(FIntPoint::ZeroValue, SrcSize);
+}
+
+	const uint32 ViewportWidth = DstRect.Width();
+	const uint32 ViewportHeight = DstRect.Height();
+	const FIntPoint TargetSize(ViewportWidth, ViewportHeight);
+	float U = SrcRect.Min.X / (float)SrcSize.X;
+	float V = SrcRect.Min.Y / (float)SrcSize.Y;
+	float USize = SrcRect.Width() / (float)SrcSize.X;
+	float VSize = SrcRect.Height() / (float)SrcSize.Y;
+
+#if PLATFORM_ANDROID
+	if (bInvertY)
+	{
+		V = 1.0f - V;
+		VSize = -VSize;
+	}
+#endif
+
+	FRHITexture* SrcTextureRHI = SrcTexture;
 #if ENGINE_MINOR_VERSION > 25||ENGINE_MAJOR_VERSION>4
     RHICmdList.Transition(FRHITransitionInfo(SrcTextureRHI, ERHIAccess::Unknown, ERHIAccess::SRVGraphics));
 #else
@@ -125,50 +150,75 @@ void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& R
 #endif
     FGraphicsPipelineStateInitializer GraphicsPSOInit;
 
-    if (bNoAlpha) {
-        GraphicsPSOInit.BlendState = TStaticBlendState<CW_RGB, BO_Add, BF_One, BF_Zero, BO_Add, BF_One, BF_Zero>::GetRHI();
-    } else {
-        GraphicsPSOInit.BlendState = TStaticBlendState<CW_RGBA, BO_Add, BF_SourceAlpha, BF_Zero, BO_Add, BF_One, BF_Zero>::GetRHI();
-    }
+	if (bInvertAlpha)
+	{
+		GraphicsPSOInit.BlendState = TStaticBlendState<CW_RGBA, BO_Add, BF_One, BF_Zero, BO_Add, BF_Zero, BF_InverseSourceAlpha >::GetRHI();
+	}
+	else if (bAlphaPremultiply)
+	{
+		if (bNoAlphaWrite)
+		{
+			GraphicsPSOInit.BlendState = TStaticBlendState<CW_RGB, BO_Add, BF_One, BF_Zero, BO_Add, BF_One, BF_Zero>::GetRHI();
+		}
+		else
+		{
+			GraphicsPSOInit.BlendState = TStaticBlendState<CW_RGBA, BO_Add, BF_SourceAlpha, BF_Zero, BO_Add, BF_One, BF_Zero>::GetRHI();
+		}
+	}
+	else
+	{
+		if (bNoAlphaWrite)
+		{
+			GraphicsPSOInit.BlendState = TStaticBlendState<CW_RGB>::GetRHI();
+		}
+		else
+		{
+			GraphicsPSOInit.BlendState = TStaticBlendState<CW_RGBA, BO_Add, BF_SourceAlpha, BF_InverseSourceAlpha, BO_Add, BF_One, BF_InverseSourceAlpha>::GetRHI();
+		}
+	}
 
-    GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
-    GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
-    GraphicsPSOInit.PrimitiveType = PT_TriangleList;
+	GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
+	GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
+	GraphicsPSOInit.PrimitiveType = PT_TriangleList;
 
-    const auto FeatureLevel = GMaxRHIFeatureLevel;
-    auto ShaderMap = GetGlobalShaderMap(FeatureLevel);
-    TShaderMapRef<FScreenVS> VertexShader(ShaderMap);
-    GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GFilterVertexDeclaration.VertexDeclarationRHI;
+	const auto FeatureLevel = GMaxRHIFeatureLevel;
+	auto ShaderMap = GetGlobalShaderMap(FeatureLevel);
+	TShaderMapRef<FScreenVS> VertexShader(ShaderMap);
+	GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GFilterVertexDeclaration.VertexDeclarationRHI;
 #if ENGINE_MINOR_VERSION > 24||ENGINE_MAJOR_VERSION>4
     GraphicsPSOInit.BoundShaderState.VertexShaderRHI = VertexShader.GetVertexShader();
 #else
     GraphicsPSOInit.BoundShaderState.VertexShaderRHI = GETSAFERHISHADER_VERTEX(*VertexShader);
 #endif
 
-    if (DstTexture->GetTexture2D())
-    {
+	if (DstTexture2D)
+	{
         sRGBSource &= ( (static_cast<int32>(SrcTexture->GetFlags()) & static_cast<int32>(TexCreate_SRGB) ) != 0);
-        uint32 NumMips = SrcTexture->GetNumMips();
+#if ENGINE_MINOR_VERSION > 24||ENGINE_MAJOR_VERSION>4
+		uint32 NumMips = SrcTexture->GetNumMips();
+#else
+		uint32 NumMips = 1;
+#endif
+		for (uint32 MipIndex = 0; MipIndex < NumMips; MipIndex++)
+		{
+			FRHIRenderPassInfo RPInfo(DstTexture, ERenderTargetActions::Load_Store);
+			RPInfo.ColorRenderTargets[0].MipIndex = MipIndex;
 
-        for (uint32 MipIndex = 0; MipIndex < NumMips; MipIndex++)
-        {
-            FRHIRenderPassInfo RPInfo(DstTexture, ERenderTargetActions::Load_Store);
-            RPInfo.ColorRenderTargets[0].MipIndex = MipIndex;
+			RHICmdList.BeginRenderPass(RPInfo, TEXT("CopyTexture"));
+			{
+				const uint32 MipViewportWidth = ViewportWidth >> MipIndex;
+				const uint32 MipViewportHeight = ViewportHeight >> MipIndex;
+				const FIntPoint MipTargetSize(MipViewportWidth, MipViewportHeight);
 
-            RHICmdList.BeginRenderPass(RPInfo, TEXT("CopyTexture"));
-            {
-                const uint32 ViewportWidth = viewportWidth >> MipIndex;
-                const uint32 ViewportHeight = viewportHeight >> MipIndex;
-                const FIntPoint TargetSize(viewportWidth, viewportHeight);
+				if (bNoAlphaWrite || bInvertAlpha)
+				{
+					RHICmdList.SetViewport(DstRect.Min.X, DstRect.Min.Y, 0.0f, DstRect.Max.X, DstRect.Max.Y, 1.0f);
+					DrawClearQuad(RHICmdList, bAlphaPremultiply ? FLinearColor::Black : FLinearColor::White);
+				}
 
-                if (bNoAlpha)
-                {
-                    RHICmdList.SetViewport(DstRect.Min.X, DstRect.Min.Y, 0.0f, DstRect.Max.X, DstRect.Max.Y, 1.0f);
-                    DrawClearQuad(RHICmdList, FLinearColor::Black);
-                }
+				RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
+				FRHISamplerState* SamplerState = DstRect.Size() == SrcRect.Size() ? TStaticSamplerState<SF_Point>::GetRHI() : TStaticSamplerState<SF_Bilinear>::GetRHI();
 
-                RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
-                FRHISamplerState* SamplerState = DstRect.Size() == SrcRect.Size() ? TStaticSamplerState<SF_Point>::GetRHI() : TStaticSamplerState<SF_Bilinear>::GetRHI();
 #if ENGINE_MAJOR_VERSION>4
             	if (!sRGBSource)
             	{
@@ -205,8 +255,8 @@ void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& R
             	}
 
             	RHICmdList.SetViewport(DstRect.Min.X, DstRect.Min.Y, 0.0f, DstRect.Min.X + ViewportWidth, DstRect.Min.Y + ViewportHeight, 1.0f);
-#elif ENGINE_MINOR_VERSION > 24 && ENGINE_MAJOR_VERSION==4
-                if (!sRGBSource)
+#elif ENGINE_MINOR_VERSION > 24 && ENGINE_MAJOR_VERSION==4                
+if (!sRGBSource)
                 {
                     if (bIsMRCLayer)
                     {
@@ -214,33 +264,33 @@ void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& R
 						GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
 						SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
 						PixelShader->SetParameters(RHICmdList, SamplerState, SrcTextureRHI, MipIndex);
-                    }
+					}
                     else
 					{
                         TShaderMapRef<FScreenPSMipLevel> PixelShader(ShaderMap);
 						GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
 						SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
 						PixelShader->SetParameters(RHICmdList, SamplerState, SrcTextureRHI, MipIndex);
-                    }
+					}
 
                 } else {
                     if (bIsMRCLayer)
 					{
 						TShaderMapRef<FMRCPSsRGBSourceMipLevel> PixelShader(ShaderMap);             
-                        GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
+						GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
 						SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
 						PixelShader->SetParameters(RHICmdList, SamplerState, SrcTextureRHI, MipIndex);
-                    }
+					}
                     else
 					{
                         TShaderMapRef<FScreenPSsRGBSourceMipLevel> PixelShader(ShaderMap);
 						GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
 						SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
 						PixelShader->SetParameters(RHICmdList, SamplerState, SrcTextureRHI, MipIndex);
-                    }
+					}
                 }
 
-                RHICmdList.SetViewport(DstRect.Min.X, DstRect.Min.Y, 0.0f, DstRect.Min.X + ViewportWidth, DstRect.Min.Y + ViewportHeight, 1.0f);
+				RHICmdList.SetViewport(DstRect.Min.X, DstRect.Min.Y, 0.0f, MipViewportWidth, MipViewportHeight, 1.0f);
 #else
                 if (!sRGBSource)
                 {
@@ -275,25 +325,31 @@ void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& R
                     }
                 }
 
-                RHICmdList.SetViewport(DstRect.Min.X, DstRect.Min.Y, 0.0f, DstRect.Max.X, DstRect.Max.Y, 1.0f);
+				RHICmdList.SetViewport(DstRect.Min.X, DstRect.Min.Y, 0.0f, DstRect.Max.X, DstRect.Max.Y, 1.0f);
 #endif
 
-                RendererModule->DrawRectangle(
-                    RHICmdList,
-                    0, 0, ViewportWidth, ViewportHeight,
-                    U, V, USize, VSize,
-                    TargetSize,
-                    FIntPoint(1, 1),
+				RendererModule->DrawRectangle(
+					RHICmdList,
+					0, 0, MipViewportWidth, MipViewportHeight,
+					U, V, USize, VSize,
+					MipTargetSize,
+					FIntPoint(1, 1),
 #if ENGINE_MINOR_VERSION > 24||ENGINE_MAJOR_VERSION>4
-                    VertexShader,
+					VertexShader,
 #else
-                    *VertexShader,
+					* VertexShader,
 #endif
-                    EDRF_Default);
-            }
-            RHICmdList.EndRenderPass();
+					EDRF_Default);
+			}
+			RHICmdList.EndRenderPass();
         }
     }
+}
+
+void FPicoXRRenderBridge::SubmitGPUCommands_RenderThread(FRHICommandListImmediate& RHICmdList)
+{
+	check(IsInRenderingThread());
+	RHICmdList.SubmitCommandsHint();
 }
 
 class FPicoXRRenderBridge_OpenGL : public FPicoXRRenderBridge

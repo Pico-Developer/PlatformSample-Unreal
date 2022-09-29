@@ -44,9 +44,14 @@ void UPicoNetConnection::InitLocalConnection(UNetDriver* InDriver, class FSocket
 		// Use the default packet size/overhead unless overridden by a child class
 		InMaxPacket == 0 ? MAX_PACKET_SIZE : InMaxPacket,
 		0);
-
+#if ENGINE_MAJOR_VERSION > 4
 	FInternetAddrPico PicoAddr = FInternetAddrPico::FromUrl(InURL);
-	PeerID = PicoAddr.GetID();
+#elif ENGINE_MINOR_VERSION > 26
+	FInternetAddrPico PicoAddr = FInternetAddrPico::FromUrl(InURL);
+#elif ENGINE_MINOR_VERSION > 24
+	auto PicoAddr = FInternetAddrPico(InURL);
+#endif
+    PeerID = PicoAddr.GetID();
 	UserID = PicoAddr.GetStrID();
 }
 
@@ -87,10 +92,18 @@ void UPicoNetConnection::LowLevelSend(void* Data, int32 CountBits, FOutPacketTra
 
 	// Do not send packets over a closed connection
 	// This can unintentionally re-open the connection
-	if (State == EConnectionState::USOCK_Closed)
-	{
-		return;
-	}
+#if ENGINE_MAJOR_VERSION > 4
+    if (GetConnectionState() == EConnectionState::USOCK_Closed)
+    {
+        return;
+    }
+#elif ENGINE_MINOR_VERSION > 24
+    if (State == EConnectionState::USOCK_Closed)
+    {
+        return;
+    }
+#endif
+
 
 	const uint8* DataToSend = reinterpret_cast<uint8*>(Data);
 
@@ -151,7 +164,12 @@ void UPicoNetConnection::FinishDestroy()
 		return;
 	}
 	// Keep track if it's this call that is closing the connection before cleanup is called
+
+#if ENGINE_MAJOR_VERSION > 4
+	const bool bIsClosingOpenConnection = GetConnectionState() != EConnectionState::USOCK_Closed;
+#elif ENGINE_MINOR_VERSION > 24
 	const bool bIsClosingOpenConnection = State != EConnectionState::USOCK_Closed;
+#endif
 	UNetConnection::FinishDestroy();
 
 	// If this connection was open, then close it

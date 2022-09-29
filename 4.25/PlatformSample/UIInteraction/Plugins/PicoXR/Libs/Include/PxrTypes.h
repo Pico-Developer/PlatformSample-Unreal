@@ -19,6 +19,7 @@ static const PxrTrackingModeFlags PXR_TRACKING_MODE_ROTATION_BIT = 0x00000001;
 static const PxrTrackingModeFlags PXR_TRACKING_MODE_POSITION_BIT = 0x00000002;
 static const PxrTrackingModeFlags PXR_TRACKING_MODE_EYE_BIT = 0x00000004;
 static const PxrTrackingModeFlags PXR_TRACKING_MODE_FACE_BIT = 0x00000008;
+static const PxrTrackingModeFlags PXR_TRACKING_MODE_FACE_LIBSYNC = 0x2000;
 static const PxrTrackingModeFlags PXR_TRACKING_MODE_VCMOTOR_BIT = 0x00000010;
 static const PxrTrackingModeFlags PXR_TRACKING_MODE_HAND_BIT = 0x00000020;
 typedef struct PxrVulkanBinding_ {
@@ -184,13 +185,7 @@ enum BlendShapeIndex {
     TongueOut = 51,
 };
 
-#define BLEND_SHAPE_NUMS 52
 
-typedef struct PXrFaceTrackingData{
-    int64_t timestamp;                         // us​
-    float blendShapeWeight[BLEND_SHAPE_NUMS];   //52（51+1）表情分量权重系​
-    float reserved[16];
-} PxrFaceTrackingData;
 typedef struct PxrLayerHeader_ {
     int              layerId;
     uint32_t         layerFlags;
@@ -486,4 +481,19 @@ typedef enum XrTrackingMode
     XR_TRACKING_MODE_EYE = 0x4,
     XR_TRACKING_MODE_FACE = 0x8
 }XrTrackingMode;
+#define BLEND_SHAPE_NUMS 72
+typedef struct {
+    int64_t timestamp;
+    float blendShapeWeight[BLEND_SHAPE_NUMS];
+    float videoInputValid[10];
+    float laughingProb;
+    float emotionProb[10];
+    float reserved[128];
+} PxrFTInfo;
+enum GetDataType {
+    PXR_GET_FACE_DATA_DEFAULT = 0,
+    PXR_GET_FACE_DATA = 3,        // FT
+    PXR_GET_LIP_DATA = 4,        // Lipsync
+    PXR_GET_FACELIP_DATA = 5,        // FT|Lipsync
+};
 #endif  // PXR_TYPES_H

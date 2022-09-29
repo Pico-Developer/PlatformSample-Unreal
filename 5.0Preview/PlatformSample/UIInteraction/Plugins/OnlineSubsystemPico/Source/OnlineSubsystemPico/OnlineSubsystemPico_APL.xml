@@ -141,7 +141,11 @@
        <copyFile src="$S(PluginDir)/lib/libpxr_api.jar"
                  dst="$S(BuildDir)/libs/libpxr_plugin.jar" />
     </resourceCopies>
-
+<gameActivityImportAdditions>
+        <insert>
+            import com.psmart.aosoperation.SysActivity;
+        </insert>
+    </gameActivityImportAdditions>
     <gameActivityClassAdditions>
         <if condition="bStartTimeEntitlementCheck">
             <true>

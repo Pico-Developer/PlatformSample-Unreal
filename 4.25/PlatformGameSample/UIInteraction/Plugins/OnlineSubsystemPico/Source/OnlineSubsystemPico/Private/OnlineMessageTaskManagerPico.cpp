@@ -72,6 +72,7 @@ void FOnlineAsyncTaskPico::TaskReceiveMessage(ppfMessageHandle InMessageHandle, 
     {
         bIsComplete = true;
         bWasSuccessful = false;
+        UE_LOG_ONLINE(Log, TEXT("Wrong Message Handle return!"));
     }
 #if PLATFORM_ANDROID
     if (bWasSuccessful)
@@ -101,6 +102,7 @@ void FOnlineAsyncTaskManagerPico::TickTask()
         UE_LOG_ONLINE(Log, TEXT("OnlineTick Receive Message !"));
         bool bIsError = ppf_Message_IsError(MessageHandle);
         ppfRequest RequestId = ppf_Message_GetRequestID(MessageHandle);
+        UE_LOG_ONLINE(Log, TEXT("Receive request id: %llu!"), RequestId);
 
         if (RequestTaskMap.Contains(RequestId))
         {
@@ -129,6 +131,7 @@ void FOnlineAsyncTaskManagerPico::TickTask()
 
 void FOnlineAsyncTaskManagerPico::CollectedRequestTask(ppfRequest Request, FOnlineAsyncTaskPico* InTask)
 {
+    UE_LOG_ONLINE(Log, TEXT("Send request id: %i"), static_cast<int32>(Request));
     RequestTaskMap.Add(Request, InTask);
 }
 

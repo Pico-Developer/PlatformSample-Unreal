@@ -11,7 +11,7 @@
 struct FPXRSplashLayer
 {
 	FPXRSplashDesc Desc;
-	FPicoLayerPtr Layer;
+	FPICOLayerPtr Layer;
 
 public:
 	FPXRSplashLayer(const FPXRSplashDesc& InSplashDesc) : Desc(InSplashDesc) {}
@@ -38,7 +38,7 @@ protected:
 	};
 
 public:
-	FPXRSplash(FPicoXRHMD* InPicoXRHMD);
+	FPXRSplash(FPICOXRHMD* InPICOXRHMD);
 	virtual ~FPXRSplash();
 	virtual void ShowLoadingScreen() override;
 	virtual void HideLoadingScreen() override;
@@ -53,8 +53,8 @@ public:
 	void AutoShow(bool AutoShowSplash);
 	void AddPXRSplashLayers(const FPXRSplashDesc& Splash);
 	void SwitchActiveSplash_GameThread();
-	TArray<FPicoLayerPtr> PXRLayers_RHIThread;
-	FPicoLayerPtr BlackLayer;
+	TArray<FPICOLayerPtr> PXRLayers_RHIThread;
+	FPICOLayerPtr BlackLayer;
 
 protected:
 	void SplashTick_RenderThread(float DeltaTime);
@@ -73,19 +73,19 @@ protected:
 	TSharedPtr<FSplashTicker_RenderThread> SplashTicker;
 	FCriticalSection RenderThreadLock;
 	bool bInitialized;
-	FPicoXRHMD* PicoXRHMD;
-	FPicoXRRenderBridge* CustomRenderBridge;
+	FPICOXRHMD* PICOXRHMD;
+	FPICOXRRenderBridge* CustomRenderBridge;
 	FDelegateHandle PostLoadLevelDelegate;
-	UPicoXRSettings* PicoSettings;
+	UPICOXRSettings* PICOSettings;
 	FPXRGameFramePtr PXRFrame;
 	bool bIsShown;
 	bool bSplashNeedUpdateActiveState;
 	bool bSplashShouldToShow;
 
 	TArray<FPXRSplashLayer> AddedPXRSplashLayers;
-	TArray<FPicoLayerPtr> PXRLayers_RenderThread_Entry;
-	TArray<FPicoLayerPtr> PXRLayers_RenderThread;
+	TArray<FPICOLayerPtr> PXRLayers_RenderThread_Entry;
+	TArray<FPICOLayerPtr> PXRLayers_RenderThread;
 
 	int32 FramesOutstanding;
 };
-typedef TSharedPtr<FPXRSplash> FPicoXRSplashPtr;
+typedef TSharedPtr<FPXRSplash> FPICOXRSplashPtr;

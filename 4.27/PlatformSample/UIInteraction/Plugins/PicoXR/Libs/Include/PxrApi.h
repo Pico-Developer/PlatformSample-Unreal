@@ -87,7 +87,7 @@ int Pxr_GetTrackingMode(PxrTrackingModeFlags* trackingMode);
 int Pxr_GetEyeTrackingData(PxrEyeTrackingData* eyeTrackingData);
 
 //Face tracking
-int Pxr_GetFaceTrackingData(int64_t ts, int flags, uint64_t* timestamp,float** blendShapeWeight,float** reserved);
+int Pxr_GetFaceTrackingData(int64_t ts, int flags, PxrFTInfo *data);
 int Pxr_GetPupilDistance(float* ipd);
 int Pxr_StartEyeTracking();
 int Pxr_StopEyeTracking(int mode);

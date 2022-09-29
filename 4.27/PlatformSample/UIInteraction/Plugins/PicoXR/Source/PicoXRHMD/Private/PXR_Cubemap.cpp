@@ -37,7 +37,7 @@ void APXR_Cubemap::Tick(float DeltaTime)
 
 }
 
-bool APXR_Cubemap::SaveCubeMap_Pico()
+bool APXR_Cubemap::SaveCubeMap_PICO()
 {
 	Location = GetRootComponent()->GetComponentLocation();
 	Orientation = GetRootComponent()->GetComponentQuat();
@@ -141,7 +141,7 @@ bool APXR_Cubemap::SaveCubeMap_Pico()
 void APXR_Cubemap::PXR_CubemapHandler()
 {
 #if !UE_BUILD_SHIPPING
-	SaveCubeMap_Pico();
+	SaveCubeMap_PICO();
 #endif
 }
 

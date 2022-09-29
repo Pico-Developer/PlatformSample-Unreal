@@ -13,14 +13,19 @@
 #include "PxrApi.h"
 #endif
 
+class FDelayDeleteLayerManager;
+class FPXRGameFrame;
+
 class FPxrLayer : public TSharedFromThis<FPxrLayer, ESPMode::ThreadSafe>
 {
 public:
-	FPxrLayer(uint32 InPxrLayerId);
+	FPxrLayer(uint32 InPxrLayerId,FDelayDeleteLayerManager* InDelayDeletion);
 	~FPxrLayer();
 
 protected:
 	uint32 PxrLayerId;
+private:
+	FDelayDeleteLayerManager* DelayDeletion;
 };
 
 typedef TSharedPtr<FPxrLayer, ESPMode::ThreadSafe> FPxrLayerPtr;
@@ -35,7 +40,7 @@ public:
 	TSharedPtr<FPicoXRStereoLayer, ESPMode::ThreadSafe> CloneMyself() const;
 	void SetPXRLayerDesc(const IStereoLayers::FLayerDesc& InDesc);
 	const IStereoLayers::FLayerDesc& GetPXRLayerDesc() const { return LayerDesc; }
-	const uint32& GetPXRLayerID()const{return LayerId;}
+	const uint32& GetID()const{return ID;}
 
 	bool IsLayerSupportDepth() { return (LayerDesc.Flags & IStereoLayers::LAYER_FLAG_SUPPORT_DEPTH) != 0; }
 	void ManageUnderlayComponent();
@@ -45,23 +50,27 @@ public:
 	const FXRSwapChainPtr& GetLeftSwapChain() const { return LeftSwapChain; }
 	const FXRSwapChainPtr& GetFoveationSwapChain() const { return FoveationSwapChain; }
 	void IncrementSwapChainIndex_RHIThread(FPicoXRRenderBridge* RenderBridge);
-	void SubmitCompositionLayerRenderMatrix_RHIThread(APlayerController* PlayerController, FQuat& CurrentOrientation, FVector& CurrentPosition, FTransform& CurrentTrackingToWorld);
+	void SubmitLayer_RHIThread(FPXRGameFrame* Frame);
 	int32 GetShapeType();
-	void SetEyeLayerParams(uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples);
+	void SetProjectionLayerParams(uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, FString RHIString);
     void PXRLayersCopy_RenderThread(FPicoXRRenderBridge* RenderBridge, FRHICommandListImmediate& RHICmdList);
 	void MarkTextureForUpdate(bool bUpdate = true) { bTextureNeedUpdate = bUpdate; }
-	bool InitPXRLayer_RenderThread(FPicoXRRenderBridge* CustomPresent, FRHICommandListImmediate& RHICmdList, const FPicoXRStereoLayer* InLayer = nullptr);
+	bool InitPXRLayer_RenderThread(FPicoXRRenderBridge* CustomPresent, FDelayDeleteLayerManager* DelayDeletion, FRHICommandListImmediate& RHICmdList, const FPicoXRStereoLayer* InLayer = nullptr);
 	bool IfCanReuseLayers(const FPicoXRStereoLayer* InLayer) const;
+	bool IsVisible() { return (LayerDesc.Flags & IStereoLayers::LAYER_FLAG_HIDDEN) == 0; }
 
-	bool bSplashLayer = false;
-	bool bMRCLayer = false;
+	bool bSplashLayer;
+	bool bSplashBlackProjectionLayer;
+	bool bMRCLayer;
 
 protected:
 	FVector GetLayerLocation() const { return LayerDesc.Transform.GetLocation(); };
 	FQuat GetLayerOrientation() const { return LayerDesc.Transform.GetRotation(); };
 	FVector GetLayerScale() const { return LayerDesc.Transform.GetScale3D(); };
 	FPicoXRHMD* HMDDevice;
-	uint32 LayerId;
+	uint32 ID;
+	uint32 PxrLayerID;
+	static uint32 PxrLayerIDCounter;
 	IStereoLayers::FLayerDesc LayerDesc;
 	FXRSwapChainPtr SwapChain;
 	FXRSwapChainPtr LeftSwapChain;
@@ -95,7 +104,7 @@ struct FPicoLayerPtr_SortByPriority
 		}
 		else
 		{
-			return A->GetPXRLayerID() < B->GetPXRLayerID();
+			return A->GetID() < B->GetID();
 		}
 	}
 };
@@ -104,7 +113,7 @@ struct FPicoLayerPtr_SortById
 {
 	FORCEINLINE bool operator()(const FPicoLayerPtr& A, const FPicoLayerPtr& B) const
 	{
-		return A->GetPXRLayerID() < B->GetPXRLayerID();
+		return A->GetID() < B->GetID();
 	}
 };
 
@@ -112,8 +121,8 @@ struct FLayerPtr_CompareByAll
 {
 	FORCEINLINE bool operator()(const FPicoLayerPtr& A, const FPicoLayerPtr& B) const
 	{
-		int32 OrderA = (A->GetPXRLayerID() == 0) ? 0 : A->IsLayerSupportDepth() ? -1 : 1;
-		int32 OrderB = (B->GetPXRLayerID() == 0) ? 0 : B->IsLayerSupportDepth() ? -1 : 1;
+		int32 OrderA = (A->GetID() == 0) ? 0 : A->IsLayerSupportDepth() ? -1 : 1;
+		int32 OrderB = (B->GetID() == 0) ? 0 : B->IsLayerSupportDepth() ? -1 : 1;
 
 		if (OrderA != OrderB)
 		{
@@ -136,6 +145,6 @@ struct FLayerPtr_CompareByAll
 			return DescA.Priority < DescB.Priority;
 		}
 
-		return A->GetPXRLayerID() < B->GetPXRLayerID();
+		return A->GetID() < B->GetID();
 	}
 };

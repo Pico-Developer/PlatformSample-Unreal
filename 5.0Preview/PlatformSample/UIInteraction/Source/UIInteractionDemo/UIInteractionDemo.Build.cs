@@ -15,6 +15,8 @@ public class UIInteractionDemo : ModuleRules
 			"Engine", 
 			"InputCore",
 			"OnlineSubsystem",
+			"HTTP", 
+			"Json",
 			"OnlineSubsystemPico",
 			"OnlineSubsystemUtils"
 		});

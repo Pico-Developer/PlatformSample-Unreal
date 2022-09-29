@@ -15,6 +15,7 @@
 #include "Engine/Public/SceneUtils.h"
 #include "PXR_GameFrame.h"
 #include "StereoLayerManager.h"
+#include "PXR_DelayDeleteLayer.h"
 #if PLATFORM_ANDROID
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJNI.h"
@@ -236,8 +237,6 @@ public:
 	class FPicoXRInput* GetPicoXRInput();
 	float UPxr_GetIPD() const;
 
-	void BeginFrame_RHIThread();
-	void EndFrame_RHIThread();
 	FPicoXRSplashPtr GetSplash() const {return  PicoSplash;};
 
 	bool Initialize();
@@ -295,10 +294,6 @@ public:
 
 	UPicoXREventManager* EventManager;
 	uint32 NextLayerId;
-	TMap<FString, FVector> MapToInitPos;
-	FVector InitCamPos;
-	FVector PreCamPos;
-	static int32 GMapInitFrame;
 	bool MRCEnabled=false;
 	FLinearColor GColorScale = FLinearColor(1.0,1.0,1.0,1.0);
 	FLinearColor GColorOffset = FLinearColor(0.0,0.0,0.0,0.0);
@@ -313,6 +308,9 @@ public:
 	UPicoContentResourceFinder* GetContentResourceFinder(){return ContentResourceFinder;}
 	void AllocateEyeLayer();
 
+	FDelayDeleteLayerManager DelayDeletion;
+	void UpdateSensorValue(FPXRGameFrame* InFrame);
+	double DisplayRefreshRate;
 protected:
 	void InitEyeLayer_RenderThread(FRHICommandListImmediate& RHICmdList);
 
@@ -333,7 +331,6 @@ private:
 	void ApplicationPauseDelegate();
 	void ApplicationResumeDelegate();
 	void UpdateNeckOffset();
-	void UpdateSensorValue(FPXRGameFrame * InFrame);
 	void EnableContentProtect(bool bEnable );
 	void SetRefreshRate();
 	void ConfigMobileMSAA();
@@ -353,14 +350,9 @@ private:
 	EHMDTrackingOrigin::Type TrackingOrigin;
 	static float IpdValue;
 	TSharedPtr<FPicoXREyeTracker> EyeTracker;
-	static int32 SubmitViewNumber;
-	static FVector SubmitPosition;
-	static FQuat SubmitOrientation;
-	static FTransform SubmitTrackingToWorld;
 	APlayerController* PlayerController;
 	FPicoXRSplashPtr PicoSplash;
 	FString DeviceModel;
-	double DisplayRefreshRate;
 	UPicoContentResourceFinder* ContentResourceFinder;
 };
 

@@ -36,6 +36,7 @@ class FPicoPresenceInterface;
 class FApplicationLifecycleInterface;
 class FPicoIAPInterface;
 class FPicoUserInterface;
+class FPicoAssetFileInterface;
 class FPicoSportInterface;
 class FPicoAchievementsInterface;
 
@@ -101,15 +102,14 @@ public:
 
     TSharedPtr<FPicoPresenceInterface> GetPicoPresenceInterface() const;
 
-    TSharedPtr<FPicoSportInterface> GetPicoSportInterface() const;
+    TSharedPtr<FPicoAssetFileInterface> GetPicoAssetFileInterface() const;
 
+    TSharedPtr<FPicoSportInterface> GetPicoSportInterface() const;
 
     // Game
     FOnlineSessionPicoPtr GetGameSessionInterface() const;
 
     TSharedPtr<FPicoAchievementsInterface> GetPicoAchievementsInterface() const;
-
-
 
 /**
  * Allows for the PicoSDK calls to be used directly with the Delegates in the Pico PSS
@@ -159,6 +159,8 @@ private:
     TSharedPtr<FPicoIAPInterface> PicoIAPInterface;
 
     TSharedPtr<FPicoUserInterface> PicoUserInterface;
+
+    TSharedPtr<FPicoAssetFileInterface> PicoAssetFileInterface;
 
     TSharedPtr<FPicoSportInterface> PicoSportInterface;
 

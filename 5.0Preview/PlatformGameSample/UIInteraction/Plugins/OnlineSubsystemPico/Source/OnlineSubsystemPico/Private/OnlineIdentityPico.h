@@ -247,11 +247,11 @@ public:
 
     // FOnlineIdentityPico
 
-    /// <summary>The constructor.</summary>
-    /// <param name="InSubsystem">The online subsystem being used.</param>
+    // <summary>The constructor.</summary>
+    // <param name="InSubsystem">The online subsystem being used.</param>
     FOnlineIdentityPico(FOnlineSubsystemPico& InSubsystem);
 
-    /// The default destructor.
+    // The default destructor.
     virtual ~FOnlineIdentityPico() = default;
 
 PACKAGE_SCOPE:
@@ -264,10 +264,10 @@ PACKAGE_SCOPE:
 
 private:
 
-    /// @brief Reference to the main Pico subsystem.
+    // @brief Reference to the main Pico subsystem.
     FOnlineSubsystemPico& PicoSubsystem;
 
-    /// @brief IDs mapped to locally registered users.
+    // @brief IDs mapped to locally registered users.
 #if ENGINE_MAJOR_VERSION > 4
     TMap<int32, FUniqueNetIdRef> UserIds;
 #elif ENGINE_MINOR_VERSION > 26

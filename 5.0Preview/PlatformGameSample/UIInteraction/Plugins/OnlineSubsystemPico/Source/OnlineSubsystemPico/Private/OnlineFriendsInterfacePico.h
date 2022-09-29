@@ -201,13 +201,13 @@ class FOnlineFriendsPico : public IOnlineFriends
 {
 private:
 
-    /// @brief Reference to the main Pico subsystem.
+    // @brief Reference to the main Pico subsystem.
     FOnlineSubsystemPico& PicoSubsystem;
 
-    /// @brief Current player friends map.
+    // @brief Current player friends map.
     TMap<FString, TSharedRef<FOnlineFriend>> PlayerFriends;
 
-    /// @brief Current friends map can user invite.
+    // @brief Current friends map can user invite.
     TMap<FString, TSharedRef<FOnlineFriend>> InvitableUsers;
 
 PACKAGE_SCOPE:
@@ -220,12 +220,12 @@ public:
     static const FString FriendsListInviteableUsers;
 
    
-    /// <summary>The constructor.</summary>
-    /// <param name="InSubsystem">A reference to the online subsystem.</param>
+    // <summary>The constructor.</summary>
+    // <param name="InSubsystem">A reference to the online subsystem.</param>
     FOnlineFriendsPico(FOnlineSubsystemPico& InSubsystem);
 
    
-    /// The default destructor.
+    // The default destructor.
     virtual ~FOnlineFriendsPico() = default;
 
     // Begin IOnlineFriends interface

@@ -24,6 +24,7 @@ DECLARE_LOG_CATEGORY_EXTERN(ApplicationLifecycleInterface, Log, All);
 // Notification
 DECLARE_MULTICAST_DELEGATE_OneParam(FApplicationLifecycleStringResult, const FString& /*MessageString*/);
 
+/// <summary>Pico Application interface class.</summary>
 class ONLINESUBSYSTEMPICO_API FApplicationLifecycleInterface
 {
 

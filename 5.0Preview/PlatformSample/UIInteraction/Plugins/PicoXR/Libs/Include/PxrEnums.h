@@ -20,7 +20,8 @@ typedef enum
     PXR_LAYER_QUAD = 1,
     PXR_LAYER_CYLINDER = 2,
     PXR_LAYER_EQUIRECT = 3,
-    PXR_LAYER_CUBE = 4,
+    PXR_LAYER_EQUIRECT2 = 4,
+    PXR_LAYER_CUBE = 5,
 } PxrLayerShape;
 
 typedef enum

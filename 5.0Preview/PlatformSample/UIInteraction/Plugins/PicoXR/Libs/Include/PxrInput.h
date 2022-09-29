@@ -351,13 +351,37 @@ typedef struct {
 
 
 //Bodytracking data
-typedef enum PxrBodyTrackingType
+typedef enum BodyTrackerRole
 {
-    TRACKER_LEFT_ANKLE  = 0,                    // left ankle
-    TRACKER_RIGHT_ANKLE = 1,                    // right ankle
-    TRACKER_LEFT_THIGH  = 2,                    // left thigh
-    TRACKER_RIGHT_THIGH = 3,                    // right thigh
-} PxrBodyTrackerType;
+    PxrPelvis         = 0,
+    Pxr_LEFT_HIP       = 1,
+    Pxr_RIGHT_HIP      = 2,
+    Pxr_SPINE1         = 3,
+    Pxr_LEFT_KNEE      = 4,
+    Pxr_RIGHT_KNEE     = 5,
+    Pxr_SPINE2         = 6,
+    Pxr_LEFT_ANKLE     = 7,
+    Pxr_RIGHT_ANKLE    = 8,
+    Pxr_SPINE3         = 9,
+    Pxr_LEFT_FOOT      = 10,
+    Pxr_RIGHT_FOOT     = 11,
+    Pxr_NECK           = 12,
+    Pxr_LEFT_COLLAR    = 13,
+    Pxr_RIGHT_COLLAR   = 14,
+    Pxr_HEAD           = 15,
+    Pxr_LEFT_SHOULDER  = 16,
+    Pxr_RIGHT_SHOULDER = 17,
+    Pxr_LEFT_ELBOW     = 18,
+    Pxr_RIGHT_ELBOW    = 19,
+    Pxr_LEFT_WRIST     = 20,
+    Pxr_RIGHT_WRIST    = 21,
+    Pxr_LEFT_HAND      = 22,
+    Pxr_RIGHT_HAND     = 23,
+    Pxr_NONE_ROLE      = 24,
+    Pxr_MIN_ROLE       = 0,
+    Pxr_MAX_ROLE       = 23,
+    Pxr_ROLE_NUM       = 24,
+} PxrBodyTrackerRole;
 
 // imu data
 typedef struct PxrBodyTrackingImu
@@ -380,21 +404,28 @@ typedef struct PxrBodyTrackingPose
     double    RotQz;                    // z components of Quaternion
     double    RotQw;                    // w components of Quaternion
 } PxrBodyTrackingPose;
-
+// action set
+typedef enum BodyActionList
+{
+    PxrNoneAction     = 0x0000,
+    PxrNoTouchGround  = 0x0001,            // the trigger of without touch ground
+    PxrHasTouchGround = 0x0010,            // the trigger of touch ground
+} PxrBodyActionList;
 typedef struct PxrBodyTrackingTransform
 {
+    PxrBodyTrackerRole bone;                // bone name. if bone == NONE_ROLE, this bone is not calculated
     PxrBodyTrackingPose pose;
     double velo[3];                     // velocity of x,y,z
     double acce[3];                     // acceleration of x,y,z
     double wvelo[3];                    // angular velocity of x,y,z
     double wacce[3];                    // angular acceleration of x,y,z
+    uint32_t   bodyAction;              // multiple actions can be supported at the same time by means of OR BodyActionList
 } PxrBodyTrackingTransform;
 
 
 typedef struct PxrBodyTrackingResult
 {
-    PxrBodyTrackingTransform leftAnkle;
-    PxrBodyTrackingTransform rightAnkle;
+    PxrBodyTrackingTransform trackingdata[Pxr_ROLE_NUM];;
 } PxrBodyTrackingResult;
 
 extern "C" {

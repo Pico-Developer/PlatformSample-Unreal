@@ -14,11 +14,11 @@ class UMaterial;
 class UMaterialInstanceDynamic;
 
 UCLASS(NotPlaceable, NotBlueprintable)
-class APicoXRMRC_CastingCameraActor : public ASceneCapture2D
+class APICOXRMRC_CastingCameraActor : public ASceneCapture2D
 {
 	GENERATED_BODY()
 public:
-	APicoXRMRC_CastingCameraActor(const FObjectInitializer& ObjectInitializer);
+	APICOXRMRC_CastingCameraActor(const FObjectInitializer& ObjectInitializer);
 
 	/** Initialize the MRC settings and states */
 	void InitializeStates(UPXRInGameThirdCamState * MRStateIn);
@@ -65,10 +65,4 @@ private:
 
 	UPROPERTY()
 	UMaterialInstanceDynamic*  MI_Foreground;
-	
-	UFUNCTION()
-	void OnHMDRecentered();
-
-	UFUNCTION()
-	void OnHMDResume();
 };

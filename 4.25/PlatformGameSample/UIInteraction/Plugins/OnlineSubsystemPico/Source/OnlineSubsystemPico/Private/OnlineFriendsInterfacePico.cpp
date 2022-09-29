@@ -11,6 +11,7 @@
 const FString FOnlineFriendsPico::FriendsListInviteableUsers = TEXT("invitableUsers");
 void FOnlineFriendsPico::OnQueryFriendsComplete(ppfMessageHandle Message, bool bIsError, int32 LocalUserNum, const FString& ListName, TMap<FString, TSharedRef<FOnlineFriend>>& OutList, bool bAppendToExistingMap, const FOnReadFriendsListComplete& Delegate)
 {
+    UE_LOG_ONLINE_FRIEND(Log, TEXT("PPF_GAME FOnlineFriendsPico::On Query Friends Complete Recive!"));
 #if PLATFORM_ANDROID
     FString ErrorStr;
     if (bIsError)
@@ -18,6 +19,7 @@ void FOnlineFriendsPico::OnQueryFriendsComplete(ppfMessageHandle Message, bool b
         auto Error = ppf_Message_GetError(Message);
         auto ErrorMessage = ppf_Error_GetMessage(Error);
 		FString ErrorMessageStr = UTF8_TO_TCHAR(ErrorMessage);
+        UE_LOG_ONLINE_FRIEND(Log, TEXT("PPF_GAME FOnlineFriendsPico::On Query Friends Complete Recive Failed :%s"), *ErrorMessageStr);
         ErrorStr = UTF8_TO_TCHAR(ErrorMessage);
         if (bAppendToExistingMap)
         {
@@ -29,6 +31,7 @@ void FOnlineFriendsPico::OnQueryFriendsComplete(ppfMessageHandle Message, bool b
     }
     auto UserArray = ppf_Message_GetUserArray(Message);
     auto UserNum = ppf_UserArray_GetSize(UserArray);
+    UE_LOG_ONLINE_FRIEND(Log, TEXT("PPF_GAME FOnlineFriendsPico::On Query Friends Complete FriendNum :%i"), UserNum);
     if (!bAppendToExistingMap)
     {
         OutList.Empty(UserNum);
@@ -56,11 +59,13 @@ void FOnlineFriendsPico::OnQueryFriendsComplete(ppfMessageHandle Message, bool b
              ImageUrl, Gender, SmallImageUrl, PresencePackage, Presence, PresenceDeeplinkMessage, PresenceDestinationApiName, PresenceLobbySessionId,
              PresenceMatchSessionId, PresenceExtra));
 
+        UE_LOG_ONLINE(Display, TEXT("PPF_GAME add friend in outlist: FriendId: %s, DisplayName: %s, InviteToken: %s"), *FriendId, *FriendDisplayName, *FriendInviteTokenString);
         OutList.Add(FriendId, OnlineFriend);
     }
     bool bHasPaging = ppf_UserArray_HasNextPage(UserArray);
     if (bHasPaging)
     {
+        UE_LOG_ONLINE_FRIEND(Log, TEXT("FOnlineFriendsPico::GetNextUserArray!"));
         PicoSubsystem.AddAsyncTask
         (
             ppf_User_GetNextUserArrayPage(ppf_UserArray_GetNextPageParam(UserArray)),
@@ -188,17 +193,32 @@ bool FOnlineFriendsPico::RejectInvite(int32 LocalUserNum, const FUniqueNetId& Fr
 
 void FOnlineFriendsPico::SetFriendAlias(int32 LocalUserNum, const FUniqueNetId& FriendId, const FString& ListName, const FString& Alias, const FOnSetFriendAliasComplete& Delegate /*= FOnSetFriendAliasComplete()*/)
 {
+#if ENGINE_MAJOR_VERSION > 4
+    FUniqueNetIdRef FriendIdRef = FriendId.AsShared();
+#elif ENGINE_MINOR_VERSION > 26
+    FUniqueNetIdRef FriendIdRef = FriendId.AsShared();
+#elif ENGINE_MINOR_VERSION > 24
     TSharedRef<const FUniqueNetId> FriendIdRef = FriendId.AsShared();
-    PicoSubsystem.ExecuteNextTick([LocalUserNum, FriendIdRef, ListName, Delegate]()
+#endif
+    PicoSubsystem.ExecuteNextTick
+    (
+        [LocalUserNum, FriendIdRef, ListName, Delegate]()
         {
             UE_LOG_ONLINE_FRIEND(Warning, TEXT("FOnlineFriendsPico::SetFriendAlias is not implemented"));
             Delegate.ExecuteIfBound(LocalUserNum, *FriendIdRef, ListName, FOnlineError(EOnlineErrorResult::NotImplemented));
-        });
+        }
+    );
 }
 
 void FOnlineFriendsPico::DeleteFriendAlias(int32 LocalUserNum, const FUniqueNetId& FriendId, const FString& ListName, const FOnDeleteFriendAliasComplete& Delegate /*= FOnDeleteFriendAliasComplete()*/)
 {
+#if ENGINE_MAJOR_VERSION > 4
+    FUniqueNetIdRef FriendIdRef = FriendId.AsShared();
+#elif ENGINE_MINOR_VERSION > 26
+    FUniqueNetIdRef FriendIdRef = FriendId.AsShared();
+#elif ENGINE_MINOR_VERSION > 24
     TSharedRef<const FUniqueNetId> FriendIdRef = FriendId.AsShared();
+#endif
     PicoSubsystem.ExecuteNextTick
     (
         [LocalUserNum, FriendIdRef, ListName, Delegate]()
@@ -245,7 +265,10 @@ bool FOnlineFriendsPico::GetFriendsList(int32 LocalUserNum, const FString& ListN
 
 TSharedPtr<FOnlineFriend> FOnlineFriendsPico::GetFriend(int32 LocalUserNum, const FUniqueNetId& FriendId, const FString& ListName)
 {
+    UE_LOG_ONLINE_FRIEND(Log, TEXT("FOnlineFriendsPico::GetFriend!"));
     auto PicoFriendId = static_cast<const FUniqueNetIdPico&>(FriendId);
+
+    UE_LOG_ONLINE(Display, TEXT("PPF_GAME GetFriend PicoFriendId.GetStringID(): %s"), *PicoFriendId.GetStringID());
     if (ListName == EFriendsLists::ToString(EFriendsLists::Default))
     {
         if (!PlayerFriends.Contains(PicoFriendId.GetStringID()))
@@ -270,6 +293,7 @@ TSharedPtr<FOnlineFriend> FOnlineFriendsPico::GetFriend(int32 LocalUserNum, cons
 
         return Friend;
     }
+
     if (ListName == FriendsListInviteableUsers)
     {
         if (!InvitableUsers.Contains(PicoFriendId.GetStringID()))

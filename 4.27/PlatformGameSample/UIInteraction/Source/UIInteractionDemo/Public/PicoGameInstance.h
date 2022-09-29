@@ -8,7 +8,13 @@
 #include "Interfaces/OnlineFriendsInterface.h"
 #include "Interfaces/OnlineIdentityInterface.h"
 #include "Interfaces/OnlineLeaderboardInterface.h"
+
+#if ENGINE_MAJOR_VERSION > 4
+#include "Online/CoreOnline.h"
+#elif ENGINE_MINOR_VERSION > 24
 #include "UObject/CoreOnline.h"
+#endif
+
 #include "RTCPicoUserInterface.h"
 #include "OnlineSessionInterfacePico.h"
 #include "OnlineSubsystemTypes.h"

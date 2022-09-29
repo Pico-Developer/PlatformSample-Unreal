@@ -87,7 +87,14 @@ bool UPicoNetDriver::InitConnect(FNetworkNotify* InNotify, const FURL& ConnectUR
 {
 	UE_LOG(LogNet, Verbose, TEXT("Connecting to host: %s"), *ConnectURL.ToString(true));
 
+#if ENGINE_MAJOR_VERSION > 4
 	FInternetAddrPico PicoAddr = FInternetAddrPico::FromUrl(ConnectURL);
+#elif ENGINE_MINOR_VERSION > 26
+	FInternetAddrPico PicoAddr = FInternetAddrPico::FromUrl(ConnectURL);
+#elif ENGINE_MINOR_VERSION > 24
+	FInternetAddrPico PicoAddr(ConnectURL);
+#endif
+
 	if (!PicoAddr.IsValid())
 	{
 		UE_LOG(LogNet, Verbose, TEXT("Init as IPNetDriver connect"));
@@ -243,8 +250,11 @@ void UPicoNetDriver::TickDispatch(float DeltaTime)
 		if (!bIgnorePacket && Connections.Contains(SenderIDStr))
 		{
 			auto Connection = Connections[SenderIDStr];
-
+#if ENGINE_MAJOR_VERSION > 4
+            if (Connection->GetConnectionState() == EConnectionState::USOCK_Open)
+#elif ENGINE_MINOR_VERSION > 24
 			if (Connection->State == EConnectionState::USOCK_Open)
+#endif
 			{
 				UE_LOG(LogNetTraffic, VeryVerbose, TEXT("Got a raw packet of size %d"), PacketSize);
 				Connection->ReceivedRawPacket(Data, PacketSize);
@@ -271,7 +281,15 @@ void UPicoNetDriver::LowLevelSend(TSharedPtr<const FInternetAddr> Address, void*
 	{
 		return UIpNetDriver::LowLevelSend(Address, Data, CountBits, Traits);
 	}
+
+#if ENGINE_MAJOR_VERSION > 4
 	FInternetAddrPico PicoAddr = FInternetAddrPico::FromUrl(FURL(nullptr, *Address->ToString(false), ETravelType::TRAVEL_Absolute));
+#elif ENGINE_MINOR_VERSION > 26
+	FInternetAddrPico PicoAddr = FInternetAddrPico::FromUrl(FURL(nullptr, *Address->ToString(false), ETravelType::TRAVEL_Absolute));
+#elif ENGINE_MINOR_VERSION > 24
+	FInternetAddrPico PicoAddr(FURL(nullptr, *Address->ToString(false), ETravelType::TRAVEL_Absolute));
+#endif
+
 	ppfID PeerID = PicoAddr.GetID();
 	FString UserID = PicoAddr.GetStrID();
 	if (IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get())
@@ -367,5 +385,9 @@ bool UPicoNetDriver::IsNetResourceValid()
 	}
 
 	// The clients need to wait until the connection is established before sending packets
+#if ENGINE_MAJOR_VERSION > 4
+	return ServerConnection->GetConnectionState() == EConnectionState::USOCK_Open;
+#elif ENGINE_MINOR_VERSION > 24
 	return ServerConnection->State == EConnectionState::USOCK_Open;
+#endif
 }

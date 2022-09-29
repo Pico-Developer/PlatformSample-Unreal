@@ -14,21 +14,21 @@
 #include "Runtime/Core/Public/Modules/ModuleManager.h"
 #include "PXR_Shaders.h"
 
-FPicoXRRenderBridge::FPicoXRRenderBridge(FPicoXRHMD* HMD) : FXRRenderBridge(),PicoXRHMD(HMD)
+FPICOXRRenderBridge::FPICOXRRenderBridge(FPICOXRHMD* HMD) : FXRRenderBridge(),PICOXRHMD(HMD)
 {
     // grab a pointer to the renderer module for displaying our mirror window
     static const FName RendererModuleName("Renderer");
     RendererModule = FModuleManager::GetModulePtr<IRendererModule>(RendererModuleName);
 }
 
-bool FPicoXRRenderBridge::NeedsNativePresent()
+bool FPICOXRRenderBridge::NeedsNativePresent()
 {
 	return false;
 }
 
-bool FPicoXRRenderBridge::Present(int32& InOutSyncInterval)
+bool FPICOXRRenderBridge::Present(int32& InOutSyncInterval)
 {
-	PicoXRHMD->OnRHIFrameEnd_RHIThread();
+	PICOXRHMD->OnRHIFrameEnd_RHIThread();
 #if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
 	// frame rate log
 	static int32 FrameCount = 0;
@@ -56,9 +56,9 @@ bool FPicoXRRenderBridge::Present(int32& InOutSyncInterval)
 }
 
 #if ENGINE_MINOR_VERSION > 25
-FXRSwapChainPtr FPicoXRRenderBridge::CreateSwapChain_RenderThread(uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, ETextureCreateFlags Flags, ETextureCreateFlags TargetableTextureFlags, uint32 MSAAValue)
+FXRSwapChainPtr FPICOXRRenderBridge::CreateSwapChain_RenderThread(uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, ETextureCreateFlags Flags, ETextureCreateFlags TargetableTextureFlags, uint32 MSAAValue)
 #else
-FXRSwapChainPtr FPicoXRRenderBridge::CreateSwapChain_RenderThread(uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, uint32 Flags, uint32 TargetableTextureFlags, uint32 MSAAValue)
+FXRSwapChainPtr FPICOXRRenderBridge::CreateSwapChain_RenderThread(uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, uint32 Flags, uint32 TargetableTextureFlags, uint32 MSAAValue)
 #endif
 {
 	check(IsInRenderingThread());
@@ -83,7 +83,7 @@ FXRSwapChainPtr FPicoXRRenderBridge::CreateSwapChain_RenderThread(uint32 LayerID
 	return CreateXRSwapChain(MoveTemp(RHITextureSwapChain), RHITexture);
 }
 
-int FPicoXRRenderBridge::GetSystemRecommendedMSAA() const
+int FPICOXRRenderBridge::GetSystemRecommendedMSAA() const
 {
 	int msaa = 1;
 #if PLATFORM_ANDROID
@@ -92,7 +92,7 @@ int FPicoXRRenderBridge::GetSystemRecommendedMSAA() const
 	return msaa;
 }
 
-void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& RHICmdList, FRHITexture* DstTexture, FRHITexture* SrcTexture, FIntRect DstRect, FIntRect SrcRect,
+void FPICOXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& RHICmdList, FRHITexture* DstTexture, FRHITexture* SrcTexture, FIntRect DstRect, FIntRect SrcRect,
 	bool bAlphaPremultiply, bool bNoAlphaWrite, bool bNeedGreenClear, bool bInvertY, bool sRGBSource, bool bInvertAlpha) const
 {
     check(IsInRenderingThread());
@@ -299,7 +299,7 @@ void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& R
 
 				RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
 
-				TShaderMapRef<FPicoCubemapPS> PixelShader(ShaderMap);
+				TShaderMapRef<FPICOCubemapPS> PixelShader(ShaderMap);
 #if ENGINE_MAJOR_VERSION >=5 || ENGINE_MINOR_VERSION >=25
 				GraphicsPSOInit.BoundShaderState.PixelShaderRHI = PixelShader.GetPixelShader();
 #else
@@ -329,7 +329,7 @@ void FPicoXRRenderBridge::TransferImage_RenderThread(FRHICommandListImmediate& R
 	}
 }
 
-void FPicoXRRenderBridge::SubmitGPUCommands_RenderThread(FRHICommandListImmediate& RHICmdList)
+void FPICOXRRenderBridge::SubmitGPUCommands_RenderThread(FRHICommandListImmediate& RHICmdList)
 {
 	check(IsInRenderingThread());
 	RHICmdList.SubmitCommandsHint();

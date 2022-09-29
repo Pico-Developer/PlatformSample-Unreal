@@ -38,6 +38,7 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetPermissionResult, bool, bIsError, const
  *  @{
  */
 
+/// @brief PicoUserInterface class.
 class ONLINESUBSYSTEMPICO_API FPicoUserInterface
 {
 private:
@@ -58,7 +59,7 @@ public:
     FGetPermissionResult RequestUserPermissionsDelegate;
 
     /// <summary>Gets the information about the current logged-in user.</summary>
-    /// <param name="InGetLoginUserDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetLoginUserDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -69,7 +70,7 @@ public:
 
     /// <summary>Gets the information by user ID.</summary>
     /// <param name="UserId">The ID of the user.</param>    
-    /// <param name="InGetUserInfoDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetUserInfoDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -78,8 +79,8 @@ public:
     /// </returns>  
     bool GetUserInfo(const FString& UserId, FGetUserInfo InGetUserInfoDelegate);
 
-    /// <summary>Gets the friends of the logged-in user and the rooms the friends might be in.If a friend is not in any room, the `room` field will be null.</summary>
-    /// <param name="OnGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <summary>Gets the friends of the logged-in user and the rooms the friends might be in. If a friend is not in any room, the 'room' field will be null.</summary>
+    /// <param name="OnGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -89,8 +90,9 @@ public:
     bool GetLoggedInUserAndRoom(FGetLoggedInUserFriendsAndRooms OnGetLoggedInuserFriendsAndRoomsCallback);
 
     /// <summary>Gets the friend list of the current user.</summary>
-    /// <param name="InUserAndRoomArray">The current object of user and room array.</param>    
-    /// <param name="OnGetNextUserAndRoomArrayPageCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InUserAndRoomArray">The current object of user and room array.</param>
+    /// <param name="OnGetNextUserAndRoomArrayPageCallback">Will be executed when the request has been completed.
+    /// Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -99,8 +101,8 @@ public:
     /// </returns>  
     bool GetNextUserAndRoomArrayPage(UPico_UserAndRoomArray* InUserAndRoomArray, FGetNextUserAndRoomArrayPage OnGetNextUserAndRoomArrayPageCallback);
 
-    /// <summary>Gets the friend list of the current user.Friends who don't use this app won't appear in this list.</summary>
-    /// <param name="OnGetLoggedInUserFriendsCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <summary>Gets the friend list of the current user. Friends who don't use this app won't appear in this list.</summary>
+    /// <param name="OnGetLoggedInUserFriendsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -110,8 +112,8 @@ public:
     bool GetUserFriends(FGetLoggedInUserFriends OnGetLoggedInUserFriendsCallback);
 
     /// <summary>Gets the next page of user list.</summary>
-    /// <param name="InUserArray">The current object of user array.</param>    
-    /// <param name="OnGetNextUserPageCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InUserArray">The current object of the user array.</param>
+    /// <param name="OnGetNextUserPageCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -123,7 +125,7 @@ public:
     /// <summary>
     /// Gets the authorized permissions.
     /// </summary>
-    /// <param name="OnGetPermissionResultCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="OnGetPermissionResultCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -135,11 +137,11 @@ public:
     /// <summary>
     /// Requests user permissions. The user will received a pop-up notification window.
     /// </summary>
-    /// <param name="OnGetPermissionResultCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.
-    /// * `user_info`: the permission to get the user's basic information, such as the nickname and profile picture.
-    /// * `friend_relation`: the permission to get the user's friend list and inviteable users.
-    /// * `sports_userinfo`: the permission to get the user's information set in the sport center.
-    /// * `sports_summarydata`: the permission to get a summary of the user's exercise data.
+    /// <param name="OnGetPermissionResultCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.
+    /// * `user_info`: The permission to get the user's basic information, such as the user's nickname and profile picture.
+    /// * `friend_relation`: The permission to get the user's friend list and invitable users.
+    /// * `sports_userinfo`: The permission to get the user's information set in the sport center.
+    /// * `sports_summarydata`: The permission to get a summary of the user's exercise data.
     /// </param>
     /// <returns>Bool:
     /// <ul>
@@ -163,6 +165,7 @@ public:
  *  @{
  */
 
+/// @brief OnlinePicoUser Blueprint Function class.
 UCLASS()
 class ONLINESUBSYSTEMPICO_API UOnlinePicoUserFunction : public UBlueprintFunctionLibrary
 {
@@ -171,9 +174,9 @@ class ONLINESUBSYSTEMPICO_API UOnlinePicoUserFunction : public UBlueprintFunctio
 
 public:
 
-    /// <summary>Gets the friends of the logged-in user and the rooms the friends might be in.If a friend is not in any room, the `room` field will be null.</summary>
+    /// <summary>Gets the friends of the logged-in user and the rooms the friends might be in. If a friend is not in any room, the 'room' field will be null.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="OnGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -186,7 +189,7 @@ public:
     /// <summary>Gets the friend list of the current user.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="InUserAndRoomArray">The current object of user and room array.</param>    
-    /// <param name="OnGetNextUserAndRoomArrayPageCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetNextUserAndRoomArrayPageCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -197,9 +200,9 @@ public:
     static void PicoGetNextUserAndRoomArrayPage(UObject* WorldContextObject, UPico_UserAndRoomArray* InUserAndRoomArray, FGetNextUserAndRoomArrayPage InGetNextUserAndRoomArrayPageCallback);
 
 
-    /// <summary>Gets the friend list of the current user.Friends who don't use this app won't appear in this list.</summary>
+    /// <summary>Gets the friend list of the current user. Friends who don't use this app won't appear in this list.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="OnGetLoggedInUserFriendsCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetLoggedInUserFriendsDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -209,10 +212,10 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|User")
     static void PicoGetUserFriends(UObject* WorldContextObject, FGetLoggedInUserFriends InGetLoggedInUserFriendsDelegate);
 
-    /// <summary>Gets the next page of user list.</summary>
+    /// <summary>Gets the next page of a user list.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="InUserArray">The current object of user array.</param>    
-    /// <param name="OnGetNextUserPageCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetNextUserPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -224,7 +227,7 @@ public:
 
     /// <summary>Gets the information about the current logged-in user.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="InGetLoginUserDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetLoginUserDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -237,7 +240,7 @@ public:
     /// <summary>Gets user information by user ID.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="UserId">The ID of the user.</param>    
-    /// <param name="InGetUserInfoDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetUserInfoDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -247,9 +250,37 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|User")
     static bool GetPicoUserInfo(UObject* WorldContextObject, const FString& UserId, FGetUserInfo InGetUserInfoDelegate);
 
+    /// <summary>
+    /// Gets the authorized permissions.
+    /// </summary>
+    /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
+    /// <param name="OnGetPermissionResultCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
+    /// <returns>Bool:
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>  
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|User")
     static bool GetAuthorizePermissions(UObject* WorldContextObject, FGetPermissionResult OnGetPermissionResultCallback);
 
+
+    /// <summary>
+    /// Requests user permissions. The user will received a pop-up notification window.
+    /// </summary>
+    /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
+    /// <param name="OnGetPermissionResultCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.
+    /// * `user_info`: The permission to get the user's basic information, such as the user's nickname and profile picture.
+    /// * `friend_relation`: The permission to get the user's friend list and invitable users.
+    /// * `sports_userinfo`: The permission to get the user's information set in the sport center.
+    /// * `sports_summarydata`: The permission to get a summary of the user's exercise data.
+    /// </param>
+    /// <returns>Bool:
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>  
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|User")
     static bool RequestUserPermissions(UObject* WorldContextObject, TArray<FString> Permissions, FGetPermissionResult OnGetPermissionResultCallback);
 

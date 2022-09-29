@@ -15,7 +15,13 @@ FOnlineLeaderboardPico::FOnlineLeaderboardPico(class FOnlineSubsystemPico& InSub
 {
 }
 
+#if ENGINE_MAJOR_VERSION > 4
 bool FOnlineLeaderboardPico::ReadLeaderboards(const TArray<FUniqueNetIdRef>& Players, FOnlineLeaderboardReadRef& ReadObject)
+#elif ENGINE_MINOR_VERSION > 26
+bool FOnlineLeaderboardPico::ReadLeaderboards(const TArray<FUniqueNetIdRef>& Players, FOnlineLeaderboardReadRef& ReadObject)
+#elif ENGINE_MINOR_VERSION > 24
+bool FOnlineLeaderboardPico::ReadLeaderboards(const TArray< TSharedRef<const FUniqueNetId> >& Players, FOnlineLeaderboardReadRef& ReadObject)
+#endif
 {
 #if PLATFORM_ANDROID
 	bool bOnlyLoggedInUser = false;
@@ -47,9 +53,13 @@ bool FOnlineLeaderboardPico::ReadLeaderboardsAroundRank(int32 Rank, uint32 Range
 	return false;
 }
 
-bool FOnlineLeaderboardPico::ReadLeaderboardsAroundUser(FUniqueNetIdRef Player, uint32 Range,
-                                                        FOnlineLeaderboardReadRef& ReadObject)
-
+#if ENGINE_MAJOR_VERSION > 4
+bool FOnlineLeaderboardPico::ReadLeaderboardsAroundUser(FUniqueNetIdRef Player, uint32 Range, FOnlineLeaderboardReadRef& ReadObject)
+#elif ENGINE_MINOR_VERSION > 26
+bool FOnlineLeaderboardPico::ReadLeaderboardsAroundUser(FUniqueNetIdRef Player, uint32 Range, FOnlineLeaderboardReadRef& ReadObject)
+#elif ENGINE_MINOR_VERSION > 24
+bool FOnlineLeaderboardPico::ReadLeaderboardsAroundUser(TSharedRef<const FUniqueNetId> Player, uint32 Range, FOnlineLeaderboardReadRef& ReadObject)
+#endif
 {
 	// todo
 	return false;
@@ -131,6 +141,7 @@ void FOnlineLeaderboardPico::OnReadLeaderboardsComplete(ppfMessageHandle Message
 		FString NickName = UTF8_TO_TCHAR(ppf_User_GetDisplayName(User));
 		auto Rank = ppf_LeaderboardEntry_GetRank(LeaderboardEntry);
 		auto Score = ppf_LeaderboardEntry_GetScore(LeaderboardEntry);
+		
 		auto Row = FOnlineStatsRow(NickName, MakeShareable(new FUniqueNetIdPico(UserID)));//FUniqueNetIdPico(NickName).AsShared());
 		if (Row.PlayerId.IsValid())
 		{

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PicoXRMRC/Private/PXR_MRCState.h"
+#include "PICOXRMRC/Private/PXR_MRCState.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "PXR_MRCFunctionLibrary.generated.h"
 
@@ -12,7 +12,7 @@ struct FPXRTrackedCamera;
 class UMaterialInstanceDynamic;
 
 UCLASS()
-class PICOXRMRC_API UPicoXRMRCFunctionLibrary : public UBlueprintFunctionLibrary
+class PICOXRMRC_API UPICOXRMRCFunctionLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

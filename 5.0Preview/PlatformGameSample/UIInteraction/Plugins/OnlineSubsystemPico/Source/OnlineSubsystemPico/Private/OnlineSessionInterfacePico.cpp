@@ -95,85 +95,85 @@ FOnlineSessionPico::~FOnlineSessionPico()
 #if PLATFORM_ANDROID
 	if (OnRoomNotificationUpdateHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Room_RoomUpdate, OnRoomNotificationUpdateHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Room_RoomUpdate, OnRoomNotificationUpdateHandle);
 		OnRoomNotificationUpdateHandle.Reset();
 	}
 
 	if (OnRoomNotificationInviteAcceptedHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Room_InviteAccepted, OnRoomNotificationInviteAcceptedHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Room_InviteAccepted, OnRoomNotificationInviteAcceptedHandle);
 		OnRoomNotificationInviteAcceptedHandle.Reset();
 	}
 
 	if (OnMatchmakingNotificationMatchFoundHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Matchmaking_MatchFound, OnMatchmakingNotificationMatchFoundHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Matchmaking_MatchFound, OnMatchmakingNotificationMatchFoundHandle);
 		OnMatchmakingNotificationMatchFoundHandle.Reset();
 	}
 	
 	if (OnNetNotificationConnectionHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_ConnectionEvent, OnNetNotificationConnectionHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_ConnectionEvent, OnNetNotificationConnectionHandle);
 		OnNetNotificationConnectionHandle.Reset();
 	}
 	
 	if (OnNetNotificationRequestFailedHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_RequestFailed, OnNetNotificationRequestFailedHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_RequestFailed, OnNetNotificationRequestFailedHandle);
 		OnNetNotificationRequestFailedHandle.Reset();
 	}
 	
 	if (OnNetNotificationGameStateResetHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_StateReset, OnNetNotificationGameStateResetHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_StateReset, OnNetNotificationGameStateResetHandle);
 		OnNetNotificationGameStateResetHandle.Reset();
 	}
 	
 	if (OnMatchmakingNotificationCancel2Handle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Matchmaking_Cancel2, OnMatchmakingNotificationCancel2Handle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Matchmaking_Cancel2, OnMatchmakingNotificationCancel2Handle);
 		OnMatchmakingNotificationCancel2Handle.Reset();
 	}
 
 	if (OnRoomNotificationLeaveHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_Leave, OnRoomNotificationLeaveHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_Leave, OnRoomNotificationLeaveHandle);
 		OnRoomNotificationLeaveHandle.Reset();
 	}
 
 	if (OnRoomNotificationJoin2Handle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_Join2, OnRoomNotificationJoin2Handle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_Join2, OnRoomNotificationJoin2Handle);
 		OnRoomNotificationJoin2Handle.Reset();
 	}
 
 	if (OnRoomNotificationSetDescriptionHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_SetDescription, OnRoomNotificationSetDescriptionHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_SetDescription, OnRoomNotificationSetDescriptionHandle);
 		OnRoomNotificationSetDescriptionHandle.Reset();
 	}
 
 	if (OnRoomNotificationKickUserHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_KickUser, OnRoomNotificationKickUserHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_KickUser, OnRoomNotificationKickUserHandle);
 		OnRoomNotificationKickUserHandle.Reset();
 	}
 
 	if (OnRoomNotificationUpdateOwnerHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateOwner, OnRoomNotificationUpdateOwnerHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateOwner, OnRoomNotificationUpdateOwnerHandle);
 		OnRoomNotificationUpdateOwnerHandle.Reset();
 	}
 
 	if (OnRoomNotificationUpdateDataStoreHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateDataStore, OnRoomNotificationUpdateDataStoreHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateDataStore, OnRoomNotificationUpdateDataStoreHandle);
 		OnRoomNotificationUpdateDataStoreHandle.Reset();
 	}
 
 	if (OnRoomNotificationUpdateMembershipLockStatusHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateMembershipLockStatus, OnRoomNotificationUpdateMembershipLockStatusHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateMembershipLockStatus, OnRoomNotificationUpdateMembershipLockStatusHandle);
 		OnRoomNotificationUpdateMembershipLockStatusHandle.Reset();
 	}
 #endif
@@ -1758,12 +1758,12 @@ void FOnlineSessionPico::Initialize()
 #if PLATFORM_ANDROID
 	SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("Initialize")));
 	SetInitState(false);
-	// PicoSubsystem.AddAsyncTask(
-	// 	ppf_User_GetAccessToken(),
-	// 	FPicoMessageOnCompleteDelegate::CreateRaw(this, &FOnlineSessionPico::OnGetAccessTokenComplete));
-	PicoSubsystem.AddAsyncTask(
-		ppf_Game_InitializeAuto(),
-		FPicoMessageOnCompleteDelegate::CreateRaw(this, &FOnlineSessionPico::OnGameInitializeComplete));
+	 PicoSubsystem.AddAsyncTask(
+	 	ppf_User_GetAccessToken(),
+	 	FPicoMessageOnCompleteDelegate::CreateRaw(this, &FOnlineSessionPico::OnGetAccessTokenComplete));
+	//PicoSubsystem.AddAsyncTask(
+	//	ppf_Game_InitializeAuto(),
+	//	FPicoMessageOnCompleteDelegate::CreateRaw(this, &FOnlineSessionPico::OnGameInitializeComplete));
 #endif
 }
 void FOnlineSessionPico::OnGetAccessTokenComplete(ppfMessageHandle Message, bool bIsError)
@@ -1798,8 +1798,8 @@ void FOnlineSessionPico::OnGameInitializeComplete(ppfMessageHandle Message, bool
 		auto Error = ppf_Message_GetError(Message);
 		auto ErrorMessage = ppf_Error_GetMessage(Error);
 		SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnGameInitializeComplete ErrorMessage: %s"), *FString(ErrorMessage)));
-		Uninitialize();
-		Initialize();
+		//Uninitialize();
+		//Initialize();
 		return;
 	}
 
@@ -1813,11 +1813,11 @@ void FOnlineSessionPico::OnGameInitializeComplete(ppfMessageHandle Message, bool
 		{
 			SetInitState(true);
 		}
-		else
-		{
-			Uninitialize();
-			Initialize();
-		}
+		//else
+		//{
+		//	Uninitialize();
+		//	Initialize();
+		//}
 	}
 #endif
 }

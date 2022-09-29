@@ -7,6 +7,7 @@
 #include "OnlineSubsystemPicoNames.h"
 #include "OnlineSubsystem.h"
 #include "OnlinePicoSettings.h"
+#include "OnlineSubsystemUtils.h"
 #include "Interfaces/OnlineLeaderboardInterface.h"
 #if PLATFORM_ANDROID
 #include "Android/AndroidApplication.h"
@@ -252,6 +253,151 @@ void UOnlinePicoFunctionLibrary::RtcUpdateToken(UObject* WorldContextObject, con
     }
 }
 
+int32 UOnlinePicoFunctionLibrary::RtcSendStreamSyncInfo(UObject* WorldContextObject, int32 Info, ERtcStreamIndex InStreamIndex, int32 RepeatCount, ERtcSyncInfoStreamType InSyncInfoStreamType)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcSendStreamSyncInfo"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        return Subsystem->GetRtcUserInterface()->RtcSendStreamSyncInfo(Info, InStreamIndex, RepeatCount, InSyncInfoStreamType);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcSendStreamSyncInfo Failed, RtcUserInterface Not Vailed!"));
+        return -1;
+    }
+}
+
+void UOnlinePicoFunctionLibrary::RtcRoomPublishStream(UObject* WorldContextObject, const FString& RoomId, ERtcMediaStreamType InRtcMediaStreamType)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcRoomPublishStream"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        Subsystem->GetRtcUserInterface()->RtcRoomPublishStream(RoomId, InRtcMediaStreamType);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcRoomPublishStream Failed, RtcUserInterface Not Vailed!"));
+    }
+}
+
+void UOnlinePicoFunctionLibrary::RtcRoomSetRemoteAudioPlaybackVolume(UObject* WorldContextObject, const FString& RoomId, const FString& UserId, int32 Volume)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcRoomSetRemoteAudioPlaybackVolume"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        Subsystem->GetRtcUserInterface()->RtcRoomSetRemoteAudioPlaybackVolume(RoomId, UserId, Volume);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcRoomSetRemoteAudioPlaybackVolume Failed, RtcUserInterface Not Vailed!"));
+    }
+}
+
+void UOnlinePicoFunctionLibrary::RtcRoomSubscribeStream(UObject* WorldContextObject, const FString& RoomId, const FString& UserId, ERtcMediaStreamType InRtcMediaStreamType)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcRoomSubscribeStream"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        Subsystem->GetRtcUserInterface()->RtcRoomSubscribeStream(RoomId, UserId, InRtcMediaStreamType);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcRoomSubscribeStream Failed, RtcUserInterface Not Vailed!"));
+    }
+}
+
+void UOnlinePicoFunctionLibrary::RtcRoomUnPublishStream(UObject* WorldContextObject, const FString& RoomId, ERtcMediaStreamType InRtcMediaStreamType)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcRoomUnPublishStream"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        Subsystem->GetRtcUserInterface()->RtcRoomUnPublishStream(RoomId, InRtcMediaStreamType);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcRoomUnPublishStream Failed, RtcUserInterface Not Vailed!"));
+    }
+}
+
+void UOnlinePicoFunctionLibrary::RtcRoomUnsubscribeStream(UObject* WorldContextObject, const FString& RoomId, const FString& UserId, ERtcMediaStreamType InRtcMediaStreamType)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcRoomUnsubscribeStream"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        Subsystem->GetRtcUserInterface()->RtcRoomUnsubscribeStream(RoomId, UserId, InRtcMediaStreamType);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcRoomUnsubscribeStream Failed, RtcUserInterface Not Vailed!"));
+    }
+}
+
+int64 UOnlinePicoFunctionLibrary::RtcSendRoomBinaryMessage(UObject* WorldContextObject, const FString& RoomId, const FString& MessageInfo)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcSendRoomBinaryMessage"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        return Subsystem->GetRtcUserInterface()->RtcSendRoomBinaryMessage(RoomId, MessageInfo);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcSendRoomBinaryMessage Failed, RtcUserInterface Not Vailed!"));
+        return -1;
+    }
+}
+
+int64 UOnlinePicoFunctionLibrary::RtcSendRoomMessage(UObject* WorldContextObject, const FString& RoomId, const FString& Message)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcSendRoomMessage"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        return Subsystem->GetRtcUserInterface()->RtcSendRoomMessage(RoomId, Message);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcSendRoomMessage Failed, RtcUserInterface Not Vailed!"));
+        return -1;
+    }
+}
+
+int64 UOnlinePicoFunctionLibrary::RtcSendUserBinaryMessage(UObject* WorldContextObject, const FString& RoomId, const FString& UserId, const FString& MessageInfo)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcSendUserBinaryMessage"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        return Subsystem->GetRtcUserInterface()->RtcSendUserBinaryMessage(RoomId, UserId, MessageInfo);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcSendUserBinaryMessage Failed, RtcUserInterface Not Vailed!"));
+        return -1;
+    }
+}
+
+int64 UOnlinePicoFunctionLibrary::RtcSendUserMessage(UObject* WorldContextObject, const FString& RoomId, const FString& UserId, const FString& Message)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlinePicoFunctionLibrary::RtcSendUserMessage"));
+    FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+    if (Subsystem && Subsystem->GetRtcUserInterface())
+    {
+        return Subsystem->GetRtcUserInterface()->RtcSendUserMessage(RoomId, UserId, Message);
+    }
+    else
+    {
+        UE_LOG_ONLINE(Log, TEXT("RtcSendUserMessage Failed, RtcUserInterface Not Vailed!"));
+        return -1;
+    }
+}
+
 // Game
 bool UOnlinePicoFunctionLibrary::IsInputSessionSettingsDataStoreValid(const FPicoOnlineSessionSettings& UpdatedSessionSettings)
 {
@@ -358,7 +504,13 @@ FOnlineSession UOnlinePicoFunctionLibrary::GetOnlineSession(const FPicoOnlineSes
     FOnlineSession Session;
     Session.SessionInfo = MakeShareable(new FOnlineSessionInfoPico(FCString::Strtoui64(*PicoSession.SessionInfoRoomID, NULL, 10)));
     Session.SessionSettings = GetOnlineSessionSettings(PicoSession.SessionSettings);
+#if ENGINE_MAJOR_VERSION > 4
+    Session.OwningUserId = FUniqueNetIdPico::Create(PicoSession.OwningUserId);
+#elif ENGINE_MINOR_VERSION > 26
+    Session.OwningUserId = FUniqueNetIdPico::Create(PicoSession.OwningUserId);
+#elif ENGINE_MINOR_VERSION > 24
     Session.OwningUserId = MakeShareable(new FUniqueNetIdPico(PicoSession.OwningUserId));
+#endif
     Session.OwningUserName = PicoSession.OwningUserName;
     Session.NumOpenPrivateConnections = PicoSession.NumOpenPrivateConnections;
     Session.NumOpenPublicConnections = PicoSession.NumOpenPublicConnections;
@@ -474,8 +626,14 @@ bool UOnlinePicoFunctionLibrary::FindSessionById(UObject* WorldContextObject, co
 	    IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get(TEXT("Pico"));
 	    auto SearchingUserIdPtr = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(SearchingUserId).ToSharedRef();
 	    auto SessionIdIdPtr = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(SessionId).ToSharedRef();
+#if ENGINE_MAJOR_VERSION > 4
+        FUniqueNetIdStringRef FriendId = FUniqueNetIdString::Create(FString(), FName("PicoSubsystem"));
+        return PicoSubsystemManager->FindSessionById(WorldContextObject, SearchingUserIdPtr.Get(), SessionIdIdPtr.Get(), FriendId.Get(), OnSingleSessionResultCompleteDelegate);
+#elif ENGINE_MINOR_VERSION > 24
 	    FUniqueNetIdString FriendId = FUniqueNetIdString();
-		return PicoSubsystemManager->FindSessionById(WorldContextObject, SearchingUserIdPtr.Get(), SessionIdIdPtr.Get(), FriendId, OnSingleSessionResultCompleteDelegate);
+        return PicoSubsystemManager->FindSessionById(WorldContextObject, SearchingUserIdPtr.Get(), SessionIdIdPtr.Get(), FriendId, OnSingleSessionResultCompleteDelegate);
+#endif
+		
 	}
     return false;
 }
@@ -829,26 +987,6 @@ FString UOnlinePicoFunctionLibrary::PicoGetDeviceSN()
     }
 #endif
     return DeviceSN;
-}
-
-FString UOnlinePicoFunctionLibrary::GetOpenId()
-{
-    FString ret = FString("");
-#if PLATFORM_ANDROID
-    if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
-    {
-        static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "GetOpenID", "()Ljava/lang/String;", false);
-        jstring JavaString = (jstring)FJavaWrapper::CallObjectMethod(Env, FJavaWrapper::GameActivityThis, Method);
-        if (JavaString != NULL)
-        {
-            const char* JavaChars = Env->GetStringUTFChars(JavaString, 0);
-            ret = FString(UTF8_TO_TCHAR(JavaChars));
-            Env->ReleaseStringUTFChars(JavaString, JavaChars);
-            Env->DeleteLocalRef(JavaString);
-}
-    }
-#endif
-    return ret;
 }
 
 #if PLATFORM_ANDROID

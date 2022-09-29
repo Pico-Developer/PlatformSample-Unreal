@@ -10,6 +10,17 @@
 #include "PPF_Platform.h"
 #include "OnlineSubsystemPicoNames.h"
 
+#if ENGINE_MAJOR_VERSION > 4
+using FUniqueNetIdPicoPtr = TSharedPtr<const class FUniqueNetIdPico>;
+using FUniqueNetIdPicoRef = TSharedRef<const class FUniqueNetIdPico>;
+
+#elif ENGINE_MINOR_VERSION > 26
+using FUniqueNetIdPicoPtr = TSharedPtr<const class FUniqueNetIdPico, UNIQUENETID_ESPMODE>;
+using FUniqueNetIdPicoRef = TSharedRef<const class FUniqueNetIdPico, UNIQUENETID_ESPMODE>;
+#elif ENGINE_MINOR_VERSION > 24
+
+#endif
+
 
 class FUniqueNetIdPico : public FUniqueNetId
 {
@@ -30,19 +41,54 @@ protected:
     }
 
 public:
-
-    virtual FName GetType() const override
+#if ENGINE_MAJOR_VERSION > 4
+    template<typename... TArgs>
+    static FUniqueNetIdPicoRef Create(TArgs&&... Args)
     {
-        return PICO_SUBSYSTEM;
+        return MakeShared<FUniqueNetIdPico>(Forward<TArgs>(Args)...);
     }
 
-    // IOnlinePlatformData
     static const FUniqueNetIdPico& Cast(const FUniqueNetId& NetId)
     {
         check(NetId.GetType() == PICO_SUBSYSTEM);
         return *static_cast<const FUniqueNetIdPico*>(&NetId);
     }
 
+    FUniqueNetIdPicoRef AsShared() const
+    {
+        return StaticCastSharedRef<const FUniqueNetIdPico>(FUniqueNetId::AsShared());
+    }
+#elif ENGINE_MINOR_VERSION > 26
+    template<typename... TArgs>
+    static FUniqueNetIdPicoRef Create(TArgs&&... Args)
+    {
+        return MakeShared<FUniqueNetIdPico, UNIQUENETID_ESPMODE>(Forward<TArgs>(Args)...);
+    }
+
+    /** Allow MakeShared to see private constructors */
+    friend class SharedPointerInternals::TIntrusiveReferenceController<FUniqueNetIdPico>;
+
+    static const FUniqueNetIdPico& Cast(const FUniqueNetId& NetId)
+    {
+        check(NetId.GetType() == PICO_SUBSYSTEM);
+        return *static_cast<const FUniqueNetIdPico*>(&NetId);
+    }
+    FUniqueNetIdPicoRef AsShared() const
+    {
+        return StaticCastSharedRef<const FUniqueNetIdPico>(FUniqueNetId::AsShared());
+    }
+#elif ENGINE_MINOR_VERSION > 24
+    static const FUniqueNetIdPico& Cast(const FUniqueNetId& NetId)
+    {
+        check(NetId.GetType() == PICO_SUBSYSTEM);
+        return *static_cast<const FUniqueNetIdPico*>(&NetId);
+    }
+#endif
+
+    virtual FName GetType() const override
+    {
+        return PICO_SUBSYSTEM;
+    }
 
     virtual const uint8* GetBytes() const override
     {
@@ -105,11 +151,27 @@ public:
     }
 
     /** global static instance of invalid (zero) id */
+#if ENGINE_MAJOR_VERSION > 4
+    static const FUniqueNetIdPicoRef& EmptyId()
+    {
+        static const FUniqueNetIdPicoRef EmptyId(Create());
+        return EmptyId;
+    }
+#elif ENGINE_MINOR_VERSION > 26
+    static const FUniqueNetIdPicoRef& EmptyId()
+    {
+        static const FUniqueNetIdPicoRef EmptyId(Create());
+        return EmptyId;
+    }
+#elif ENGINE_MINOR_VERSION > 24
+
     static const TSharedRef<const FUniqueNetId>& EmptyId()
     {
         static const TSharedRef<const FUniqueNetId> EmptyId(MakeShared<FUniqueNetIdPico>());
         return EmptyId;
     }
+
+#endif
 
     FUniqueNetIdPico()
     {
@@ -136,10 +198,22 @@ public:
     */
     explicit FUniqueNetIdPico(const FUniqueNetId& Src)
     {
+#if ENGINE_MAJOR_VERSION > 4
+        if (Src.GetType() == PICO_SUBSYSTEM)
+        {
+            ID = FUniqueNetIdPico::Cast(Src).ID;
+        }
+#elif ENGINE_MINOR_VERSION > 26
+        if (Src.GetType() == PICO_SUBSYSTEM)
+        {
+            ID = FUniqueNetIdPico::Cast(Src).ID;
+        }
+#elif ENGINE_MINOR_VERSION > 24
         if (Src.GetSize() == sizeof(ppfID))
         {
             ID = static_cast<const FUniqueNetIdPico&>(Src).ID;
         }
+#endif
     }
 };
 
@@ -151,6 +225,13 @@ class FOnlineSessionInfoPico : public FOnlineSessionInfo
 protected:
 
     /** Hidden on purpose */
+#if ENGINE_MAJOR_VERSION > 4
+    FOnlineSessionInfoPico(const FOnlineSessionInfoPico& Src) = delete;
+    FOnlineSessionInfoPico& operator=(const FOnlineSessionInfoPico& Src) = delete;
+#elif ENGINE_MINOR_VERSION > 26
+    FOnlineSessionInfoPico(const FOnlineSessionInfoPico& Src) = delete;
+    FOnlineSessionInfoPico& operator=(const FOnlineSessionInfoPico& Src) = delete;
+#elif ENGINE_MINOR_VERSION > 24
     FOnlineSessionInfoPico(const FOnlineSessionInfoPico& Src)
     {
     }
@@ -160,13 +241,22 @@ protected:
     {
         return *this;
     }
+#endif
+
 
 PACKAGE_SCOPE:
 
     FOnlineSessionInfoPico(ppfID RoomId);
 
     /** Unique Id for this session */
+#if ENGINE_MAJOR_VERSION > 4
+    FUniqueNetIdPicoRef SessionId;
+#elif ENGINE_MINOR_VERSION > 26
+    FUniqueNetIdPicoRef SessionId;
+#elif ENGINE_MINOR_VERSION > 24
     FUniqueNetIdPico SessionId;
+#endif
+
 
 public:
 
@@ -174,7 +264,13 @@ public:
 
     bool operator==(const FOnlineSessionInfoPico& Other) const
     {
+#if ENGINE_MAJOR_VERSION > 4
+        return *Other.SessionId == *SessionId;
+#elif ENGINE_MINOR_VERSION > 26
+        return *Other.SessionId == *SessionId;
+#elif ENGINE_MINOR_VERSION > 24
         return Other.SessionId == SessionId;
+#endif
     }
 
     virtual const uint8* GetBytes() const override
@@ -191,7 +287,37 @@ public:
     {
         return true;
     }
+#if ENGINE_MAJOR_VERSION > 4
+    virtual FString ToString() const override
+    {
+        return SessionId->ToString();
+    }
 
+    virtual FString ToDebugString() const override
+    {
+        return FString::Printf(TEXT("SessionId: %s"), *SessionId->ToDebugString());
+    }
+
+    virtual const FUniqueNetId& GetSessionId() const override
+    {
+        return *SessionId;
+    }
+#elif ENGINE_MINOR_VERSION > 26
+    virtual FString ToString() const override
+    {
+        return SessionId->ToString();
+    }
+
+    virtual FString ToDebugString() const override
+    {
+        return FString::Printf(TEXT("SessionId: %s"), *SessionId->ToDebugString());
+    }
+
+    virtual const FUniqueNetId& GetSessionId() const override
+    {
+        return *SessionId;
+    }
+#elif ENGINE_MINOR_VERSION > 24
     virtual FString ToString() const override
     {
         return SessionId.ToString();
@@ -206,6 +332,9 @@ public:
     {
         return SessionId;
     }
+#endif
+
+
 };
 
 
@@ -218,3 +347,10 @@ public:
     int PageSize = 0;
     int PageIndex = 0;
 };
+
+#if ENGINE_MINOR_VERSION > 26
+typedef TSharedRef<FOnlineLeaderboardReadPico, ESPMode::ThreadSafe> FOnlineLeaderboardReadPicoRef;
+typedef TSharedPtr<FOnlineLeaderboardReadPico, ESPMode::ThreadSafe> FOnlineLeaderboardReadPicoPtr;
+#elif ENGINE_MINOR_VERSION > 24
+
+#endif

@@ -2,7 +2,13 @@
 
 #include "PicoCreateSessionCallbackProxy.h"
 #include "OnlineSubsystemPicoPrivate.h"
+
+#if ENGINE_MAJOR_VERSION > 4
+#include "Online/CoreOnline.h"
+#elif ENGINE_MINOR_VERSION > 24
 #include "UObject/CoreOnline.h"
+#endif
+
 #include "Online.h"
 #include "OnlineSessionInterfacePico.h"
 

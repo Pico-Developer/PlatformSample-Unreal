@@ -20,14 +20,14 @@ FPicoApplicationInterface::~FPicoApplicationInterface()
 }
 
 
-bool FPicoApplicationInterface::LaunchOtherApp(const FString& AppID, const FString& Message, const FOnLaunchOtherAppComplete& Delegate /*= FOnGetTokenComplete()*/)
+bool FPicoApplicationInterface::LaunchOtherApp(const FString& PackageName, const FString& Message, const FOnLaunchOtherAppComplete& Delegate /*= FOnGetTokenComplete()*/)
 {
 #if PLATFORM_ANDROID
     auto ApplicationOptions = ppf_ApplicationOptions_Create();
     ppf_ApplicationOptions_SetDeeplinkMessage(ApplicationOptions, TCHAR_TO_UTF8(*Message));
     PicoSubsystem.AddAsyncTask
     (
-        ppf_Application_LaunchOtherApp(TCHAR_TO_UTF8(*AppID), ApplicationOptions),
+        ppf_Application_LaunchOtherApp(TCHAR_TO_UTF8(*PackageName), ApplicationOptions),
         FPicoMessageOnCompleteDelegate::CreateLambda
         (
             [this, Delegate](ppfMessageHandle Message, bool bIsError)

@@ -31,7 +31,7 @@ class FOnlineLeaderboardPico : public IOnlineLeaderboards
 {
 private:
 	
-	/** Reference to the owning subsystem */
+	// Reference to the owning subsystem
 	FOnlineSubsystemPico& PicoSubsystem;
 
 	bool ReadPicoLeaderboards(bool bOnlyFriends, bool bOnlyLoggedInUser, FOnlineLeaderboardReadRef& ReadObject);
@@ -44,21 +44,16 @@ private:
 
 public:
 
-	/**
-	* Constructor
-	*
-	* @param InSubsystem - A reference to the owning subsystem
-	*/
+
+    //Constructor * @param InSubsystem - A reference to the owning subsystem
 	FOnlineLeaderboardPico(FOnlineSubsystemPico& InSubsystem);
 
-	/**
-	* Default destructor
-	*/
+    // Default destructor
 	virtual ~FOnlineLeaderboardPico() = default;
 
     // Begin IOnlineLeaderboard interface
+
     /// <summary>Gets the entries of a leaderboard.</summary>
-    ///
     /// <param name="Players">Defines how the entries are returned:
     /// * If you leave this parameter empty, `StartAt` will be `none`,
     /// indicating that all entries of the leaderboard will be returned, and the rank starts from top 1 to the last.
@@ -81,7 +76,6 @@ public:
 #endif
 
     /// <summary>Gets the entries of the friends of the current logged-in user on a leaderboard.</summary>
-    ///
     /// <param name="LocalUserNum">not used</param>
     /// <param name="PicoReadObject">Set the leaderboard name in it.</param>
     /// <returns>Bool: 

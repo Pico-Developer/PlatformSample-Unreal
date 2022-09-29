@@ -7,11 +7,12 @@
 #include "CoreMinimal.h"
 #include "OnlineSubsystemPico.h"
 #include "Interfaces/OnlineIdentityInterface.h"
-#include "OnlineSubsystemPicoTypes.h"
 #include "PPF_Platform.h"
 #include "OnlineSubsystemPicoNames.h"
 #include "Pico_User.h"
 #include "OnlineFriendsInterfacePico.h"
+#include "OnlineSubsystemPicoTypes.h"
+
 /**
 /// 
  */
@@ -24,8 +25,13 @@ class FUserOnlineAccountPico : public FUserOnlineAccount
 {
 public:
 
-
+#if ENGINE_MAJOR_VERSION > 4
     FUserOnlineAccountPico(const FUniqueNetIdRef& InUserId, const FString& InName)
+#elif ENGINE_MINOR_VERSION > 26
+    FUserOnlineAccountPico(const FUniqueNetIdRef& InUserId, const FString& InName)
+#elif ENGINE_MINOR_VERSION > 24
+    FUserOnlineAccountPico(const TSharedRef<const FUniqueNetId>& InUserId, const FString& InName)
+#endif
         : UserId(InUserId),
         Name(InName)
     { }
@@ -36,8 +42,13 @@ public:
 
 
     /** User Id represented as a FUniqueNetId */
+#if ENGINE_MAJOR_VERSION > 4
     FUniqueNetIdRef UserId;
-
+#elif ENGINE_MINOR_VERSION > 26
+    FUniqueNetIdRef UserId;
+#elif ENGINE_MINOR_VERSION > 24
+    TSharedRef<const FUniqueNetId> UserId;
+#endif
     /** Additional key/value pair data related to auth */
     TMap<FString, FString> AdditionalAuthData;
     /** Additional key/value pair data related to user attribution */
@@ -48,8 +59,13 @@ public:
 
 
     // @return The ID associated with the user account provided by the online service during registration.
+#if ENGINE_MAJOR_VERSION > 4
     virtual FUniqueNetIdRef GetUserId() const override { return UserId; };
-
+#elif ENGINE_MINOR_VERSION > 26
+    virtual FUniqueNetIdRef GetUserId() const override { return UserId; };
+#elif ENGINE_MINOR_VERSION > 24
+    virtual TSharedRef<const FUniqueNetId> GetUserId() const override { return UserId; }
+#endif
     // @return The real name for the user if known.
     virtual FString GetRealName() const override { return Name; }
 
@@ -153,7 +169,13 @@ public:
     /// <returns>
     /// The valid user ID object if the call succeeds, `NULL` otherwise.
     /// </returns>
+#if ENGINE_MAJOR_VERSION > 4
     virtual FUniqueNetIdPtr GetUniquePlayerId(int32 LocalUserNum) const override;
+#elif ENGINE_MINOR_VERSION > 26
+    virtual FUniqueNetIdPtr GetUniquePlayerId(int32 LocalUserNum) const override;
+#elif ENGINE_MINOR_VERSION > 24
+    virtual TSharedPtr<const FUniqueNetId> GetUniquePlayerId(int32 LocalUserNum) const override;
+#endif
 
     /// <summary>Creates a unique ID from binary data (used during replication).</summary>
     /// <param name="Bytes">The opaque data from the appropriate platform.</param>
@@ -161,14 +183,27 @@ public:
     /// <returns>
     /// The unique ID from the given data, `NULL` otherwise.
     /// </returns>
+#if ENGINE_MAJOR_VERSION > 4
     virtual FUniqueNetIdPtr CreateUniquePlayerId(uint8* Bytes, int32 Size) override;
+#elif ENGINE_MINOR_VERSION > 26
+    virtual FUniqueNetIdPtr CreateUniquePlayerId(uint8* Bytes, int32 Size) override;
+#elif ENGINE_MINOR_VERSION > 24
+    virtual TSharedPtr<const FUniqueNetId> CreateUniquePlayerId(uint8* Bytes, int32 Size) override;
+#endif
 
     /// <summary>Creates a unique ID from string.</summary>
     /// <param name="Str">The string that holds the textual representation of an ID.</param>
     /// <returns>
     /// The unique ID from the given data, `NULL` otherwise.
     /// </returns>
+#if ENGINE_MAJOR_VERSION > 4
     virtual FUniqueNetIdPtr CreateUniquePlayerId(const FString& Str) override;
+#elif ENGINE_MINOR_VERSION > 26
+    virtual FUniqueNetIdPtr CreateUniquePlayerId(const FString& Str) override;
+#elif ENGINE_MINOR_VERSION > 24
+    virtual TSharedPtr<const FUniqueNetId> CreateUniquePlayerId(const FString& Str) override;
+#endif
+
 
     /// <summary>Gets a user's login status by controller number.</summary>
     /// <param name="LocalUserNum">The controller number of the associated user.</param>
@@ -212,11 +247,11 @@ public:
 
     // FOnlineIdentityPico
 
-    /// <summary>The constructor.</summary>
-    /// <param name="InSubsystem">The online subsystem being used.</param>
+    // <summary>The constructor.</summary>
+    // <param name="InSubsystem">The online subsystem being used.</param>
     FOnlineIdentityPico(FOnlineSubsystemPico& InSubsystem);
 
-    /// The default destructor.
+    // The default destructor.
     virtual ~FOnlineIdentityPico() = default;
 
 PACKAGE_SCOPE:
@@ -228,23 +263,28 @@ PACKAGE_SCOPE:
     void OnLoginComplete(ppfMessageHandle Message, bool bIsError, int32 LocalUserNum);
 
 private:
-    bool GetUserArrayRequest(ppfUserHandle UserHandle);
 
-private:
-
-    /// @brief Reference to the main Pico subsystem.
+    // @brief Reference to the main Pico subsystem.
     FOnlineSubsystemPico& PicoSubsystem;
 
-    /// @brief IDs mapped to locally registered users.
+    // @brief IDs mapped to locally registered users.
+#if ENGINE_MAJOR_VERSION > 4
     TMap<int32, FUniqueNetIdRef> UserIds;
-
+#elif ENGINE_MINOR_VERSION > 26
+    TMap<int32, FUniqueNetIdRef> UserIds;
+#elif ENGINE_MINOR_VERSION > 24
+    TMap<int32, TSharedPtr<const FUniqueNetId>> UserIds;
+#endif
     TMap<int32, UPico_User*> LoginPicoUserMap;
 
     /// @brief IDs mapped to locally registered user accounts.
+#if ENGINE_MAJOR_VERSION > 4
     TUniqueNetIdMap<TSharedRef<FUserOnlineAccountPico>> UserAccounts;
-
-public:
-
+#elif ENGINE_MINOR_VERSION > 26
+    TUniqueNetIdMap<TSharedRef<FUserOnlineAccountPico>> UserAccounts;
+#elif ENGINE_MINOR_VERSION > 24
+    TMap<FUniqueNetIdPico, TSharedRef<FUserOnlineAccountPico>> UserAccounts;
+#endif
 
 };
 /** @} */ // end of Identity

@@ -13,8 +13,9 @@
 #include "ApplicationLifecycleInterface.h"
 #include "Pico_IAP.h"
 #include "Pico_User.h"
-#include "Pico_Sport.h"
 #include "OnlineLeaderboardInterfacePico.h"
+#include "Pico_Sport.h"
+#include "Pico_AssetFile.h"
 #include "Pico_Achievements.h"
 
 
@@ -30,127 +31,127 @@ namespace FNetworkProtocolTypes
 
 IOnlineSessionPtr FOnlineSubsystemPico::GetSessionInterface() const
 {
-    return GameSessionInterface;
+	return GameSessionInterface;
 }
 
 IOnlineFriendsPtr FOnlineSubsystemPico::GetFriendsInterface() const
 {
-    return FriendsInterface;
+	return FriendsInterface;
 }
 
 IOnlinePartyPtr FOnlineSubsystemPico::GetPartyInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineGroupsPtr FOnlineSubsystemPico::GetGroupsInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineSharedCloudPtr FOnlineSubsystemPico::GetSharedCloudInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineUserCloudPtr FOnlineSubsystemPico::GetUserCloudInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineEntitlementsPtr FOnlineSubsystemPico::GetEntitlementsInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineLeaderboardsPtr FOnlineSubsystemPico::GetLeaderboardsInterface() const
 {
-    return LeaderboardInterface;
+	return LeaderboardInterface;
 }
 
 IOnlineVoicePtr FOnlineSubsystemPico::GetVoiceInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineExternalUIPtr FOnlineSubsystemPico::GetExternalUIInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineTimePtr FOnlineSubsystemPico::GetTimeInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineIdentityPtr FOnlineSubsystemPico::GetIdentityInterface() const
 {
-    return IdentityInterface;
+	return IdentityInterface;
 }
 
 IOnlineTitleFilePtr FOnlineSubsystemPico::GetTitleFileInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineStoreV2Ptr FOnlineSubsystemPico::GetStoreV2Interface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlinePurchasePtr FOnlineSubsystemPico::GetPurchaseInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineEventsPtr FOnlineSubsystemPico::GetEventsInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineAchievementsPtr FOnlineSubsystemPico::GetAchievementsInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineSharingPtr FOnlineSubsystemPico::GetSharingInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineUserPtr FOnlineSubsystemPico::GetUserInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineMessagePtr FOnlineSubsystemPico::GetMessageInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlinePresencePtr FOnlineSubsystemPico::GetPresenceInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineChatPtr FOnlineSubsystemPico::GetChatInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineStatsPtr FOnlineSubsystemPico::GetStatsInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineTurnBasedPtr FOnlineSubsystemPico::GetTurnBasedInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 
 IOnlineTournamentPtr FOnlineSubsystemPico::GetTournamentInterface() const
 {
-    return nullptr;
+	return nullptr;
 }
 TSharedPtr<FRTCPicoUserInterface> FOnlineSubsystemPico::GetRtcUserInterface() const
 {
@@ -187,35 +188,40 @@ TSharedPtr<FPicoSportInterface> FOnlineSubsystemPico::GetPicoSportInterface() co
     return PicoSportInterface;
 }
 
+TSharedPtr<FPicoAssetFileInterface> FOnlineSubsystemPico::GetPicoAssetFileInterface() const
+{
+    return PicoAssetFileInterface;
+}
+
 FOnlineSessionPicoPtr FOnlineSubsystemPico::GetGameSessionInterface() const
 {
     return GameSessionInterface;
 }
+
 TSharedPtr<FPicoAchievementsInterface> FOnlineSubsystemPico::GetPicoAchievementsInterface() const
 {
-	return PicoAchievementsInterface;
+    return PicoAchievementsInterface;
 }
-
 
 bool FOnlineSubsystemPico::Init()
 {
-    if (bPicoInit)
-    {
-        return bPicoInit;
-    }
-    bPicoInit = false;
+	if (bPicoInit)
+	{
+		return bPicoInit;
+	}
+	bPicoInit = false;
 #if PLATFORM_WINDOWS
-    bPicoInit = InitWithWindowsPlatform();
+	bPicoInit = InitWithWindowsPlatform();
 #elif PLATFORM_ANDROID
-    bPicoInit = InitWithAndroidPlatform();
+	bPicoInit = InitWithAndroidPlatform();
 #endif
-    if (bPicoInit)
-    {
+	if (bPicoInit)
+	{
         // Create the online async task thread
         OnlineAsyncTaskThreadRunnable = new FOnlineAsyncTaskManagerPico(this);
         check(OnlineAsyncTaskThreadRunnable);
 
-        IdentityInterface = MakeShareable(new FOnlineIdentityPico(*this));
+		IdentityInterface = MakeShareable(new FOnlineIdentityPico(*this));
         FriendsInterface = MakeShareable(new FOnlineFriendsPico(*this));
         RtcPicoUserInterface = MakeShareable(new FRTCPicoUserInterface(*this));
         PicoPresenceInterface = MakeShareable(new FPicoPresenceInterface(*this));
@@ -223,13 +229,14 @@ bool FOnlineSubsystemPico::Init()
         PicoApplicationLifecycleInterface = MakeShareable(new FApplicationLifecycleInterface(*this));
         PicoIAPInterface = MakeShareable(new FPicoIAPInterface(*this));
         PicoUserInterface = MakeShareable(new FPicoUserInterface(*this));
-        GameSessionInterface = MakeShareable(new FOnlineSessionPico(*this));
+        PicoAssetFileInterface = MakeShareable(new FPicoAssetFileInterface(*this));
         PicoSportInterface = MakeShareable(new FPicoSportInterface(*this));
+
+        GameSessionInterface = MakeShareable(new FOnlineSessionPico(*this));
         GameSessionInterface->Uninitialize();
         GameSessionInterface->Initialize();
 		LeaderboardInterface = MakeShareable(new FOnlineLeaderboardPico(*this));
-		PicoAchievementsInterface = MakeShareable(new FPicoAchievementsInterface(*this));
-
+        PicoAchievementsInterface = MakeShareable(new FPicoAchievementsInterface(*this));
 
 #if WITH_EDITOR
         StartTicker();
@@ -239,7 +246,7 @@ bool FOnlineSubsystemPico::Init()
     {
         FOnlineSubsystemImpl::Shutdown();
     }
-    return bPicoInit;
+	return bPicoInit;
 }
 
 bool FOnlineSubsystemPico::Shutdown()
@@ -256,9 +263,10 @@ bool FOnlineSubsystemPico::Shutdown()
     PicoIAPInterface.Reset();
     PicoUserInterface.Reset();
     GameSessionInterface.Reset();
-    LeaderboardInterface.Reset();
+	LeaderboardInterface.Reset();
+    PicoAssetFileInterface.Reset();
     PicoSportInterface.Reset();
-	PicoAchievementsInterface.Reset();
+    PicoAchievementsInterface.Reset();
 
     if (OnlineAsyncTaskThreadRunnable)
     {
@@ -282,12 +290,12 @@ FString FOnlineSubsystemPico::GetAppId() const
 
 bool FOnlineSubsystemPico::Exec(class UWorld* InWorld, const TCHAR* Cmd, FOutputDevice& Ar)
 {
-    return false;
+	return false;
 }
 
 FText FOnlineSubsystemPico::GetOnlineServiceName() const
 {
-    return NSLOCTEXT("OnlineSubsystemPico", "OnlineServiceName", "Pico Platform");
+	return NSLOCTEXT("OnlineSubsystemPico", "OnlineServiceName", "Pico Platform");
 }
 
 bool FOnlineSubsystemPico::Tick(float DeltaTime)
@@ -298,10 +306,10 @@ bool FOnlineSubsystemPico::Tick(float DeltaTime)
     {
         return false;
     }
-    if (GameSessionInterface.IsValid())
-    {
-        GameSessionInterface->TickPendingInvites(DeltaTime);
-    }
+	if (GameSessionInterface.IsValid())
+	{
+		GameSessionInterface->TickPendingInvites(DeltaTime);
+	}
 
     if (OnlineAsyncTaskThreadRunnable)
     {
@@ -334,20 +342,20 @@ void FOnlineSubsystemPico::RemoveNotifyDelegate(ppfMessageType MessageType, cons
 
 bool FOnlineSubsystemPico::IsInitialized() const
 {
-    return bPicoInit;
+	return bPicoInit;
 }
 
 #if PLATFORM_WINDOWS
 bool FOnlineSubsystemPico::InitWithWindowsPlatform() const
 {
-    return true;
+	return true;
 }
 
 #elif PLATFORM_ANDROID
 bool FOnlineSubsystemPico::InitWithAndroidPlatform()
 {
-    UE_LOG_ONLINE(Display, TEXT("FOnlineSubsystemPico::InitWithAndroidPlatform()"));
-    auto PicoAppId = GetAppId();
+	UE_LOG_ONLINE(Display, TEXT("FOnlineSubsystemPico::InitWithAndroidPlatform()"));
+	auto PicoAppId = GetAppId();
     if (PicoAppId.IsEmpty())
     {
         UE_LOG_ONLINE(Error, TEXT("Missing PicoAppId key in [OnlineSubsystemPico] of DefaultEngine.ini"));

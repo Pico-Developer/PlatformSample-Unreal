@@ -134,10 +134,7 @@ void APicoXRMRC_CastingCameraActor::SpawnForegroundCaptureActor()
 	{
 		PXR_LOGI(LogMRC, "Begin Spawn Forground MRC Capture Actor!");
 		ForegroundCaptureActor = GetWorld()->SpawnActor<ASceneCapture2D>();
-		ForegroundCaptureActor->GetCaptureComponent2D()->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
-#if ENGINE_MINOR_VERSION == 25
-		ForegroundCaptureActor->GetCaptureComponent2D()->bDisableFlipCopyGLES = true;
-#endif
+		ForegroundCaptureActor->GetCaptureComponent2D()->CaptureSource = ESceneCaptureSource::SCS_SceneColorHDR;
 		ForegroundCaptureActor->GetCaptureComponent2D()->SetVisibility(false);
 		ForegroundCaptureActor->GetCaptureComponent2D()->MaxViewDistanceOverride = ForegroundMaxDistance;
 		float x = MRState->TrackedCamera.Width;
@@ -325,10 +322,7 @@ void APicoXRMRC_CastingCameraActor::InitializeInGameCam()
 		InitializeRTSize();
 	
 		// LDR for gamma correction and post process
-		GetCaptureComponent2D()->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
-#if ENGINE_MINOR_VERSION == 25
-		GetCaptureComponent2D()->bDisableFlipCopyGLES = true;
-#endif
+		GetCaptureComponent2D()->CaptureSource = ESceneCaptureSource::SCS_SceneColorHDR;
 		float x = MRState->TrackedCamera.Width;
 		float y = MRState->TrackedCamera.Height;
 		GetCaptureComponent2D()->FOVAngle = MRState->TrackedCamera.FOV * (x / y);

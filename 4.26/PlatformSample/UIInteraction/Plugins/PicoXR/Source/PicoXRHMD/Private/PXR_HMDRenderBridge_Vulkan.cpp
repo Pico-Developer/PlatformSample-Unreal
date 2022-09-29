@@ -11,13 +11,13 @@
 #include "VulkanContext.h"
 #endif
 
-class FPicoXRRenderBridge_Vulkan : public FPicoXRRenderBridge
+class FPICOXRRenderBridge_Vulkan : public FPICOXRRenderBridge
 {
 public:
-	FPicoXRRenderBridge_Vulkan(FPicoXRHMD* HMD) :FPicoXRRenderBridge(HMD)
+	FPICOXRRenderBridge_Vulkan(FPICOXRHMD* HMD) :FPICOXRRenderBridge(HMD)
 	{
 		RHIString = HMD->GetRHIString();
-		PXR_LOGI(PxrUnreal, "FPicoXRRenderBridge_Vulkan GRHISupportsRHIThread = %d, GIsThreadedRendering = %d, GUseRHIThread_InternalUseOnly = %d", GRHISupportsRHIThread, GIsThreadedRendering, GUseRHIThread_InternalUseOnly);
+		PXR_LOGI(PxrUnreal, "FPICOXRRenderBridge_Vulkan GRHISupportsRHIThread = %d, GIsThreadedRendering = %d, GUseRHIThread_InternalUseOnly = %d", GRHISupportsRHIThread, GIsThreadedRendering, GUseRHIThread_InternalUseOnly);
 #if PLATFORM_ANDROID
 		if (GRHISupportsRHIThread && GIsThreadedRendering && GUseRHIThread_InternalUseOnly)
 		{
@@ -107,7 +107,7 @@ public:
 	}
 };
 
-FPicoXRRenderBridge* CreateRenderBridge_Vulkan(FPicoXRHMD* HMD)
+FPICOXRRenderBridge* CreateRenderBridge_Vulkan(FPICOXRHMD* HMD)
 {
-	return new FPicoXRRenderBridge_Vulkan(HMD);
+	return new FPICOXRRenderBridge_Vulkan(HMD);
 }

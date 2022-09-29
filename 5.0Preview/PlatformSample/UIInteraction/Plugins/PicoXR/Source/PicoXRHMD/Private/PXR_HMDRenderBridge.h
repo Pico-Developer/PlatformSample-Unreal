@@ -24,7 +24,8 @@ public:
 #endif
     virtual void GetVulkanGraphics();
     virtual int GetSystemRecommendedMSAA() const;
-    void TransferImage_RenderThread(FRHICommandListImmediate& RHICmdList, FRHITexture* DstTexture, FRHITexture* SrcTexture, FIntRect DstRect=FIntRect(), FIntRect SrcRect = FIntRect(), bool bPremultiply=false, bool bNoAlpha=false, bool bIsMRCLayer = false, bool bReverse=false, bool sRGBSource=false) const;
+	void TransferImage_RenderThread(FRHICommandListImmediate& RHICmdList, FRHITexture* DstTexture, FRHITexture* SrcTexture, FIntRect DstRect = FIntRect(), FIntRect SrcRect = FIntRect(), bool bAlphaPremultiply = false, bool bNoAlphaWrite = false, bool bIsMRCLayer = false, bool bInvertY = false, bool sRGBSource = false, bool bInvertAlpha = false) const;
+	void SubmitGPUCommands_RenderThread(FRHICommandListImmediate& RHICmdList);
 
     FPicoXRHMD* PicoXRHMD;
     FXRSwapChainPtr SwapChain;

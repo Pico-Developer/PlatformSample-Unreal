@@ -9,14 +9,14 @@
 #include "IStereoLayers.h"
 #include "XRRenderBridge.h"
 
-class FPicoXRHMD;
-class FPicoXRRenderBridge : public FXRRenderBridge
+class FPICOXRHMD;
+class FPICOXRRenderBridge : public FXRRenderBridge
 {
 public:
-	FPicoXRRenderBridge(FPicoXRHMD* HMD);
-	/** FRHICustomPresent */
-	virtual bool NeedsNativePresent() override;
-	virtual bool Present(int32& InOutSyncInterval)override;
+    FPICOXRRenderBridge(FPICOXRHMD* HMD);
+    /** FRHICustomPresent */
+    virtual bool NeedsNativePresent() override;
+    virtual bool Present(int32& InOutSyncInterval)override;
 #if ENGINE_MINOR_VERSION >25
 	FXRSwapChainPtr CreateSwapChain_RenderThread(uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, ETextureCreateFlags Flags, ETextureCreateFlags TargetableTextureFlags, uint32 MSAAValue);
 #else
@@ -33,11 +33,11 @@ public:
 	void TransferImage_RenderThread(FRHICommandListImmediate& RHICmdList, FRHITexture* DstTexture, FRHITexture* SrcTexture, FIntRect DstRect = FIntRect(), FIntRect SrcRect = FIntRect(), bool bAlphaPremultiply = false, bool bNoAlphaWrite = false, bool bNeedGreenClear = false, bool bInvertY = false, bool sRGBSource = false, bool bInvertAlpha = false) const;
 	void SubmitGPUCommands_RenderThread(FRHICommandListImmediate& RHICmdList);
 
-	FPicoXRHMD* PicoXRHMD;
-	FXRSwapChainPtr SwapChain;
-	FString RHIString;
-	IRendererModule* RendererModule;
+    FPICOXRHMD* PICOXRHMD;
+    FXRSwapChainPtr SwapChain;
+    FString RHIString;
+    IRendererModule* RendererModule;
 };
-FPicoXRRenderBridge* CreateRenderBridge_OpenGL(FPicoXRHMD* HMD);
-FPicoXRRenderBridge* CreateRenderBridge_Vulkan(FPicoXRHMD* HMD);
+FPICOXRRenderBridge* CreateRenderBridge_OpenGL(FPICOXRHMD* HMD);
+FPICOXRRenderBridge* CreateRenderBridge_Vulkan(FPICOXRHMD* HMD);
 

@@ -30,14 +30,14 @@ private:
 
 typedef TSharedPtr<FPxrLayer, ESPMode::ThreadSafe> FPxrLayerPtr;
 
-class FPicoXRStereoLayer : public TSharedFromThis<FPicoXRStereoLayer, ESPMode::ThreadSafe>
+class FPICOXRStereoLayer : public TSharedFromThis<FPICOXRStereoLayer, ESPMode::ThreadSafe>
 {
 public:
-	FPicoXRStereoLayer(FPicoXRHMD* InHMDDevice,uint32 InPXRLayerId, const IStereoLayers::FLayerDesc& InLayerDesc);
-	FPicoXRStereoLayer(const FPicoXRStereoLayer& InPXRLayer);
-	~FPicoXRStereoLayer();
+	FPICOXRStereoLayer(FPICOXRHMD* InHMDDevice,uint32 InPXRLayerId, const IStereoLayers::FLayerDesc& InLayerDesc);
+	FPICOXRStereoLayer(const FPICOXRStereoLayer& InPXRLayer);
+	~FPICOXRStereoLayer();
 
-	TSharedPtr<FPicoXRStereoLayer, ESPMode::ThreadSafe> CloneMyself() const;
+	TSharedPtr<FPICOXRStereoLayer, ESPMode::ThreadSafe> CloneMyself() const;
 	void SetPXRLayerDesc(const IStereoLayers::FLayerDesc& InDesc);
 	const IStereoLayers::FLayerDesc& GetPXRLayerDesc() const { return LayerDesc; }
 	const uint32& GetID()const{return ID;}
@@ -49,14 +49,14 @@ public:
 	const FXRSwapChainPtr& GetSwapChain() const { return SwapChain; }
 	const FXRSwapChainPtr& GetLeftSwapChain() const { return LeftSwapChain; }
 	const FXRSwapChainPtr& GetFoveationSwapChain() const { return FoveationSwapChain; }
-	void IncrementSwapChainIndex_RHIThread(FPicoXRRenderBridge* RenderBridge);
+	void IncrementSwapChainIndex_RHIThread(FPICOXRRenderBridge* RenderBridge);
 	void SubmitLayer_RHIThread(FPXRGameFrame* Frame);
 	int32 GetShapeType();
 	void SetProjectionLayerParams(uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, FString RHIString);
-    void PXRLayersCopy_RenderThread(FPicoXRRenderBridge* RenderBridge, FRHICommandListImmediate& RHICmdList);
+    void PXRLayersCopy_RenderThread(FPICOXRRenderBridge* RenderBridge, FRHICommandListImmediate& RHICmdList);
 	void MarkTextureForUpdate(bool bUpdate = true) { bTextureNeedUpdate = bUpdate; }
-	bool InitPXRLayer_RenderThread(FPicoXRRenderBridge* CustomPresent, FDelayDeleteLayerManager* DelayDeletion, FRHICommandListImmediate& RHICmdList, const FPicoXRStereoLayer* InLayer = nullptr);
-	bool IfCanReuseLayers(const FPicoXRStereoLayer* InLayer) const;
+	bool InitPXRLayer_RenderThread(FPICOXRRenderBridge* CustomPresent, FDelayDeleteLayerManager* DelayDeletion, FRHICommandListImmediate& RHICmdList, const FPICOXRStereoLayer* InLayer = nullptr);
+	bool IfCanReuseLayers(const FPICOXRStereoLayer* InLayer) const;
 	bool IsVisible() { return (LayerDesc.Flags & IStereoLayers::LAYER_FLAG_HIDDEN) == 0; }
 
 	bool bSplashLayer;
@@ -67,8 +67,8 @@ protected:
 	FVector GetLayerLocation() const { return LayerDesc.Transform.GetLocation(); };
 	FQuat GetLayerOrientation() const { return LayerDesc.Transform.GetRotation(); };
 	FVector GetLayerScale() const { return LayerDesc.Transform.GetScale3D(); };
-	FPicoXRHMD* HMDDevice;
-	uint32 ID;
+	FPICOXRHMD* HMDDevice;
+	uint32 ID;	
 	uint32 PxrLayerID;
 	static uint32 PxrLayerIDCounter;
 	IStereoLayers::FLayerDesc LayerDesc;
@@ -86,11 +86,11 @@ protected:
 
 };
 
-typedef TSharedPtr<FPicoXRStereoLayer, ESPMode::ThreadSafe> FPicoLayerPtr;
+typedef TSharedPtr<FPICOXRStereoLayer, ESPMode::ThreadSafe> FPICOLayerPtr;
 
-struct FPicoLayerPtr_SortByPriority
+struct FPICOLayerPtr_SortByPriority
 {
-	FORCEINLINE bool operator()(const FPicoLayerPtr&A,const FPicoLayerPtr&B)const
+	FORCEINLINE bool operator()(const FPICOLayerPtr&A,const FPICOLayerPtr&B)const
 	{
 		int32 nPriorityA = A->GetPXRLayerDesc().Priority;
 		int32 nPriorityB = B->GetPXRLayerDesc().Priority;
@@ -109,9 +109,9 @@ struct FPicoLayerPtr_SortByPriority
 	}
 };
 
-struct FPicoLayerPtr_SortById
+struct FPICOLayerPtr_SortById
 {
-	FORCEINLINE bool operator()(const FPicoLayerPtr& A, const FPicoLayerPtr& B) const
+	FORCEINLINE bool operator()(const FPICOLayerPtr& A, const FPICOLayerPtr& B) const
 	{
 		return A->GetID() < B->GetID();
 	}
@@ -119,7 +119,7 @@ struct FPicoLayerPtr_SortById
 
 struct FLayerPtr_CompareByAll
 {
-	FORCEINLINE bool operator()(const FPicoLayerPtr& A, const FPicoLayerPtr& B) const
+	FORCEINLINE bool operator()(const FPICOLayerPtr& A, const FPICOLayerPtr& B) const
 	{
 		int32 OrderA = (A->GetID() == 0) ? 0 : A->IsLayerSupportDepth() ? -1 : 1;
 		int32 OrderB = (B->GetID() == 0) ? 0 : B->IsLayerSupportDepth() ? -1 : 1;

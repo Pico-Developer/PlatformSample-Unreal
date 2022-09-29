@@ -11,7 +11,7 @@ typedef struct ppfAchievementDefinition *ppfAchievementDefinitionHandle;
 PPF_PUBLIC_FUNCTION(ppfID)                      ppf_AchievementDefinition_GetID(const ppfAchievementDefinitionHandle obj);
 PPF_PUBLIC_FUNCTION(const char *)               ppf_AchievementDefinition_GetName(const ppfAchievementDefinitionHandle obj);
 PPF_PUBLIC_FUNCTION(unsigned int)               ppf_AchievementDefinition_GetBitfieldLength(const ppfAchievementDefinitionHandle obj);
-PPF_PUBLIC_FUNCTION(long long)					ppf_AchievementDefinition_GetTarget(const ppfAchievementDefinitionHandle obj);
+PPF_PUBLIC_FUNCTION(long long)                  ppf_AchievementDefinition_GetTarget(const ppfAchievementDefinitionHandle obj);
 PPF_PUBLIC_FUNCTION(ppfAchievementType)         ppf_AchievementDefinition_GetType(const ppfAchievementDefinitionHandle obj);
 PPF_PUBLIC_FUNCTION(ppfAchievementWritePolicy)  ppf_AchievementDefinition_GetWritePolicy(const ppfAchievementDefinitionHandle obj);
 PPF_PUBLIC_FUNCTION(bool)                       ppf_AchievementDefinition_IsArchived(const ppfAchievementDefinitionHandle obj);

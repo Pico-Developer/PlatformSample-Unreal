@@ -159,7 +159,7 @@ bool FApplicationLifecycleInterface::GetLaunchDetails(FLaunchDetails& OutLaunchD
 bool FApplicationLifecycleInterface::LogDeeplinkResult(const FString& TrackingID, ELaunchResult LaunchResult)
 {
 #if PLATFORM_ANDROID
-    ppfLaunchResult Result;
+    ppfLaunchResult Result = ppfLaunchResult_Unknown;
     switch (LaunchResult)
     {
     case ELaunchResult::Unknown:

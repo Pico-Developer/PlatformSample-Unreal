@@ -35,7 +35,7 @@
     <addAttribute tag="activity"  name="android:hardwareAccelerated" value="false" />
     <addElements tag="application">
       <meta-data android:name="pvr.app.type" android:value="vr" />
-	  <meta-data android:name="pvr.sdk.version" android:value="UE4_2.0.6.6" />
+	  <meta-data android:name="pvr.sdk.version" android:value="UE4_2.0.6.8" />
       <meta-data android:name="pxr.sdk.2dloading.flag" android:value="system" />
     </addElements>
 

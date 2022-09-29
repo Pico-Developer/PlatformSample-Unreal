@@ -83,6 +83,16 @@ UOnlineSubsystemPicoManager::UOnlineSubsystemPicoManager()
             RtcInterface->RtcConnectStateChangedCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcConnectStateChanged);
             RtcInterface->RtcUserStartAudioCaptureCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcUserStartAudioCapture);
             RtcInterface->RtcUserStopAudioCaptureCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcUserStopAudioCapture);
+
+            // V2
+            RtcInterface->RtcUserPublishInfoCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcUserPublishInfo);
+            RtcInterface->RtcUserUnPublishInfoCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcUserUnPublishInfo);
+            RtcInterface->RtcStreamSyncInfoCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnGetRtcStreamSyncInfo);
+            RtcInterface->RtcMessageSendResultCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcMessageSendResult);
+            RtcInterface->RtcBinaryMessageReceivedCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcBinaryMessageReceived);
+            RtcInterface->RtcRoomMessageReceivedCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcRoomMessageReceived);
+            RtcInterface->RtcUserMessageReceivedCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcUserMessageReceived);
+            RtcInterface->RtcTokenWillExpireCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnRtcTokenWilExpire);
         }
         GameInterface = Subsystem->GetGameSessionInterface();
         if (GameInterface)
@@ -108,6 +118,12 @@ UOnlineSubsystemPicoManager::UOnlineSubsystemPicoManager()
         if (Subsystem->GetApplicationLifecycleInterface())
         {
             Subsystem->GetApplicationLifecycleInterface()->LaunchIntentChangedCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnLaunchIntentChangedResult);
+        }
+        PicoAssetFileInterface = Subsystem->GetPicoAssetFileInterface();
+        if (PicoAssetFileInterface)
+        {
+            PicoAssetFileInterface->AssetFileDownloadUpdateCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnAssetFileDownloadUpdate);
+            PicoAssetFileInterface->AssetFileDeleteForSafetyCallback.AddUObject(this, &UOnlineSubsystemPicoManager::OnAssetFileDeleteForSafety);
         }
     }
 
@@ -554,6 +570,47 @@ void UOnlineSubsystemPicoManager::OnRtcUserStopAudioCapture(const FString& Strin
 }
 
 
+
+void UOnlineSubsystemPicoManager::OnRtcUserPublishInfo(const FString& RoomId, const FString& UserId, ERtcMediaStreamType MediaStreamType)
+{
+    OnRtcUserPublishInfoDelegate.Broadcast(RoomId, UserId, MediaStreamType);
+}
+
+void UOnlineSubsystemPicoManager::OnRtcUserUnPublishInfo(const FString& RoomId, const FString& UserId, ERtcMediaStreamType MediaStreamType, ERtcStreamRemoveReason Reason)
+{
+    OnRtcUserUnPublishInfoDelegate.Broadcast(RoomId, UserId, MediaStreamType, Reason);
+}
+
+void UOnlineSubsystemPicoManager::OnGetRtcStreamSyncInfo(const FString& RoomId, const FString& UserId, ERtcStreamIndex StreamIndex, ERtcSyncInfoStreamType RtcSyncInfoStreamType, const FString& Info)
+{
+    OnGetRtcStreamSyncInfoDelegate.Broadcast(RoomId, UserId, StreamIndex, RtcSyncInfoStreamType, Info);
+}
+
+void UOnlineSubsystemPicoManager::OnRtcMessageSendResult(int64 MessageId, int32 Error, const FString& RoomId)
+{
+    OnRtcMessageSendResultDelegate.Broadcast(MessageId, Error, RoomId);
+}
+
+void UOnlineSubsystemPicoManager::OnRtcBinaryMessageReceived(const FString& RoomId, const FString& UserId, const FString& Info)
+{
+    OnRtcBinaryMessageReceivedDelegate.Broadcast(RoomId, UserId, Info);
+}
+
+void UOnlineSubsystemPicoManager::OnRtcRoomMessageReceived(const FString& RoomId, const FString& UserId, const FString& Message)
+{
+    OnRtcRoomMessageReceivedDelegateDelegate.Broadcast(RoomId, UserId, Message);
+}
+
+void UOnlineSubsystemPicoManager::OnRtcUserMessageReceived(const FString& RoomId, const FString& UserId, const FString& Message)
+{
+    OnRtcUserMessageReceivedDelegate.Broadcast(RoomId, UserId, Message);
+}
+
+void UOnlineSubsystemPicoManager::OnRtcTokenWilExpire(const FString& Message)
+{
+    UE_LOG_ONLINE(Log, TEXT("UOnlineSubsystemPicoManager::OnRtcTokenWilExpire"));
+    OnRtcTokenWilExpireCallbackDelegate.Broadcast(Message);
+}
 
 void UOnlineSubsystemPicoManager::OnPresenceJoinIntentReceivedResult(const FString& DeeplinkMessage, const FString& DestinationApiName, const FString& LobbySessionId, const FString& MatchSessionId)
 {
@@ -1512,14 +1569,14 @@ bool UOnlineSubsystemPicoManager::PresenceGetDestinationsList(UObject* WorldCont
     return false;
 }
 
-bool UOnlineSubsystemPicoManager::LaunchOtherApp(UObject* WorldContextObject, const FString& AppID, const FString& Message, FOnlineManagerLaunchOtherAppDelegate InLaunchOtherAppDelegate)
+bool UOnlineSubsystemPicoManager::LaunchOtherApp(UObject* WorldContextObject, const FString& PackageName, const FString& Message, FOnlineManagerLaunchOtherAppDelegate InLaunchOtherAppDelegate)
 {
     FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
     if (Subsystem && Subsystem->GetApplicationInterface())
     {
         UOnlineSubsystemPicoManager::LaunchOtherAppDelegate = InLaunchOtherAppDelegate;
         LaunchOtherAppCompleteDelegate.BindUObject(this, &UOnlineSubsystemPicoManager::OnLaunchOtherAppComplete);
-        Subsystem->GetApplicationInterface()->LaunchOtherApp(AppID, Message, LaunchOtherAppCompleteDelegate);
+        Subsystem->GetApplicationInterface()->LaunchOtherApp(PackageName, Message, LaunchOtherAppCompleteDelegate);
         return true;
     }
     return false;
@@ -1624,6 +1681,16 @@ bool UOnlineSubsystemPicoManager::LogDeeplinkResult(UObject* WorldContextObject,
         return true;
     }
     return false;
+}
+
+void UOnlineSubsystemPicoManager::OnAssetFileDownloadUpdate(UPico_AssetFileDownloadUpdate* AssetFileDownloadUpdateObj)
+{
+    OnAssetFileDownloadUpdateDelegate.Broadcast(AssetFileDownloadUpdateObj);
+}
+
+void UOnlineSubsystemPicoManager::OnAssetFileDeleteForSafety(UPico_AssetFileDeleteForSafety* AssetFileDeleteForSafetyObj)
+{
+    OnAssetFileDeleteForSafetyDelegate.Broadcast(AssetFileDeleteForSafetyObj);
 }
 
 // Leaderboard

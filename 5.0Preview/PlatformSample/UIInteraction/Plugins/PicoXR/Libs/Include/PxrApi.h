@@ -167,6 +167,9 @@ bool Pxr_SetExtraLatencyMode(int mode);
 void Pxr_InitPsensor(jobject activity);
 int Pxr_getPsensorState();
 void Pxr_UnregisterPsensor();
+
+int Pxr_GetStringMetaFromApplication(const char* keyname,char* value);
+int  Pxr_GetIntMetaFromApplication(const char* keyname,int * value);
 #if defined(__cplusplus)
 } // extern "C"
 #endif

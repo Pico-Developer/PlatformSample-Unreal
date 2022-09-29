@@ -40,6 +40,7 @@ DECLARE_DELEGATE_TwoParams(FOnGetDestinationsComplete, bool /*IsSuccessed*/, con
 DECLARE_MULTICAST_DELEGATE_FourParams(FJoinIntentReceived, const FString& /*DeeplinkMessage*/, const FString& /*DestinationApiName*/, const FString&/*LobbySessionId*/, const FString& /*MatchSessionId*/);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FLeaveIntentReceived, const FString& /*DestinationApiName*/, const FString&/*LobbySessionId*/, const FString& /*MatchSessionId*/);
 
+/// <summary>Pico Presence interface class.</summary>
 class ONLINESUBSYSTEMPICO_API FPicoPresenceInterface
 {
 
@@ -58,7 +59,7 @@ public:
 	~FPicoPresenceInterface();
 
     /// <summary>Clears a user's presence data in the current app.</summary>
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -103,7 +104,7 @@ public:
     /// * `false`: not joinable
     /// </param> 
     /// <param name ="Extra">Extra presence data defined by the developer.</param> 
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -117,7 +118,7 @@ public:
     /// @note Other presence-related parameters will remain the same.
     /// </summary>
     /// <param name ="ApiName">The API name of the new destination.</param> 
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -135,7 +136,7 @@ public:
     /// * `true`: joinable
     /// * `false`: not joinable
     /// </param> 
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -149,7 +150,7 @@ public:
     /// @note Other presence parameter settings will remain the same.
     /// </summary>
     /// <param name ="LobbySession">The new lobby session ID.</param> 
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -176,8 +177,8 @@ public:
     /// <summary> 
     /// Sets extra presence data for a user.
     /// </summary>
-    /// <param name ="Extra">Extra presence data defined by the developer</param> 
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// <param name ="Extra">Extra presence data defined by the developer.</param> 
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -187,9 +188,10 @@ public:
 	bool PresenceSetExtra(const FString& Extra, const FOnPresenceSetPresenceExtraComplete& Delegate = FOnPresenceSetPresenceExtraComplete());
 	void OnQueryPresenceSetExtraComplete(ppfMessageHandle Message, bool bIsError, const FOnPresenceSetPresenceExtraComplete& Delegate);
 
-    /// <summary>Reads a list of sent invitations.</summary>
+    /// <summary>Reads a list of sent invitations.
     /// @note Call `GetSendInvitesList` after the Delegate has been executed.
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// </summary>
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -226,7 +228,7 @@ public:
     /// <summary>Gets all the destinations that can be set for a user.
     /// @note Call `PresenceGetDescriptionList` after the Delegate has been executed.
     /// </summary>
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -257,7 +259,6 @@ public:
 
     /// @brief Gets notified when the join intent has been received.
 	FJoinIntentReceived JoinIntentReceivedCallback;
-	//void SentPack(void* Data);
 
     /// @brief Gets notified when the leave intent has been received.
 	FLeaveIntentReceived LeaveIntentReceivedCallback;

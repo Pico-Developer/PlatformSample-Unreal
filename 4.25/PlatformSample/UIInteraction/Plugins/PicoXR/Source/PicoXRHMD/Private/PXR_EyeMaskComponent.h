@@ -6,12 +6,12 @@
 #include "PXR_EyeMaskComponent.generated.h"
 
 UCLASS( ClassGroup=(PXRComponent), meta=(BlueprintSpawnableComponent) )
-class UPicoXREyeMaskComponent : public UProceduralMeshComponent
+class UPICOXREyeMaskComponent : public UProceduralMeshComponent
 {
 	GENERATED_BODY()
 public:
 	// Sets default values for this component's properties
-	UPicoXREyeMaskComponent(const FObjectInitializer& ObjectInitializer);
+	UPICOXREyeMaskComponent(const FObjectInitializer& ObjectInitializer);
 	virtual void PostLoad() override;
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

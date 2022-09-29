@@ -1,27 +1,34 @@
 // Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OnlineSubsystemPico.h"
 #include "Interfaces/OnlineFriendsInterface.h"
 #include "Interfaces/OnlinePresenceInterface.h"
+#include "OnlineSubsystemPico.h"
 #include "OnlineSubsystemPicoTypes.h"
 #include "OnlineSubsystemPicoPackage.h"
 
-
 /// @file OnlineFriendsInterfacePico.h
+
+
+
 
 /// @brief OnlinePicoFriend class inherited from FOnlineFriend(Unreal Engine).
 class FOnlinePicoFriend : public FOnlineFriend
 {
-public:
-
 
 private:
+
+#if ENGINE_MAJOR_VERSION > 4
     FUniqueNetIdPicoRef UserId;
+#elif ENGINE_MINOR_VERSION > 26
+    FUniqueNetIdPicoRef UserId;
+#elif ENGINE_MINOR_VERSION > 24
+    TSharedRef<const FUniqueNetIdPico> UserId;
+#endif
+
     const FString StrUserId;
     const FString DisplayName;
     FOnlineUserPresence Presence;
@@ -43,7 +50,14 @@ public:
         const FString& InPresencePackage, const FString& InPresence, const FString& InPresenceDeeplinkMessage,
         const FString& InPresenceDestinationApiName, const FString& InPresenceLobbySessionId, const FString& InPresenceMatchSessionId,
         const FString& InExtra) :
+
+#if ENGINE_MAJOR_VERSION > 4
         UserId(FUniqueNetIdPico::Create(StrId)),
+#elif ENGINE_MINOR_VERSION > 26
+        UserId(FUniqueNetIdPico::Create(StrId)),
+#elif ENGINE_MINOR_VERSION > 24
+        UserId(new FUniqueNetIdPico(StrId)),
+#endif
         StrUserId(StrId),
         DisplayName(InDisplayName),
         InviteToken(InInviteToken),
@@ -61,11 +75,23 @@ public:
     {
         Presence.bIsOnline = FriendPresenceStatus == ppfUserPresenceStatus_OnLine;
     }
-
+#if ENGINE_MAJOR_VERSION > 4
     virtual FUniqueNetIdRef GetUserId() const override
     {
         return UserId;
     }
+#elif ENGINE_MINOR_VERSION > 26
+    virtual FUniqueNetIdRef GetUserId() const override
+    {
+        return UserId;
+    }
+#elif ENGINE_MINOR_VERSION > 24
+    virtual TSharedRef<const FUniqueNetId> GetUserId() const override
+    {
+        return UserId;
+    }
+#endif
+
     
     FString GetUserStrId() const
     {
@@ -175,13 +201,13 @@ class FOnlineFriendsPico : public IOnlineFriends
 {
 private:
 
-    /// @brief Reference to the main Pico subsystem.
+    // @brief Reference to the main Pico subsystem.
     FOnlineSubsystemPico& PicoSubsystem;
 
-    /// @brief Current player friends map.
+    // @brief Current player friends map.
     TMap<FString, TSharedRef<FOnlineFriend>> PlayerFriends;
 
-    /// @brief Current friends map can user invite.
+    // @brief Current friends map can user invite.
     TMap<FString, TSharedRef<FOnlineFriend>> InvitableUsers;
 
 PACKAGE_SCOPE:
@@ -194,12 +220,12 @@ public:
     static const FString FriendsListInviteableUsers;
 
    
-    /// <summary>The constructor.</summary>
-    /// <param name="InSubsystem">A reference to the online subsystem.</param>
+    // <summary>The constructor.</summary>
+    // <param name="InSubsystem">A reference to the online subsystem.</param>
     FOnlineFriendsPico(FOnlineSubsystemPico& InSubsystem);
 
    
-    /// The default destructor.
+    // The default destructor.
     virtual ~FOnlineFriendsPico() = default;
 
     // Begin IOnlineFriends interface
@@ -228,10 +254,10 @@ public:
    
     // To do(Not implement).
     virtual bool RejectInvite(int32 LocalUserNum, const FUniqueNetId & FriendId, const FString & ListName) override;
-      
-    // To do(Not implement).
-    virtual void SetFriendAlias(int32 LocalUserNum, const FUniqueNetId & FriendId, const FString & ListName, const FString & Alias, const FOnSetFriendAliasComplete & Delegate = FOnSetFriendAliasComplete()) override;
    
+    // To do(Not implement).
+    virtual void SetFriendAlias(int32 LocalUserNum, const FUniqueNetId& FriendId, const FString& ListName, const FString& Alias, const FOnSetFriendAliasComplete& Delegate = FOnSetFriendAliasComplete()) override;
+
     // To do(Not implement).
     virtual void DeleteFriendAlias(int32 LocalUserNum, const FUniqueNetId & FriendId, const FString & ListName, const FOnDeleteFriendAliasComplete & Delegate = FOnDeleteFriendAliasComplete()) override;
    

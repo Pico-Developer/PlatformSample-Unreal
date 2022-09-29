@@ -1,4 +1,4 @@
-// This file is generated automatically. Please don't edit it.
+
 
 #ifndef PPF_MESSAGETYPE_H
 #define PPF_MESSAGETYPE_H
@@ -41,6 +41,21 @@ typedef enum {
     ppfMessageType_Notification_Rtc_OnRoomMessageReceived = 10217,
     ppfMessageType_Notification_Rtc_OnUserMessageReceived = 10218,
     ppfMessageType_Notification_Rtc_OnTokenWillExpire=10219,
+    ppfMessageType_Notification_Rtc_OnStreamSyncInfoReceived = 10220,
+    ppfMessageType_Notification_Rtc_OnVideoDeviceStateChanged = 10221,
+    ppfMessageType_Notification_Rtc_OnFirstLocalVideoFrameCaptured = 10222,
+    ppfMessageType_Notification_Rtc_OnRoomBinaryMessageReceived = 10223,
+    ppfMessageType_Notification_Rtc_OnLocalVideoSizeChanged = 10224,
+    ppfMessageType_Notification_Rtc_OnScreenVideoFrameSendStateChanged = 10225,
+    ppfMessageType_Notification_Rtc_OnUserBinaryMessageReceived = 10226,
+    ppfMessageType_Notification_Rtc_OnLocalVideoStateChanged = 10227,
+
+    ppfMessageType_Notification_Rtc_OnUserMessageSendResult=10228,
+    ppfMessageType_Notification_Rtc_OnUserUnPublishScreen=10229,
+    ppfMessageType_Notification_Rtc_OnRoomMessageSendResult=10230,
+    ppfMessageType_Notification_Rtc_OnUserPublishStream=10231,
+    ppfMessageType_Notification_Rtc_OnUserUnPublishStream=10232,
+    ppfMessageType_Notification_Rtc_OnUserPublishScreen=10233,
     ppfMessageType_Rtc_GetToken                                     = 10300,
 
     ppfMessageType_Matchmaking_Browse2                                  = 10400,
@@ -96,6 +111,15 @@ typedef enum {
     ppfMessageType_Leaderboard_GetPreviousEntries                       = 10806,
     ppfMessageType_Leaderboard_WriteEntry                               = 10807,
     ppfMessageType_Leaderboard_WriteEntryWithSupplementaryMetric        = 10808,
+    ppfMessageType_Achievements_AddCount                                = 10820,
+    ppfMessageType_Achievements_AddFields                               = 10821,
+    ppfMessageType_Achievements_GetAllDefinitions                       = 10822,
+    ppfMessageType_Achievements_GetAllProgress                          = 10823,
+    ppfMessageType_Achievements_GetDefinitionsByName                    = 10824,
+    ppfMessageType_Achievements_GetNextAchievementDefinitionArrayPage   = 10825,
+    ppfMessageType_Achievements_GetNextAchievementProgressArrayPage     = 10826,
+    ppfMessageType_Achievements_GetProgressByName                       = 10827,
+    ppfMessageType_Achievements_Unlock                                  = 10828,
 
     ppfMessageType_Application_LaunchOtherApp                       = 11001,
     ppfMessageType_Presence_GetSentInvites                          = 11002,
@@ -108,9 +132,7 @@ typedef enum {
     ppfMessageType_Notification_Presence_JoinIntentReceived             = 11009,
     ppfMessageType_Notification_Presence_LeaveIntentReceived            = 11010,
     ppfMessageType_Application_LaunchOtherAppByPresence             = 11011,
-    ppfMessageType_Notification_APPLICATION_ROOM_INVITE_ACCEPTED = 11012,
-
-
+    ppfMessageType_Notification_Application_RoomInviteAccepted = 11012,
 
     ppfMessageType_Application_LaunchOtherAppByMessage              = 11013,
     ppfMessageType_IAP_GetProductsBySKU = 12001,
@@ -121,6 +143,22 @@ typedef enum {
     ppfMessageType_Sport_GetUserInfo = 12500,
     ppfMessageType_Sport_GetDailySummary = 12501,
     ppfMessageType_Sport_GetSummary = 12502,
+
+    // dlc start
+    ppfMessageType_AssetFile_DeleteById                                = 13001,
+    ppfMessageType_AssetFile_DeleteByName                              = 13002,
+    ppfMessageType_AssetFile_DownloadById                              = 13003,
+    ppfMessageType_AssetFile_DownloadByName                            = 13004,
+    ppfMessageType_AssetFile_DownloadCancelById                        = 13005,
+    ppfMessageType_AssetFile_DownloadCancelByName                      = 13006,
+    ppfMessageType_AssetFile_GetList                                   = 13007,
+    ppfMessageType_AssetFile_StatusById                                = 13008,
+    ppfMessageType_AssetFile_StatusByName                              = 13009,
+    ppfMessageType_AssetFile_GetNextAssetDetailsArrayPage              = 13010,
+    // notification
+    ppfMessageType_Notification_AssetFile_DownloadUpdate               = 13101,
+    ppfMessageType_Notification_AssetFile_DeleteForSafety              = 13102,
+    // dlc end
 } ppfMessageType;
 #endif
 

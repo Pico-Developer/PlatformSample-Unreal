@@ -58,7 +58,7 @@ void MainMipLevelUE5(
 	out float4 OutColor : SV_Target0
 	)
 {
-	OutColor = Texture2DSampleLevel(InTexture, InTextureSampler, float2(Input.UV.x,1-Input.UV.y), MipLevel);
+	OutColor = Texture2DSampleLevel(InTexture, InTextureSampler, float2(Input.UV.x,Input.UV.y), MipLevel);
 	OutColor.rgb = OutColor.a != 0 ? float3(0,1,0) : OutColor.rgb;
 }
 
@@ -67,7 +67,7 @@ void MainsRGBSourceMipLevelUE5(
 	out float4 OutColor : SV_Target0
 	)
 {
-	OutColor = Texture2DSampleLevel(InTexture, InTextureSampler, float2(Input.UV.x,1-Input.UV.y), MipLevel);
+	OutColor = Texture2DSampleLevel(InTexture, InTextureSampler, float2(Input.UV.x,Input.UV.y), MipLevel);
 	OutColor.rgb = pow( OutColor.rgb, 1.0f / 2.2f );
 	OutColor.rgb = OutColor.a != 0 ? float3(0,1,0) : OutColor.rgb;
 }

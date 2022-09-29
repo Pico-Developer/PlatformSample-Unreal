@@ -10,6 +10,7 @@ typedef enum ppfPlatformGameInitializeResult_ {
     ppfPlatformGameInitialize_InvalidCredentials  = 3,
     ppfPlatformGameInitialize_ServiceNotAvaliable = 4,
     ppfPlatformGameInitialize_Unknown             = 5,
+    ppfPlatformGameInitialize_InvalidServerAddr   = 6,
 } ppfPlatformGameInitializeResult;
 
 PPF_PUBLIC_FUNCTION(const char*) ppfPlatformGameInitializeResult_ToString(ppfPlatformGameInitializeResult value);

@@ -31,7 +31,7 @@ public:
 	FVector Location = FVector::ZeroVector;
 	EPixelFormat CaptureFormat = PF_A16B16G16R16;
 
-	bool SaveCubeMap_Pico();
+	bool SaveCubeMap_PICO();
 
 private:
 	UPROPERTY()

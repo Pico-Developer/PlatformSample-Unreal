@@ -32,6 +32,8 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FLaunchCheckoutFlowDelegate, bool, bIsError
  *  This is the IAP group
  *  @{
  */
+
+/// @brief PicoIAPInterface class.
 class ONLINESUBSYSTEMPICO_API FPicoIAPInterface
 {
 private:
@@ -53,7 +55,7 @@ public:
     /// @note Users are unable to repurchase the same consumable until the previous order is fulfilled.
     /// </summary>
     /// <param name ="SKU">The SKU of the product.</param> 
-    /// <param name ="InConsumePurchaseDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InConsumePurchaseDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -63,11 +65,10 @@ public:
 	bool ConsumePurchase(const FString& SKU, FConsumePurchaseDelegate InConsumePurchaseDelegate);
 
     /// <summary>Gets a list of purchasable products in the current app.</summary>
-    /// <param name ="ProductSKUs">The SKUs of products.
-    /// @note If this parameter is empty, all purchasable products will be returned. If SKUs are specified, products with corresponding SKUs will be returned.
-    /// </param> 
-    /// <param name ="Count">The number of `ProductSKUs` arrays to return.</param> 
-    /// <param name ="InGetProductsBySKUDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="ProductSKUs">The SKUs of products. If this parameter is empty, all purchasable products will be returned.
+    /// If SKUs are specified, products with corresponding SKUs will be returned.</param>
+    /// <param name ="Count">The number of 'ProductSKUs' arrays to return.</param> 
+    /// <param name ="InGetProductsBySKUDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -78,7 +79,7 @@ public:
 
     /// <summary>Gets the next page of purchasable products.</summary>
     /// <param name ="InProductArray">The current object of product array.</param> 
-    /// <param name ="InGetNextProductArrayPageDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InGetNextProductArrayPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -90,7 +91,7 @@ public:
     /// <summary>Gets a list of purchased products for a user.
     /// @note This list includes consumables that have not been fulfilled and products that are permanently available after one purchase.
     /// </summary>
-    /// <param name ="InGetViewerPurchasesDelegate">Will br executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InGetViewerPurchasesDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -101,7 +102,7 @@ public:
 
     /// <summary>Gets the next page of purchased products.</summary>
     /// <param name ="InPurchaseArray">The current object of purchase array.</param> 
-    /// <param name ="InGetNextPurchaseArrayPageDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InGetNextPurchaseArrayPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -112,14 +113,14 @@ public:
 
     /// <summary>
     /// Launches the checkout flow to pay for a product.
-    /// @note Pico tries to handle and fix as many errors as possible. Home returns the
+    /// @note PICO tries to handle and fix as many errors as possible. Home returns the
     /// appropriate error message and how to resolve it if possible. Returns a
     /// purchase on success, empty purchase on cancel, and an error on error.
     /// </summary>
     /// <param name ="SKU">The SKU of the product the user wants to purchase.</param> 
     /// <param name ="Price">The price for the product.</param> 
     /// <param name ="Currency">The currency of the payment.</param> 
-    /// <param name ="InLaunchCheckoutFlowDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InLaunchCheckoutFlowDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -142,6 +143,8 @@ public:
  *  This is the BP_IAP group
  *  @{
  */
+
+/// @brief OnlinePicoIAP Blueprint Function class.
 UCLASS()
 class ONLINESUBSYSTEMPICO_API UOnlinePicoIAPFunction : public UBlueprintFunctionLibrary
 {
@@ -150,11 +153,12 @@ class ONLINESUBSYSTEMPICO_API UOnlinePicoIAPFunction : public UBlueprintFunction
 public:
 
 
-	/// <summary>Records the order fulfillment result for a consumable.</summary>
+	/// <summary>Records the order fulfillment result for a consumable.
 	/// @note Users are unable to repurchase the same consumable until the previous order is fulfilled.
+    /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
     /// <param name ="SKU">The SKU of the product.</param> 
-    /// <param name ="InConsumePurchaseDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InConsumePurchaseDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -168,7 +172,7 @@ public:
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
     /// <param name ="ProductSKUs">The SKUs of products.</param> 
     /// <param name ="Count">The number of ProductSKUs arrays to return.</param> 
-    /// <param name ="InGetProductsBySKUDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InGetProductsBySKUDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -181,7 +185,7 @@ public:
     /// <summary>Gets the next page of purchasable products.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
     /// <param name ="InProductArray">The current object of product array.</param> 
-    /// <param name ="InGetNextProductArrayPageDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InGetNextProductArrayPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -195,7 +199,7 @@ public:
 	/// @note This list includes consumables that have not been fulfilled and products that are permanently available after one purchase.
 	/// </summary>
 	/// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
-    /// <param name ="InGetViewerPurchasesDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InGetViewerPurchasesDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -208,7 +212,7 @@ public:
     /// <summary>Gets the next page of purchased products.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
     /// <param name ="InPurchaseArray">The current object of purchase array.</param> 
-    /// <param name ="InGetNextPurchaseArrayPageDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InGetNextPurchaseArrayPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>
@@ -220,7 +224,7 @@ public:
 
     /// <summary>
     /// Launches the checkout flow to purchase a product.
-    /// @note Pico tries to handle and fix as many errors as possible. Home returns the
+    /// @note PICO tries to handle and fix as many errors as possible. Home returns the
     /// appropriate error message and how to resolve it if possible. Returns a
     /// purchase on success, empty purchase on cancel, and an error on error.
     /// </summary>
@@ -228,7 +232,7 @@ public:
     /// <param name ="SKU">The SKU of the product to purchase.</param> 
     /// <param name ="Price">The price for the product.</param> 
     /// <param name ="Currency">The currency of the payment.</param> 
-    /// <param name ="InLaunchCheckoutFlowDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param> 
+    /// <param name ="InLaunchCheckoutFlowDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>

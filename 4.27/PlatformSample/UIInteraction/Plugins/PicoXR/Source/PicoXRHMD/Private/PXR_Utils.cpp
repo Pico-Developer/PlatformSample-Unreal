@@ -4,9 +4,9 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Materials/Material.h"
 
-UPicoContentResourceFinder::UPicoContentResourceFinder(const FObjectInitializer& ObjectInitializer)
+UPICOContentResourceFinder::UPICOContentResourceFinder(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	static ConstructorHelpers::FObjectFinder<UMaterial> StaticUnderlayMaterial(TEXT("Material'/PicoXR/Materials/UnderlayMaterial.UnderlayMaterial'"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> StaticUnderlayMaterial(TEXT("Material'/PICOXR/Materials/UnderlayMaterial.UnderlayMaterial'"));
 	StereoLayerDepthMat = StaticUnderlayMaterial.Object;
 }

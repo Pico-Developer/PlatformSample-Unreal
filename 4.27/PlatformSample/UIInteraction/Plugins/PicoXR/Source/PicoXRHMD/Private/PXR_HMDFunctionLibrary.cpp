@@ -7,116 +7,116 @@
 #include "PXR_Settings.h"
 #include "PXR_BoundarySystem.h"
 
-FPicoXRIPDChangedDelegate UPicoXRHMDFunctionLibrary::PicoXRIPDChangedCallback;
-FPicoXRHMD* UPicoXRHMDFunctionLibrary::PicoXRHMD = nullptr;
-UPicoXRHMDFunctionLibrary::UPicoXRHMDFunctionLibrary()
+FPICOXRIPDChangedDelegate UPICOXRHMDFunctionLibrary::PICOXRIPDChangedCallback;
+FPICOXRHMD* UPICOXRHMDFunctionLibrary::PICOXRHMD = nullptr;
+UPICOXRHMDFunctionLibrary::UPICOXRHMDFunctionLibrary()
 {
 }
 
-FPicoXRHMD* UPicoXRHMDFunctionLibrary::GetPicoXRHMD()
+FPICOXRHMD* UPICOXRHMDFunctionLibrary::GetPICOXRHMD()
 {
-    if (!PicoXRHMD)
+    if (!PICOXRHMD)
     {
-        static FName SystemName(TEXT("PicoXRHMD"));
+        static FName SystemName(TEXT("PICOXRHMD"));
         if (GEngine)
         {
             if (GEngine->XRSystem.IsValid() && (GEngine->XRSystem->GetSystemName() == SystemName))
             {
-                PicoXRHMD =  static_cast<FPicoXRHMD*>(GEngine->XRSystem.Get());  
+                PICOXRHMD =  static_cast<FPICOXRHMD*>(GEngine->XRSystem.Get());  
             }
-            if (PicoXRHMD == nullptr)
+            if (PICOXRHMD == nullptr)
             {
-                PXR_LOGI(PxrUnreal, "GetPicoXRHMD Failed!");
+                PXR_LOGI(PxrUnreal, "GetPICOXRHMD Failed!");
             }
         } 
     }
-    return PicoXRHMD;
+    return PICOXRHMD;
 }
 
-FQuat UPicoXRHMDFunctionLibrary::PXR_GetCurrentOrientation()
+FQuat UPICOXRHMDFunctionLibrary::PXR_GetCurrentOrientation()
 {
     FVector Position;
     FQuat Orientation;
-    GetPicoXRHMD()->GetCurrentPose(IXRTrackingSystem::HMDDeviceId,Orientation,Position);
+    GetPICOXRHMD()->GetCurrentPose(IXRTrackingSystem::HMDDeviceId,Orientation,Position);
     return  Orientation;
 }
 
-FVector UPicoXRHMDFunctionLibrary::PXR_GetCurrentPosition()
+FVector UPICOXRHMDFunctionLibrary::PXR_GetCurrentPosition()
 {
     FVector Position;
     FQuat Orientation;
-    GetPicoXRHMD()->GetCurrentPose(IXRTrackingSystem::HMDDeviceId,Orientation,Position);
+    GetPICOXRHMD()->GetCurrentPose(IXRTrackingSystem::HMDDeviceId,Orientation,Position);
     return  Position;
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_DoesSupportPositionalTracking()
+bool UPICOXRHMDFunctionLibrary::PXR_DoesSupportPositionalTracking()
 {  
-    return  GetPicoXRHMD()->DoesSupportPositionalTracking();
+    return  GetPICOXRHMD()->DoesSupportPositionalTracking();
 }
 
-FVector UPicoXRHMDFunctionLibrary::PXR_GetAngularVelocity()
+FVector UPICOXRHMDFunctionLibrary::PXR_GetAngularVelocity()
 {
     FVector AngularVelocity;
-    GetPicoXRHMD()->UPxr_GetAngularVelocity(AngularVelocity);
+    GetPICOXRHMD()->UPxr_GetAngularVelocity(AngularVelocity);
     return AngularVelocity;
 }
 
-FVector UPicoXRHMDFunctionLibrary::PXR_GetAcceleration()
+FVector UPICOXRHMDFunctionLibrary::PXR_GetAcceleration()
 {
     FVector Acceleration;
-    GetPicoXRHMD()->UPxr_GetAcceleration(Acceleration);
+    GetPICOXRHMD()->UPxr_GetAcceleration(Acceleration);
     return Acceleration;
 }
 
-FVector UPicoXRHMDFunctionLibrary::PXR_GetVelocity()
+FVector UPICOXRHMDFunctionLibrary::PXR_GetVelocity()
 {
     FVector Velocity;
-    GetPicoXRHMD()->UPxr_GetVelocity(Velocity);
+    GetPICOXRHMD()->UPxr_GetVelocity(Velocity);
     return Velocity;
 }
 
-FVector UPicoXRHMDFunctionLibrary::PXR_GetAngularAcceleration()
+FVector UPICOXRHMDFunctionLibrary::PXR_GetAngularAcceleration()
 {
     FVector AngularAcceleration;
-    GetPicoXRHMD()->UPxr_GetAngularAcceleration(AngularAcceleration);
+    GetPICOXRHMD()->UPxr_GetAngularAcceleration(AngularAcceleration);
     return AngularAcceleration;
 }
 
-EHMDWornState::Type UPicoXRHMDFunctionLibrary::PXR_GetHMDWornState()
+EHMDWornState::Type UPICOXRHMDFunctionLibrary::PXR_GetHMDWornState()
 {  
-    return GetPicoXRHMD()->GetHMDWornState();
+    return GetPICOXRHMD()->GetHMDWornState();
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_ResetHMDSensor()
+bool UPICOXRHMDFunctionLibrary::PXR_ResetHMDSensor()
 {
-    GetPicoXRHMD()->ResetOrientationAndPosition(0);
+    GetPICOXRHMD()->ResetOrientationAndPosition(0);
     return true;
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetFieldOfView(float& HFOVInDegrees, float& VFOVInDegrees)
+bool UPICOXRHMDFunctionLibrary::PXR_GetFieldOfView(float& HFOVInDegrees, float& VFOVInDegrees)
 {
-    GetPicoXRHMD()->GetFieldOfView(HFOVInDegrees,VFOVInDegrees);
+    GetPICOXRHMD()->GetFieldOfView(HFOVInDegrees,VFOVInDegrees);
     return true;
 }
 
-float UPicoXRHMDFunctionLibrary::PXR_GetIPD()
+float UPICOXRHMDFunctionLibrary::PXR_GetIPD()
 {
-    return GetPicoXRHMD()->UPxr_GetIPD();
+    return GetPICOXRHMD()->UPxr_GetIPD();
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_IPDChangedDelegates(FPicoXRIPDChangedDelegate OnPicoXRIPDChanged)
+void UPICOXRHMDFunctionLibrary::PXR_IPDChangedDelegates(FPICOXRIPDChangedDelegate OnPICOXRIPDChanged)
 {
 #if PLATFORM_ANDROID
-	PicoXRIPDChangedCallback = OnPicoXRIPDChanged;
+	PICOXRIPDChangedCallback = OnPICOXRIPDChanged;
 #endif
 }
 
-FString UPicoXRHMDFunctionLibrary::PXR_GetDeviceModel()
+FString UPICOXRHMDFunctionLibrary::PXR_GetDeviceModel()
 {
-    return GetPicoXRHMD()->UPxr_GetDeviceModel();
+    return GetPICOXRHMD()->UPxr_GetDeviceModel();
 }
 
-float UPicoXRHMDFunctionLibrary::PXR_GetCurrentDisplayFrequency()
+float UPICOXRHMDFunctionLibrary::PXR_GetCurrentDisplayFrequency()
 {
     float frequency = 1.0f;
 #if PLATFORM_ANDROID
@@ -125,7 +125,7 @@ float UPicoXRHMDFunctionLibrary::PXR_GetCurrentDisplayFrequency()
     return  frequency;
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_SetCPUAndGPULevels(int32 CPULevel, int32 GPULevel)
+void UPICOXRHMDFunctionLibrary::PXR_SetCPUAndGPULevels(int32 CPULevel, int32 GPULevel)
 {
 #if PLATFORM_ANDROID
     Pxr_SetPerformanceLevels(PxrPerfSettings::PXR_PERF_SETTINGS_CPU,CPULevel);
@@ -133,7 +133,7 @@ void UPicoXRHMDFunctionLibrary::PXR_SetCPUAndGPULevels(int32 CPULevel, int32 GPU
 #endif
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_GetCPUAndGPULevels(int32& CPULevel, int32& GPULevel)
+void UPICOXRHMDFunctionLibrary::PXR_GetCPUAndGPULevels(int32& CPULevel, int32& GPULevel)
 {
 #if PLATFORM_ANDROID
     int32 cpuLevel, gpuLevel = -1;
@@ -145,7 +145,7 @@ void UPicoXRHMDFunctionLibrary::PXR_GetCPUAndGPULevels(int32& CPULevel, int32& G
 #endif
 }
 
-float UPicoXRHMDFunctionLibrary::PXR_GetSystemDisplayFrequency()
+float UPICOXRHMDFunctionLibrary::PXR_GetSystemDisplayFrequency()
 {
 	float frequency = 0.f;
 #if PLATFORM_ANDROID
@@ -154,94 +154,94 @@ float UPicoXRHMDFunctionLibrary::PXR_GetSystemDisplayFrequency()
 	return  frequency;
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_SetSystemDisplayFrequency(float Rate)
+void UPICOXRHMDFunctionLibrary::PXR_SetSystemDisplayFrequency(float Rate)
 {
 #if PLATFORM_ANDROID
     Pxr_SetDisplayRefreshRate(Rate);
 #endif
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_SetColorScaleAndOffset(FLinearColor ColorScale, FLinearColor ColorOffset, bool bApplyToAllLayers)
+void UPICOXRHMDFunctionLibrary::PXR_SetColorScaleAndOffset(FLinearColor ColorScale, FLinearColor ColorOffset, bool bApplyToAllLayers)
 {
 #if PLATFORM_ANDROID
-    GetPicoXRHMD()->UPxr_SetColorScaleAndOffset(ColorScale,ColorOffset,bApplyToAllLayers);
+    GetPICOXRHMD()->UPxr_SetColorScaleAndOffset(ColorScale,ColorOffset,bApplyToAllLayers);
 #endif
 }
 
-bool UPicoXRHMDFunctionLibrary::GetFocusState()
+bool UPICOXRHMDFunctionLibrary::GetFocusState()
 {
-    const FPicoXRHMD* const picoXRHMD = GetPicoXRHMD();
-    if (picoXRHMD != nullptr && picoXRHMD->IsHMDEnabled())
+    const FPICOXRHMD* const PICOXRHMDInstance = GetPICOXRHMD();
+    if (PICOXRHMDInstance != nullptr && PICOXRHMDInstance->IsHMDEnabled())
     {
-        return picoXRHMD->inputFocusState;
+        return PICOXRHMDInstance->inputFocusState;
     }
     return false;
 }
 
-UPicoXRBoundarySystem* UPicoXRHMDFunctionLibrary::GetBoundarySystemInterface()
+UPICOXRBoundarySystem* UPICOXRHMDFunctionLibrary::GetBoundarySystemInterface()
 {
-    return UPicoXRBoundarySystem::GetInstance();
+    return UPICOXRBoundarySystem::GetInstance();
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetBoundaryConfigured()
+bool UPICOXRHMDFunctionLibrary::PXR_GetBoundaryConfigured()
 {
     return GetBoundarySystemInterface()->UPxr_GetConfigured();
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetBoundaryEnabled()
+bool UPICOXRHMDFunctionLibrary::PXR_GetBoundaryEnabled()
 {
     return GetBoundarySystemInterface()->UPxr_GetEnabled();
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_SetBoundaryVisible(bool NewVisible)
+void UPICOXRHMDFunctionLibrary::PXR_SetBoundaryVisible(bool NewVisible)
 {
     GetBoundarySystemInterface()->UPxr_SetVisible(NewVisible);
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetBoundaryVisible()
+bool UPICOXRHMDFunctionLibrary::PXR_GetBoundaryVisible()
 {
     return GetBoundarySystemInterface()->UPxr_GetVisible();
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_BoundaryTestNode(EPicoXRNodeType DeviceType,
-    EPicoXRBoundaryType BoundaryType, bool& IsTriggering, float& ClosestDistance, FVector& ClosestPoint,
+bool UPICOXRHMDFunctionLibrary::PXR_BoundaryTestNode(EPICOXRNodeType DeviceType,
+    EPICOXRBoundaryType BoundaryType, bool& IsTriggering, float& ClosestDistance, FVector& ClosestPoint,
     FVector& ClosestPointNormal)
 {
-    return GetBoundarySystemInterface()->UPxr_TestNode(static_cast<int32>(DeviceType),BoundaryType == EPicoXRBoundaryType::PlayArea,IsTriggering,ClosestDistance,ClosestPoint,ClosestPointNormal);
+    return GetBoundarySystemInterface()->UPxr_TestNode(static_cast<int32>(DeviceType),BoundaryType == EPICOXRBoundaryType::PlayArea,IsTriggering,ClosestDistance,ClosestPoint,ClosestPointNormal);
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_BoundaryTestPoint(FVector Point, EPicoXRBoundaryType BoundaryType,
+bool UPICOXRHMDFunctionLibrary::PXR_BoundaryTestPoint(FVector Point, EPICOXRBoundaryType BoundaryType,
     bool& IsTriggering, float& ClosestDistance, FVector& ClosestPoint, FVector& ClosestPointNormal)
 {
-    return GetBoundarySystemInterface()->UPxr_TestPoint(Point,BoundaryType == EPicoXRBoundaryType::PlayArea,IsTriggering,ClosestDistance,ClosestPoint,ClosestPointNormal);
+    return GetBoundarySystemInterface()->UPxr_TestPoint(Point,BoundaryType == EPICOXRBoundaryType::PlayArea,IsTriggering,ClosestDistance,ClosestPoint,ClosestPointNormal);
 }
 
-TArray<FVector> UPicoXRHMDFunctionLibrary::PXR_GetBoundaryGeometry(EPicoXRBoundaryType BoundaryType)
+TArray<FVector> UPICOXRHMDFunctionLibrary::PXR_GetBoundaryGeometry(EPICOXRBoundaryType BoundaryType)
 {
-   return GetBoundarySystemInterface()->UPxr_GetGeometry(BoundaryType == EPicoXRBoundaryType::PlayArea);
+   return GetBoundarySystemInterface()->UPxr_GetGeometry(BoundaryType == EPICOXRBoundaryType::PlayArea);
 }
 
-FVector UPicoXRHMDFunctionLibrary::PXR_GetBoundaryDimensions(EPicoXRBoundaryType BoundaryType)
+FVector UPICOXRHMDFunctionLibrary::PXR_GetBoundaryDimensions(EPICOXRBoundaryType BoundaryType)
 {
-    return GetBoundarySystemInterface()->UPxr_GetDimensions(BoundaryType == EPicoXRBoundaryType::PlayArea);
+    return GetBoundarySystemInterface()->UPxr_GetDimensions(BoundaryType == EPICOXRBoundaryType::PlayArea);
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetBoundarySeeThroughData(EPicoXRCameraType CameraType, UTexture2D*& CameraImage)
+bool UPICOXRHMDFunctionLibrary::PXR_GetBoundarySeeThroughData(EPICOXRCameraType CameraType, UTexture2D*& CameraImage)
 {
     return GetBoundarySystemInterface()->UPxr_GetSeeThroughData(static_cast<int32>(CameraType),CameraImage);
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_SetBoundaryCameraImageSize(FIntPoint ImageSize)
+bool UPICOXRHMDFunctionLibrary::PXR_SetBoundaryCameraImageSize(FIntPoint ImageSize)
 {
     return GetBoundarySystemInterface()->UPxr_SetCameraImageSize(ImageSize);
 }
 
-int UPicoXRHMDFunctionLibrary::PXR_SetSeeThroughBackground(bool Value)
+int UPICOXRHMDFunctionLibrary::PXR_SetSeeThroughBackground(bool Value)
 {
     return GetBoundarySystemInterface()->UPxr_SetSeeThroughBackground(Value);
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_GetDialogState(EPicoXRBoundaryState& State)
+void UPICOXRHMDFunctionLibrary::PXR_GetDialogState(EPICOXRBoundaryState& State)
 {
     int result = 1;
 #if PLATFORM_ANDROID
@@ -249,29 +249,29 @@ void UPicoXRHMDFunctionLibrary::PXR_GetDialogState(EPicoXRBoundaryState& State)
     switch (result)
     {
     case -2:
-        State = EPicoXRBoundaryState::LostNoDialog;
+        State = EPICOXRBoundaryState::LostNoDialog;
         break;
 	case -1:
-        State = EPicoXRBoundaryState::NothingDialog;
+        State = EPICOXRBoundaryState::NothingDialog;
 		break;
     default:
-        State = EPicoXRBoundaryState((uint8)result);
+        State = EPICOXRBoundaryState((uint8)result);
         break;
      }
 #endif
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_EnableFoveation(bool Enable)
+void UPICOXRHMDFunctionLibrary::PXR_EnableFoveation(bool Enable)
 {
 #if PLATFORM_ANDROID
-    GetPicoXRHMD()->UPxr_EnableFoveation(Enable);
+    GetPICOXRHMD()->UPxr_EnableFoveation(Enable);
 #endif
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetFoveationLevel(EPicoXRFoveationLevel &FoveationLevel)
+bool UPICOXRHMDFunctionLibrary::PXR_GetFoveationLevel(EPICOXRFoveationLevel &FoveationLevel)
 {
     int32 Foveation = -1;
-    if (GetMutableDefault<UPicoXRSettings>()->bEnableFoveation)
+    if (GetMutableDefault<UPICOXRSettings>()->bEnableFoveation)
     {
 #if PLATFORM_ANDROID
     Foveation = (int32)Pxr_GetFoveationLevel();
@@ -279,16 +279,16 @@ bool UPicoXRHMDFunctionLibrary::PXR_GetFoveationLevel(EPicoXRFoveationLevel &Fov
     switch (Foveation)
       {
     case 0:
-        FoveationLevel = EPicoXRFoveationLevel::Low;
+        FoveationLevel = EPICOXRFoveationLevel::Low;
         return true;
     case 1:
-        FoveationLevel = EPicoXRFoveationLevel::Medium;
+        FoveationLevel = EPICOXRFoveationLevel::Medium;
         return true;
     case 2:
-        FoveationLevel = EPicoXRFoveationLevel::High;
+        FoveationLevel = EPICOXRFoveationLevel::High;
         return true;
     case 3:
-        FoveationLevel = EPicoXRFoveationLevel::TopHigh;
+        FoveationLevel = EPICOXRFoveationLevel::TopHigh;
         return true;
      default:
          return false;
@@ -302,9 +302,9 @@ bool UPicoXRHMDFunctionLibrary::PXR_GetFoveationLevel(EPicoXRFoveationLevel &Fov
     }
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_SetFoveationLevel(EPicoXRFoveationLevel InLevel)
+bool UPICOXRHMDFunctionLibrary::PXR_SetFoveationLevel(EPICOXRFoveationLevel InLevel)
 { 
-    if (GetMutableDefault<UPicoXRSettings>()->bEnableFoveation)
+    if (GetMutableDefault<UPICOXRSettings>()->bEnableFoveation)
     {
 #if PLATFORM_ANDROID
 		PxrFoveationLevel Level = static_cast<PxrFoveationLevel>(InLevel);
@@ -322,10 +322,10 @@ bool UPicoXRHMDFunctionLibrary::PXR_SetFoveationLevel(EPicoXRFoveationLevel InLe
     }
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_SetFoveationParameter(FVector2D FoveationGainValue, float FoveationAreaValue, float FoveationMinimumValue)
+bool UPICOXRHMDFunctionLibrary::PXR_SetFoveationParameter(FVector2D FoveationGainValue, float FoveationAreaValue, float FoveationMinimumValue)
 {
 #if PLATFORM_ANDROID
-    if (GetMutableDefault<UPicoXRSettings>()->bEnableFoveation)
+    if (GetMutableDefault<UPICOXRSettings>()->bEnableFoveation)
     {
         PxrFoveationParams FoveationParams;
         FoveationParams.foveationGainX = FoveationGainValue.X;
@@ -347,13 +347,13 @@ bool UPicoXRHMDFunctionLibrary::PXR_SetFoveationParameter(FVector2D FoveationGai
     return false;
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetEyeTrackingGazeRay(FVector& Origin, FVector& Direction)
+bool UPICOXRHMDFunctionLibrary::PXR_GetEyeTrackingGazeRay(FVector& Origin, FVector& Direction)
 {
     bool ReturnValue = false;
-    if (GetMutableDefault<UPicoXRSettings>()->bEnableEyeTracking )
+    if (GetMutableDefault<UPICOXRSettings>()->bEnableEyeTracking )
     { 
-        const TSharedPtr<FPicoXREyeTracker> EyeTracker =GetPicoXRHMD()->UPxr_GetEyeTracker();
-        FPicoXREyeTrackingGazeRay EyeTrackingGazeRay;
+        const TSharedPtr<FPICOXREyeTracker> EyeTracker =GetPICOXRHMD()->UPxr_GetEyeTracker();
+        FPICOXREyeTrackingGazeRay EyeTrackingGazeRay;
         ReturnValue = EyeTracker->GetEyeTrackingGazeRay(EyeTrackingGazeRay);
         Origin = EyeTrackingGazeRay.Origin;
         Direction = EyeTrackingGazeRay.Direction;
@@ -361,34 +361,34 @@ bool UPicoXRHMDFunctionLibrary::PXR_GetEyeTrackingGazeRay(FVector& Origin, FVect
     return ReturnValue;
 }
 
-FPicoXREyeTrackingData UPicoXRHMDFunctionLibrary::PXR_GetEyeTrackingData()
+FPICOXREyeTrackingData UPICOXRHMDFunctionLibrary::PXR_GetEyeTrackingData()
 {
-    FPicoXREyeTrackingData EyeTrackingData ;
-    if (GetMutableDefault<UPicoXRSettings>()->bEnableEyeTracking )
+    FPICOXREyeTrackingData EyeTrackingData ;
+    if (GetMutableDefault<UPICOXRSettings>()->bEnableEyeTracking )
     {
-        const TSharedPtr<FPicoXREyeTracker> EyeTracker =GetPicoXRHMD()->UPxr_GetEyeTracker();
+        const TSharedPtr<FPICOXREyeTracker> EyeTracker =GetPICOXRHMD()->UPxr_GetEyeTracker();
         EyeTracker->UPxr_GetEyeTrackingData(EyeTrackingData);
     }
     return EyeTrackingData;
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_EnableEyeTrackingMarker(bool Enable)
+void UPICOXRHMDFunctionLibrary::PXR_EnableEyeTrackingMarker(bool Enable)
 {
 #if PLATFORM_ANDROID
-	UPicoXRSettings *picoSettings = GetMutableDefault<UPicoXRSettings>();
-	if (picoSettings)
+	UPICOXRSettings *PICOSettings = GetMutableDefault<UPICOXRSettings>();
+	if (PICOSettings)
 	{
-		picoSettings->bEnableEyeTrackingMarker = Enable;
+		PICOSettings->bEnableEyeTrackingMarker = Enable;
 	}
 #endif
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetEyeTrackingPos(FVector &EyeTrackingPos)
+bool UPICOXRHMDFunctionLibrary::PXR_GetEyeTrackingPos(FVector &EyeTrackingPos)
 {
 #if PLATFORM_ANDROID
-	if (GetMutableDefault<UPicoXRSettings>()->bEnableEyeTracking)
+	if (GetMutableDefault<UPICOXRSettings>()->bEnableEyeTracking)
 	{
-		const TSharedPtr<FPicoXREyeTracker> eyeTracker = GetPicoXRHMD()->UPxr_GetEyeTracker();
+		const TSharedPtr<FPICOXREyeTracker> eyeTracker = GetPICOXRHMD()->UPxr_GetEyeTracker();
 		if (eyeTracker)
 		{
 			if (eyeTracker->GetEyeDirectionToFoveationRendering(EyeTrackingPos))
@@ -399,20 +399,42 @@ bool UPicoXRHMDFunctionLibrary::PXR_GetEyeTrackingPos(FVector &EyeTrackingPos)
 	return false;
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_EnableEyeTracking(bool enable)
+bool UPICOXRHMDFunctionLibrary::PXR_GetFaceTrackingData(int64 Ts, int Flags, int64& TimeStamp, TArray<float>& BlendShapeWeight, TArray<float>& Reserved)
 {
 #if PLATFORM_ANDROID
-	const TSharedPtr<FPicoXREyeTracker> eyeTracker = GetPicoXRHMD()->UPxr_GetEyeTracker();
-	if (eyeTracker)
+	if (GetMutableDefault<UPICOXRSettings>()->bEnableFaceTracking)
 	{
-		if (eyeTracker->OpenEyeTracking(enable))
-            return true;
+		const TSharedPtr<FPICOXREyeTracker> FaceOrTracker = GetPICOXRHMD()->UPxr_GetEyeTracker();
+		if (FaceOrTracker)
+		{
+            return FaceOrTracker->GetFaceTrackingData(Ts, Flags, TimeStamp, BlendShapeWeight, Reserved);
+		}
 	}
 #endif
+    return false;
+}
+
+bool UPICOXRHMDFunctionLibrary::PXR_EnableEyeTracking(bool enable)
+{
+	const TSharedPtr<FPICOXREyeTracker> FaceOrEyeTracker = GetPICOXRHMD()->UPxr_GetEyeTracker();
+	if (FaceOrEyeTracker)
+	{
+		return FaceOrEyeTracker->EnableEyeTracking(enable);
+	}
 	return false;
 }
 
-int UPicoXRHMDFunctionLibrary::PXR_SetSensorLostCustomMode(bool Value)
+bool UPICOXRHMDFunctionLibrary::PXR_EnableFaceTracking(bool enable)
+{
+    const TSharedPtr<FPICOXREyeTracker> FaceOrEyeTracker = GetPICOXRHMD()->UPxr_GetEyeTracker();
+	if (FaceOrEyeTracker)
+	{
+		return FaceOrEyeTracker->EnableFaceTracking(enable);
+	}
+	return false;
+}
+
+int UPICOXRHMDFunctionLibrary::PXR_SetSensorLostCustomMode(bool Value)
 {
 #if PLATFORM_ANDROID
     return Pxr_SetSensorLostCustomMode(Value);
@@ -420,7 +442,7 @@ int UPicoXRHMDFunctionLibrary::PXR_SetSensorLostCustomMode(bool Value)
     return 0;
 }
 
-int UPicoXRHMDFunctionLibrary::PXR_SetSensorLostCMST(bool Value)
+int UPICOXRHMDFunctionLibrary::PXR_SetSensorLostCMST(bool Value)
 {
 #if PLATFORM_ANDROID
     return Pxr_SetSensorLostCMST(Value);
@@ -428,19 +450,19 @@ int UPicoXRHMDFunctionLibrary::PXR_SetSensorLostCMST(bool Value)
     return 0;
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_GetVFov(float & VFOVInDegrees)
+void UPICOXRHMDFunctionLibrary::PXR_GetVFov(float & VFOVInDegrees)
 {
 	float drop;
-	GetPicoXRHMD()->GetFieldOfView(drop, VFOVInDegrees);
+	GetPICOXRHMD()->GetFieldOfView(drop, VFOVInDegrees);
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_GetHFov(float & HFOVInDegrees)
+void UPICOXRHMDFunctionLibrary::PXR_GetHFov(float & HFOVInDegrees)
 {
 	float drop;
-	GetPicoXRHMD()->GetFieldOfView(HFOVInDegrees, drop);
+	GetPICOXRHMD()->GetFieldOfView(HFOVInDegrees, drop);
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_GetDisplayFrequenciesAvailable(int& Count, TArray<float>& AvailableRates)
+bool UPICOXRHMDFunctionLibrary::PXR_GetDisplayFrequenciesAvailable(int& Count, TArray<float>& AvailableRates)
 {
     bool result = false;
 #if PLATFORM_ANDROID
@@ -458,7 +480,7 @@ bool UPicoXRHMDFunctionLibrary::PXR_GetDisplayFrequenciesAvailable(int& Count, T
     return result;
 }
 
-bool UPicoXRHMDFunctionLibrary::PXR_SetExtraLatencyMode(int Mode)
+bool UPICOXRHMDFunctionLibrary::PXR_SetExtraLatencyMode(int Mode)
 {
 #if PLATFORM_ANDROID
     return Pxr_SetExtraLatencyMode(Mode);
@@ -466,12 +488,12 @@ bool UPicoXRHMDFunctionLibrary::PXR_SetExtraLatencyMode(int Mode)
     return false;
 }
 
-UPicoXREventManager* UPicoXRHMDFunctionLibrary::PXR_GetEventManager()
+UPICOXREventManager* UPICOXRHMDFunctionLibrary::PXR_GetEventManager()
 {
-    return UPicoXREventManager::GetInstance();
+    return UPICOXREventManager::GetInstance();
 }
 
-void UPicoXRHMDFunctionLibrary::PXR_GetPredictedMainSensorState(FPxrSensorState& sensorState, int& sensorFrameIndex) {
+void UPICOXRHMDFunctionLibrary::PXR_GetPredictedMainSensorState(FPxrSensorState& sensorState, int& sensorFrameIndex) {
 #if PLATFORM_ANDROID
 
     int SdkVersion = 0;
@@ -511,4 +533,63 @@ void UPicoXRHMDFunctionLibrary::PXR_GetPredictedMainSensorState(FPxrSensorState&
         sensorState.poseTimeStampNs = sensorState2.poseTimeStampNs;
     }
 #endif
+}
+
+bool UPICOXRHMDFunctionLibrary::PXR_QueryDeviceAbilities(EPICOXRDeviceAbilities DeviceAbility)
+{
+#if PLATFORM_ANDROID
+    int CurrentVersion = 0;
+    Pxr_GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
+    if (CurrentVersion >= 0x2000304)
+    {
+        PxrTrackingModeFlags SupportTrackingMode;
+        Pxr_GetTrackingMode(&SupportTrackingMode);
+        switch (DeviceAbility)
+        {
+        case EPICOXRDeviceAbilities::TRACKING_MODE_ROTATION_BIT:
+            {
+                return (PXR_TRACKING_MODE_ROTATION_BIT & SupportTrackingMode)? true:false;
+            }
+            break;
+        case EPICOXRDeviceAbilities::TRACKING_MODE_POSITION_BIT:
+            {
+                return (PXR_TRACKING_MODE_POSITION_BIT & SupportTrackingMode)? true:false;
+            }
+            break;
+        case EPICOXRDeviceAbilities::TRACKING_MODE_EYE_BIT:
+            {
+                return (PXR_TRACKING_MODE_EYE_BIT & SupportTrackingMode)? true:false;
+            }
+            break;
+        case EPICOXRDeviceAbilities::TRACKING_MODE_FACE_BIT:
+            {
+                return (PXR_TRACKING_MODE_FACE_BIT & SupportTrackingMode)? true:false;
+            }
+            break;
+        case EPICOXRDeviceAbilities::TRACKING_MODE_VCMOTOR_BIT:
+            {
+                return (PXR_TRACKING_MODE_VCMOTOR_BIT & SupportTrackingMode)? true:false;
+            }
+            break;
+        case EPICOXRDeviceAbilities::TRACKING_MODE_HAND_BIT:
+            {
+                return (PXR_TRACKING_MODE_HAND_BIT & SupportTrackingMode)? true:false;
+            }
+            break;
+        default:
+            ;
+        }
+    }
+#endif
+
+    return false;
+}
+
+void UPICOXRHMDFunctionLibrary::PXR_SetLateLatchingEnable(bool Value)
+{
+    IConsoleVariable* Variable = IConsoleManager::Get().FindConsoleVariable(TEXT("r.EnableLateLatching"));
+    if (Variable)
+    {
+        Variable->Set(Value ? 1 : 0);
+    }
 }

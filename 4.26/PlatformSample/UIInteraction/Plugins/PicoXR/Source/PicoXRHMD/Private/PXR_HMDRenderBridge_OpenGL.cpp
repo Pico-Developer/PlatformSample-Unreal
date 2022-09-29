@@ -3,10 +3,10 @@
 #include "PXR_HMD.h"
 #include "OpenGLDrv.h"
 
-class FPicoXRRenderBridge_OpenGL : public FPicoXRRenderBridge
+class FPICOXRRenderBridge_OpenGL : public FPICOXRRenderBridge
 {
 public:
-	FPicoXRRenderBridge_OpenGL(FPicoXRHMD* HMD) :FPicoXRRenderBridge(HMD)
+	FPICOXRRenderBridge_OpenGL(FPICOXRHMD* HMD) :FPICOXRRenderBridge(HMD)
 	{
 		RHIString = HMD->GetRHIString();
 	}
@@ -34,7 +34,7 @@ public:
 	}
 };
 
-FPicoXRRenderBridge* CreateRenderBridge_OpenGL(FPicoXRHMD* HMD)
+FPICOXRRenderBridge* CreateRenderBridge_OpenGL(FPICOXRHMD* HMD)
 {
-	return new FPicoXRRenderBridge_OpenGL(HMD);
+	return new FPICOXRRenderBridge_OpenGL(HMD);
 }

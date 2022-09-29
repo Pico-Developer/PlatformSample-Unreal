@@ -11,15 +11,15 @@
 
 /// @file OnlineSessionInterfacePico.h
 
-/// @brief Used to set the matchmaking pool name.
+// @brief Used to set the matchmaking pool name.
 #define SETTING_PICO_POOL FName(TEXT("PICOPOOL"))
-/// @brief Used to set the pico build unique ID.
+// @brief Used to set the pico build unique ID.
 #define SETTING_PICO_BUILD_UNIQUE_ID FName(TEXT("PICOSESSIONBUILDUNIQUEID"))
-/// @brief Used to set whether to search for moderated rooms.
+// @brief Used to set whether to search for moderated rooms.
 #define SEARCH_PICO_MODERATED_ROOMS_ONLY FName(TEXT("PICOMODERATEDROOMSONLY"))
-/// @brief Used to set the page index when searching for moderated rooms.
+// @brief Used to set the page index when searching for moderated rooms.
 #define GET_MODERATEDROOMS_PAGEINDEX FName(TEXT("GETMODERATEDROOMSPAGEINDEX"))
-/// @brief Used to set the page size when searching for moderated rooms.
+// @brief Used to set the page size when searching for moderated rooms.
 #define GET_MODERATEDROOMS_PAGESIZE FName(TEXT("GETMODERATEDROOMSPAGESIZE"))
 
 class FUniqueNetIdPico;
@@ -58,16 +58,16 @@ class FOnlineSessionPico : public IOnlineSession
 {
 private:
 
-	/// <summary>Reference to the main Pico subsystem.</summary>
+	// <summary>Reference to the main Pico subsystem.</summary>
 	FOnlineSubsystemPico& PicoSubsystem;
 
-	/// <summary>Current sessions map.</summary>
+	// <summary>Current sessions map.</summary>
 	TMap<FName, TSharedPtr<FNamedOnlineSession>> Sessions;
 
-	/// <summary>The SearchSettings for matchmaking.</summary>
+	// <summary>The SearchSettings for matchmaking.</summary>
 	TSharedPtr<FOnlineSessionSearch> InProgressMatchmakingSearch;
 
-	/// <summary>The SessionName when in matchmaking.</summary>
+	// <summary>The SessionName when in matchmaking.</summary>
 	FName InProgressMatchmakingSearchName;
 
 	/// <summary>Gets the room ID of the session.</summary>
@@ -75,7 +75,7 @@ private:
 	/// <returns>The room ID of the specified session.</returns>
 	ppfID GetRoomIDOfSession(const FNamedOnlineSession& Session) const;
 	
-	/// <summary>Returns the search results of the sessions where the invitation has been accepted. Supported version: 4.8.0 or later.</summary>
+	// <summary>Returns the search results of the sessions where the invitation has been accepted. Supported version: 4.8.0 or later.</summary>
 	TArray<TSharedRef<const FOnlineSessionSearchResult>> InviteAcceptedSessions;
 	
 	
@@ -137,8 +137,8 @@ PACKAGE_SCOPE:
 
 public:
 
-	/// <summary>The constructor.</summary>
-	/// <param name="InSubsystem">A reference to the online subsystem.</param>
+	// <summary>The constructor.</summary>
+	// <param name="InSubsystem">A reference to the online subsystem.</param>
 	FOnlineSessionPico(FOnlineSubsystemPico& InSubsystem);
 	
     /// The default destructor.
@@ -147,9 +147,10 @@ public:
 
 	// Begin IOnlineSession interface
 
-	/// <summary>Creates an online session based on the specified settings.</summary>
-	/// <b>Note:</b> Online session registration is an async process and will not complete
+	/// <summary>Creates an online session based on the specified settings.
+	/// @note Online session registration is an async process and will not complete
 	/// until the `OnCreateSessionComplete` delegate is called.
+	/// </summary>
 	/// <param name="HostingPlayerNum">The index of the player hosting the session.</param>
 	/// <param name="SessionName">The name of the session to create.</param>
 	/// <param name="NewSessionSettings">The settings to use for the new session.</param>
@@ -185,7 +186,7 @@ public:
 	virtual bool UpdateSession(FName SessionName, FOnlineSessionSettings& UpdatedSessionSettings, bool bShouldRefreshOnlineData = true) override;
 
 	/// <summary>Marks an online session as having been ended.</summary>
-	/// <param name="SessionName">The name of the session the to end.</param>
+	/// <param name="SessionName">The name of the session to end.</param>
 	/// <returns>Bool: 
 	/// <ul>
 	/// <li>`true`: success</li>
@@ -194,9 +195,10 @@ public:
 	/// </returns>
 	virtual bool EndSession(FName SessionName) override;
 
-	/// <summary>Destroys the specified online session.</summary>
-	/// <b>Note:</b> Online session de-registration is an async process and will not complete
+	/// <summary>Destroys the specified online session.
+	/// @note Online session de-registration is an async process and will not complete
 	/// until the `OnDestroySessionComplete` delegate is called.
+	/// </summary>
 	/// <param name="SessionName">The name of the session to destroy.</param>
 	/// <param name="CompletionDelegate">Used when the session destroy request has been completed.</param>
 	/// <returns>Bool: 
@@ -259,7 +261,7 @@ public:
 	/// <param name="SearchingUserId">The ID of the user initiating the request.</param>
 	/// <param name="SessionId">The session ID to search for.</param>
 	/// <param name="FriendId">Not supported. Set it invalid.</param>
-	/// <param name="CompletionDelegate">Will be executed when ppf_Room_Get completes.</param>
+	/// <param name="CompletionDelegate">Will be executed when ppf_Room_Get is complete.</param>
 	/// <returns>Bool: 
 	/// <ul>
 	/// <li>`true`: success</li>

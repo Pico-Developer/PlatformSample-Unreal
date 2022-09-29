@@ -13,7 +13,14 @@
 #include "Misc/MessageDialog.h"
 
 FOnlineSessionInfoPico::FOnlineSessionInfoPico(ppfID RoomId) :
+#if ENGINE_MAJOR_VERSION > 4
+	SessionId(FUniqueNetIdPico::Create(RoomId))
+#elif ENGINE_MINOR_VERSION > 26
+
+	SessionId(FUniqueNetIdPico::Create(RoomId))
+#elif ENGINE_MINOR_VERSION > 24
 	SessionId(FUniqueNetIdPico(RoomId))
+#endif
 {
 }
 
@@ -88,85 +95,85 @@ FOnlineSessionPico::~FOnlineSessionPico()
 #if PLATFORM_ANDROID
 	if (OnRoomNotificationUpdateHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Room_RoomUpdate, OnRoomNotificationUpdateHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Room_RoomUpdate, OnRoomNotificationUpdateHandle);
 		OnRoomNotificationUpdateHandle.Reset();
 	}
 
 	if (OnRoomNotificationInviteAcceptedHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Room_InviteAccepted, OnRoomNotificationInviteAcceptedHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Room_InviteAccepted, OnRoomNotificationInviteAcceptedHandle);
 		OnRoomNotificationInviteAcceptedHandle.Reset();
 	}
 
 	if (OnMatchmakingNotificationMatchFoundHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Matchmaking_MatchFound, OnMatchmakingNotificationMatchFoundHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Matchmaking_MatchFound, OnMatchmakingNotificationMatchFoundHandle);
 		OnMatchmakingNotificationMatchFoundHandle.Reset();
 	}
 	
 	if (OnNetNotificationConnectionHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_ConnectionEvent, OnNetNotificationConnectionHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_ConnectionEvent, OnNetNotificationConnectionHandle);
 		OnNetNotificationConnectionHandle.Reset();
 	}
 	
 	if (OnNetNotificationRequestFailedHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_RequestFailed, OnNetNotificationRequestFailedHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_RequestFailed, OnNetNotificationRequestFailedHandle);
 		OnNetNotificationRequestFailedHandle.Reset();
 	}
 	
 	if (OnNetNotificationGameStateResetHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_StateReset, OnNetNotificationGameStateResetHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Notification_Game_StateReset, OnNetNotificationGameStateResetHandle);
 		OnNetNotificationGameStateResetHandle.Reset();
 	}
 	
 	if (OnMatchmakingNotificationCancel2Handle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Matchmaking_Cancel2, OnMatchmakingNotificationCancel2Handle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Matchmaking_Cancel2, OnMatchmakingNotificationCancel2Handle);
 		OnMatchmakingNotificationCancel2Handle.Reset();
 	}
 
 	if (OnRoomNotificationLeaveHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_Leave, OnRoomNotificationLeaveHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_Leave, OnRoomNotificationLeaveHandle);
 		OnRoomNotificationLeaveHandle.Reset();
 	}
 
 	if (OnRoomNotificationJoin2Handle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_Join2, OnRoomNotificationJoin2Handle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_Join2, OnRoomNotificationJoin2Handle);
 		OnRoomNotificationJoin2Handle.Reset();
 	}
 
 	if (OnRoomNotificationSetDescriptionHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_SetDescription, OnRoomNotificationSetDescriptionHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_SetDescription, OnRoomNotificationSetDescriptionHandle);
 		OnRoomNotificationSetDescriptionHandle.Reset();
 	}
 
 	if (OnRoomNotificationKickUserHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_KickUser, OnRoomNotificationKickUserHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_KickUser, OnRoomNotificationKickUserHandle);
 		OnRoomNotificationKickUserHandle.Reset();
 	}
 
 	if (OnRoomNotificationUpdateOwnerHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateOwner, OnRoomNotificationUpdateOwnerHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateOwner, OnRoomNotificationUpdateOwnerHandle);
 		OnRoomNotificationUpdateOwnerHandle.Reset();
 	}
 
 	if (OnRoomNotificationUpdateDataStoreHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateDataStore, OnRoomNotificationUpdateDataStoreHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateDataStore, OnRoomNotificationUpdateDataStoreHandle);
 		OnRoomNotificationUpdateDataStoreHandle.Reset();
 	}
 
 	if (OnRoomNotificationUpdateMembershipLockStatusHandle.IsValid())
 	{
-		PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateMembershipLockStatus, OnRoomNotificationUpdateMembershipLockStatusHandle);
+		//PicoSubsystem.RemoveNotifyDelegate(ppfMessageType_Room_UpdateMembershipLockStatus, OnRoomNotificationUpdateMembershipLockStatusHandle);
 		OnRoomNotificationUpdateMembershipLockStatusHandle.Reset();
 	}
 #endif
@@ -664,7 +671,13 @@ bool FOnlineSessionPico::IsPlayerInSession(FName SessionName, const FUniqueNetId
 #endif
 }
 
+#if ENGINE_MAJOR_VERSION > 4
+bool FOnlineSessionPico::StartMatchmaking(const TArray< FUniqueNetIdRef >& LocalPlayers, FName SessionName, const FOnlineSessionSettings& NewSessionSettings, TSharedRef<FOnlineSessionSearch>& SearchSettings)
+#elif ENGINE_MINOR_VERSION > 26
+bool FOnlineSessionPico::StartMatchmaking(const TArray< FUniqueNetIdRef >& LocalPlayers, FName SessionName, const FOnlineSessionSettings& NewSessionSettings, TSharedRef<FOnlineSessionSearch>& SearchSettings)
+#elif ENGINE_MINOR_VERSION > 24
 bool FOnlineSessionPico::StartMatchmaking(const TArray< TSharedRef<const FUniqueNetId> >& LocalPlayers, FName SessionName, const FOnlineSessionSettings& NewSessionSettings, TSharedRef<FOnlineSessionSearch>& SearchSettings)
+#endif
 {
 	if (!IsInitSuccess())
 	{
@@ -1155,7 +1168,13 @@ bool FOnlineSessionPico::FindFriendSession(const FUniqueNetId& LocalUserId, cons
 	return FindFriendSession(0, Friend);
 }
 
+#if ENGINE_MAJOR_VERSION > 4
+bool FOnlineSessionPico::FindFriendSession(const FUniqueNetId& LocalUserId, const TArray<FUniqueNetIdRef>& FriendList)
+#elif ENGINE_MINOR_VERSION > 26
+bool FOnlineSessionPico::FindFriendSession(const FUniqueNetId& LocalUserId, const TArray<FUniqueNetIdRef>& FriendList)
+#elif ENGINE_MINOR_VERSION > 24
 bool FOnlineSessionPico::FindFriendSession(const FUniqueNetId& LocalUserId, const TArray<TSharedRef<const FUniqueNetId>>& FriendList)
+#endif
 {
 	// todo
 	return false;
@@ -1169,12 +1188,23 @@ bool FOnlineSessionPico::SendSessionInviteToFriend(int32 LocalUserNum, FName Ses
 		return false;
 	}
 #if PLATFORM_ANDROID
-	TArray< TSharedRef<const FUniqueNetId> > Friends;
 
-	const FUniqueNetIdPico& PicoFriend = static_cast<const FUniqueNetIdPico&>(Friend);
-	SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("SendSessionInviteToFriend PicoFriend StrID: %s"), *PicoFriend.GetStringID()));
-	
-	TSharedRef<const FUniqueNetId> NewFriend = MakeShareable(new FUniqueNetIdPico(PicoFriend.GetStringID()));
+#if ENGINE_MAJOR_VERSION > 4
+    TArray< FUniqueNetIdRef > Friends;
+    const FUniqueNetIdPico& PicoFriend = static_cast<const FUniqueNetIdPico&>(Friend);
+    SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("SendSessionInviteToFriend PicoFriend StrID: %s"), *PicoFriend.GetStringID()));
+    auto NewFriend = FUniqueNetIdPico::Create(PicoFriend.GetStringID());
+#elif ENGINE_MINOR_VERSION > 26
+    TArray< FUniqueNetIdRef > Friends;
+    const FUniqueNetIdPico& PicoFriend = static_cast<const FUniqueNetIdPico&>(Friend);
+    SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("SendSessionInviteToFriend PicoFriend StrID: %s"), *PicoFriend.GetStringID()));
+    auto NewFriend = FUniqueNetIdPico::Create(PicoFriend.GetStringID());
+#elif ENGINE_MINOR_VERSION > 24
+    TArray< TSharedRef<const FUniqueNetId> > Friends;
+    const FUniqueNetIdPico& PicoFriend = static_cast<const FUniqueNetIdPico&>(Friend);
+    SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("SendSessionInviteToFriend PicoFriend StrID: %s"), *PicoFriend.GetStringID()));
+    TSharedRef<const FUniqueNetId> NewFriend = MakeShareable(new FUniqueNetIdPico(PicoFriend.GetStringID()));
+#endif
 	SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("SendSessionInviteToFriend NewFriend StrID: %s"), *NewFriend->ToString()));
 	Friends.Add(NewFriend);
 	
@@ -1188,8 +1218,13 @@ bool FOnlineSessionPico::SendSessionInviteToFriend(const FUniqueNetId& LocalUser
 {
 	return SendSessionInviteToFriend(0, SessionName, Friend);
 }
-
+#if ENGINE_MAJOR_VERSION > 4
+bool FOnlineSessionPico::SendSessionInviteToFriends(int32 LocalUserNum, FName SessionName, const TArray< FUniqueNetIdRef >& Friends)
+#elif ENGINE_MINOR_VERSION > 26
+bool FOnlineSessionPico::SendSessionInviteToFriends(int32 LocalUserNum, FName SessionName, const TArray< FUniqueNetIdRef >& Friends)
+#elif ENGINE_MINOR_VERSION > 24
 bool FOnlineSessionPico::SendSessionInviteToFriends(int32 LocalUserNum, FName SessionName, const TArray< TSharedRef<const FUniqueNetId> >& Friends)
+#endif
 {
 	if (!IsInitSuccess())
 	{
@@ -1245,7 +1280,13 @@ bool FOnlineSessionPico::SendSessionInviteToFriends(int32 LocalUserNum, FName Se
 #endif
 }
 
+#if ENGINE_MAJOR_VERSION > 4
+bool FOnlineSessionPico::SendSessionInviteToFriends(const FUniqueNetId& LocalUserId, FName SessionName, const TArray< FUniqueNetIdRef >& Friends)
+#elif ENGINE_MINOR_VERSION > 26
+bool FOnlineSessionPico::SendSessionInviteToFriends(const FUniqueNetId& LocalUserId, FName SessionName, const TArray< FUniqueNetIdRef >& Friends)
+#elif ENGINE_MINOR_VERSION > 24
 bool FOnlineSessionPico::SendSessionInviteToFriends(const FUniqueNetId& LocalUserId, FName SessionName, const TArray< TSharedRef<const FUniqueNetId> >& Friends)
+#endif
 {
 	return SendSessionInviteToFriends(0, SessionName, Friends);
 }
@@ -1319,8 +1360,16 @@ bool FOnlineSessionPico::RegisterPlayer(FName SessionName, const FUniqueNetId& P
 		return false;
 	}
 #if PLATFORM_ANDROID
-	TArray< TSharedRef<const FUniqueNetId> > Players;
-	Players.Add(MakeShareable(new FUniqueNetIdPico(PlayerId)));
+#if ENGINE_MAJOR_VERSION > 4
+    TArray< FUniqueNetIdRef > Players;
+    Players.Add(FUniqueNetIdPico::Create(PlayerId));
+#elif ENGINE_MINOR_VERSION > 26
+    TArray< FUniqueNetIdRef > Players;
+    Players.Add(FUniqueNetIdPico::Create(PlayerId));
+#elif ENGINE_MINOR_VERSION > 24
+    TArray< TSharedRef<const FUniqueNetId> > Players;
+    Players.Add(MakeShareable(new FUniqueNetIdPico(PlayerId)));
+#endif
 	TriggerOnRegisterPlayersCompleteDelegates(SessionName, Players, true);
 	return true;
 #else
@@ -1343,12 +1392,19 @@ bool FOnlineSessionPico::RegisterPlayers(FName SessionName, const TArray< TShare
 #endif
 }
 
+
 bool FOnlineSessionPico::UnregisterPlayer(FName SessionName, const FUniqueNetId& PlayerId)
 {
 	return false;
 }
 
+#if ENGINE_MAJOR_VERSION > 4
+bool FOnlineSessionPico::UnregisterPlayers(FName SessionName, const TArray< FUniqueNetIdRef >& Players)
+#elif ENGINE_MINOR_VERSION > 26
+bool FOnlineSessionPico::UnregisterPlayers(FName SessionName, const TArray< FUniqueNetIdRef >& Players)
+#elif ENGINE_MINOR_VERSION > 24
 bool FOnlineSessionPico::UnregisterPlayers(FName SessionName, const TArray< TSharedRef<const FUniqueNetId> >& Players)
+#endif
 {
 	return false;
 }
@@ -1376,9 +1432,19 @@ void FOnlineSessionPico::UnregisterLocalPlayer(const FUniqueNetId& PlayerId, FNa
 	Delegate.ExecuteIfBound(PlayerId, false);
 }
 
+#if ENGINE_MAJOR_VERSION > 4
+FUniqueNetIdPtr FOnlineSessionPico::CreateSessionIdFromString(const FString& SessionIdStr)
+{
+    FUniqueNetIdPtr SessionId;
+#elif ENGINE_MINOR_VERSION > 26
+FUniqueNetIdPtr FOnlineSessionPico::CreateSessionIdFromString(const FString& SessionIdStr)
+{
+    FUniqueNetIdPtr SessionId;
+#elif ENGINE_MINOR_VERSION > 24
 TSharedPtr<const FUniqueNetId> FOnlineSessionPico::CreateSessionIdFromString(const FString& SessionIdStr)
 {
-	TSharedPtr<const FUniqueNetId> SessionId;
+    TSharedPtr<const FUniqueNetId> SessionId;
+#endif
 	return SessionId;
 }
 
@@ -1463,7 +1529,13 @@ TSharedRef<FOnlineSession> FOnlineSessionPico::CreateSessionFromRoom(ppfRoomHand
 #endif
 	auto Session = new FOnlineSession(SessionSettings);
 #if PLATFORM_ANDROID
+#if ENGINE_MAJOR_VERSION > 4
+	Session->OwningUserId = FUniqueNetIdPico::Create(UTF8_TO_TCHAR(ppf_User_GetID(RoomOwner)));
+#elif ENGINE_MINOR_VERSION > 26
+	Session->OwningUserId = FUniqueNetIdPico::Create(UTF8_TO_TCHAR(ppf_User_GetID(RoomOwner)));
+#elif ENGINE_MINOR_VERSION > 24
 	Session->OwningUserId = MakeShareable(new FUniqueNetIdPico(UTF8_TO_TCHAR(ppf_User_GetID(RoomOwner))));
+#endif
 	// FUniqueNetIdPico::Create(UTF8_TO_TCHAR(ppf_User_GetID(RoomOwner)));
 	Session->OwningUserName = UTF8_TO_TCHAR(ppf_User_GetDisplayName(RoomOwner));
 	auto RemainingConnections = RoomMaxUsers - RoomCurrentUsersSize;
@@ -1504,13 +1576,25 @@ void FOnlineSessionPico::UpdateSessionFromRoom(FNamedOnlineSession& Session, ppf
 	LogRoomData(Room);
 	auto UserArray = ppf_Room_GetUsers(Room);
 	auto UserArraySize = ppf_UserArray_GetSize(UserArray);
+#if ENGINE_MAJOR_VERSION > 4
+	TArray< FUniqueNetIdRef > Players;
+#elif ENGINE_MINOR_VERSION > 26
+	TArray< FUniqueNetIdRef > Players;
+#elif ENGINE_MINOR_VERSION > 24
 	TArray< TSharedRef<const FUniqueNetId> > Players;
+#endif
 	SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("UpdateSessionFromRoom UserArraySize: %zu"), UserArraySize));
 	for (size_t UserIndex = 0; UserIndex < UserArraySize; ++UserIndex)
 	{
 		auto User = ppf_UserArray_GetElement(UserArray, UserIndex);
 		FString UserId = UTF8_TO_TCHAR(ppf_User_GetID(User));
+#if ENGINE_MAJOR_VERSION > 4
+		auto PlayerId = FUniqueNetIdPico::Create(UserId);
+#elif ENGINE_MINOR_VERSION > 26
+		auto PlayerId = FUniqueNetIdPico::Create(UserId);
+#elif ENGINE_MINOR_VERSION > 24
 		TSharedRef<const FUniqueNetId>  PlayerId = MakeShareable(new FUniqueNetIdPico(UserId));
+#endif
 		Players.Add(PlayerId);
 		SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("UpdateSessionFromRoom UserIndex: %zu, UserId: %s, PlayerId: %s, PlayerId->IsValid(): %d"), UserIndex, *UserId, *PlayerId->ToString(), PlayerId->IsValid()));
 	}
@@ -1526,7 +1610,14 @@ void FOnlineSessionPico::UpdateSessionFromRoom(FNamedOnlineSession& Session, ppf
 	FString RoomOwnerIdString = UTF8_TO_TCHAR(ppf_User_GetID(RoomOwner));
 	SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("UpdateSessionFromRoom RoomOwnerIdString: %s"), *RoomOwnerIdString));
 	//auto RoomOwnerUniqueIdPtr = FUniqueNetIdPico::Create(RoomOwnerIdString);
+
+#if ENGINE_MAJOR_VERSION > 4
+	auto RoomOwnerUniqueIdPtr = FUniqueNetIdPico::Create(RoomOwnerIdString);
+#elif ENGINE_MINOR_VERSION > 26
+	auto RoomOwnerUniqueIdPtr = FUniqueNetIdPico::Create(RoomOwnerIdString);
+#elif ENGINE_MINOR_VERSION > 24
 	TSharedRef<const FUniqueNetId> RoomOwnerUniqueIdPtr = MakeShareable(new FUniqueNetIdPico(RoomOwnerIdString));
+#endif
 	SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("UpdateSessionFromRoom RoomOwnerUniqueId: %s"), *RoomOwnerUniqueIdPtr->ToString()));
 
 	if (!Session.OwningUserId.IsValid() || Session.OwningUserId.ToSharedRef().Get() != *RoomOwnerUniqueIdPtr)
@@ -1667,12 +1758,12 @@ void FOnlineSessionPico::Initialize()
 #if PLATFORM_ANDROID
 	SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("Initialize")));
 	SetInitState(false);
-	PicoSubsystem.AddAsyncTask(
-		ppf_User_GetAccessToken(),
-		FPicoMessageOnCompleteDelegate::CreateRaw(this, &FOnlineSessionPico::OnGetAccessTokenComplete));
-	// PicoSubsystem.AddAsyncTask(
-	// 	ppf_Game_InitializeAuto(),
-	// 	FPicoMessageOnCompleteDelegate::CreateRaw(this, &FOnlineSessionPico::OnGameInitializeComplete));
+	 PicoSubsystem.AddAsyncTask(
+	 	ppf_User_GetAccessToken(),
+	 	FPicoMessageOnCompleteDelegate::CreateRaw(this, &FOnlineSessionPico::OnGetAccessTokenComplete));
+	//PicoSubsystem.AddAsyncTask(
+	//	ppf_Game_InitializeAuto(),
+	//	FPicoMessageOnCompleteDelegate::CreateRaw(this, &FOnlineSessionPico::OnGameInitializeComplete));
 #endif
 }
 void FOnlineSessionPico::OnGetAccessTokenComplete(ppfMessageHandle Message, bool bIsError)
@@ -1707,8 +1798,8 @@ void FOnlineSessionPico::OnGameInitializeComplete(ppfMessageHandle Message, bool
 		auto Error = ppf_Message_GetError(Message);
 		auto ErrorMessage = ppf_Error_GetMessage(Error);
 		SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnGameInitializeComplete ErrorMessage: %s"), *FString(ErrorMessage)));
-		Uninitialize();
-		Initialize();
+		//Uninitialize();
+		//Initialize();
 		return;
 	}
 
@@ -1722,11 +1813,11 @@ void FOnlineSessionPico::OnGameInitializeComplete(ppfMessageHandle Message, bool
 		{
 			SetInitState(true);
 		}
-		else
-		{
-			Uninitialize();
-			Initialize();
-		}
+		//else
+		//{
+		//	Uninitialize();
+		//	Initialize();
+		//}
 	}
 #endif
 }

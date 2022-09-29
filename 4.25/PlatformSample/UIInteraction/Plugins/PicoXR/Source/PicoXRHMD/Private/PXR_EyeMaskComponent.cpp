@@ -18,7 +18,7 @@
 #define RM_P1 0.90666
 #define RM_Z  -1     // near plane value in right hand rule clipping space
 
-UPicoXREyeMaskComponent::UPicoXREyeMaskComponent(const FObjectInitializer& ObjectInitializer):
+UPICOXREyeMaskComponent::UPICOXREyeMaskComponent(const FObjectInitializer& ObjectInitializer):
     Super(ObjectInitializer), 
     Color(), 
     UseDebugMesh(false), 
@@ -27,13 +27,13 @@ UPicoXREyeMaskComponent::UPicoXREyeMaskComponent(const FObjectInitializer& Objec
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UPicoXREyeMaskComponent::PostLoad()
+void UPICOXREyeMaskComponent::PostLoad()
 {
     Super::PostLoad();
     PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UPicoXREyeMaskComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+void UPICOXREyeMaskComponent::TickComponent(float DeltaTime, ELevelTick TickType,
     FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -56,7 +56,7 @@ void UPicoXREyeMaskComponent::TickComponent(float DeltaTime, ELevelTick TickType
     PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UPicoXREyeMaskComponent::BeginPlay()
+void UPICOXREyeMaskComponent::BeginPlay()
 {
     Super::BeginPlay();
 }
@@ -158,7 +158,7 @@ static void MakeTriangle(int Shape, float OffsetY, float OffsetZ, float Size, TA
     Tangents.Add(Tangent);
     Tangents.Add(Tangent);
 }
-bool UPicoXREyeMaskComponent::GetStencilMeshData()
+bool UPICOXREyeMaskComponent::GetStencilMeshData()
 {
 #if WITH_EDITOR
     if (GIsEditor)
@@ -215,7 +215,7 @@ bool UPicoXREyeMaskComponent::GetStencilMeshData()
     return false;
 }
 
-void UPicoXREyeMaskComponent::CreateStencilMesh()
+void UPICOXREyeMaskComponent::CreateStencilMesh()
 {
      FMatrix InvProj[2];
 
@@ -242,7 +242,7 @@ void UPicoXREyeMaskComponent::CreateStencilMesh()
 	 AxisChangeMatrix.M[2][0] = -1, AxisChangeMatrix.M[2][1] = 0, AxisChangeMatrix.M[2][2] = 0;
 
 
-	 UMaterialInterface * MaterialMask = static_cast<UMaterialInterface*>(LoadObject<UMaterial>(nullptr, TEXT("Material'/PicoXR/Materials/Mat_EyeMask.EyeMask'"))
+	 UMaterialInterface * MaterialMask = static_cast<UMaterialInterface*>(LoadObject<UMaterial>(nullptr, TEXT("Material'/PICOXR/Materials/Mat_EyeMask.EyeMask'"))
 	 );
 	 if (MaterialMask == nullptr)
 	 {
@@ -307,7 +307,7 @@ void UPicoXREyeMaskComponent::CreateStencilMesh()
 	 ContainsPhysicsTriMeshData(false);
 }
 
-UPicoXREyeMaskComponent::EyeMaskData UPicoXREyeMaskComponent::GetEyeMaskData(int Eye)
+UPICOXREyeMaskComponent::EyeMaskData UPICOXREyeMaskComponent::GetEyeMaskData(int Eye)
 {
 #if WITH_EDITOR
 	/**

@@ -13,6 +13,8 @@
  * 
  */
 
+ /// @file Pico_Sport.h
+
 DECLARE_LOG_CATEGORY_EXTERN(PicoSport, Log, All);
 
 
@@ -20,6 +22,17 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetDailySummary, bool, bIsError, const FSt
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetSummary, bool, bIsError, const FString&, ErrorMessage, UPico_SportSummary*, SportSummary);
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetSportUserInfo, bool, bIsError, const FString&, ErrorMessage, UPico_SportUserInfo*, SportUserInfo);
 
+/** @addtogroup Function Function
+ *  This is the Function group
+ *  @{
+ */
+
+ /** @defgroup Sport Sport
+  *  This is the Sport group
+  *  @{
+  */
+
+/// @brief PicoSportInterface class.
 class ONLINESUBSYSTEMPICO_API FPicoSportInterface
 {
 private:
@@ -42,7 +55,7 @@ public:
     /// </summary>
     /// <param name="BeginTime">A DateTime struct(FDateTime(int64 InTicks).GetTicks()) defining the begin time of the period.</param>
     /// <param name="EndTime">A DateTime struct(FDateTime(int64 InTicks).GetTicks()) defining the end time of the period.</param>
-    /// <param name="InGetDailySummaryDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetDailySummaryDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -52,12 +65,12 @@ public:
     bool GetDailySummary(int64 BeginTime, int64 EndTime, FGetDailySummary InGetDailySummaryDelegate);
 
     /// <summary>
-    /// Get a summary of the user's exercise data for a specified duration within today. The duration should not exceed 24 hours.
+    /// Gets a summary of the user's exercise data for a specified duration within today. The duration should not exceed 24 hours.
     /// @note Available in Mainland China only.
     /// </summary>
     /// <param name="BeginTime">A DateTime struct(FDateTime(int64 InTicks).GetTicks()) defining the begin time of the period.</param>
     /// <param name="EndTime">A DateTime struct(FDateTime(int64 InTicks)GetTicks()) defining the end time of the period.</param>
-    /// <param name="InGetSummaryDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetSummaryDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -70,7 +83,7 @@ public:
     /// Gets a user's basic information and exercise plan.
     /// @note Available in Mainland China only.
     /// </summary>
-    /// <param name="InGetSportUserInfoDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetSportUserInfoDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -82,6 +95,20 @@ public:
 
 };
 
+/** @} */
+/** @} */
+
+/** @addtogroup BlueprintFunction BlueprintFunction
+ *  This is the BlueprintFunction group
+ *  @{
+ */
+
+ /** @defgroup BP_Sport BP_Sport
+  *  This is the BP_Sport group
+  *  @{
+  */
+
+/// @brief OnlinePicoSport Blueprint Function class.
 UCLASS()
 class ONLINESUBSYSTEMPICO_API UOnlinePicoSportFunction : public UBlueprintFunctionLibrary
 {
@@ -97,7 +124,7 @@ public:
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="BeginTime">A DateTime struct(FDateTime(int64 InTicks).GetTicks()) defining the begin time of the period.</param>
     /// <param name="EndTime">A DateTime struct(FDateTime(int64 InTicks).GetTicks()) defining the end time of the period.</param>
-    /// <param name="InGetDailySummaryDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetDailySummaryDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -108,13 +135,13 @@ public:
     static bool GetDailySummary(UObject* WorldContextObject, int64 BeginTime, int64 EndTime, FGetDailySummary InGetDailySummaryDelegate);
 
     /// <summary>
-    /// Get a summary of the user's exercise data for a specified duration within today. The duration should not exceed 24 hours.
+    /// Gets a summary of the user's exercise data for a specified duration within today. The duration should not exceed 24 hours.
     /// @note Available in Mainland China only.
     /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="BeginTime">A DateTime struct(FDateTime(int64 InTicks).GetTicks()) defining the begin time of the period.</param>
     /// <param name="EndTime">A DateTime struct(FDateTime(int64 InTicks)GetTicks()) defining the end time of the period.</param>
-    /// <param name="InGetSummaryDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetSummaryDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -129,7 +156,7 @@ public:
     /// @note Available in Mainland China only.
     /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="InGetSportUserInfoDelegate">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="InGetSportUserInfoDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -143,23 +170,25 @@ public:
     /// Convert FDateTime to int64
     /// @note BlueprintPure function.
     /// </summary>
-    /// <param name ="InDateTime">Inpurt DateTime.</param>
+    /// <param name ="InDateTime">Input DateTime.</param>
     /// <returns>int64 result
     /// </returns>
     UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Sport")
     static int64 ConvertDateTimeToInt64(FDateTime InDateTime);
 
     /// <summary>
-    /// Convert int64 to FDateTime
+    /// Converts int64 to FDateTime.
     /// @note BlueprintPure function.
     /// </summary>
-    /// <param name ="InValue">Inpurt int64.</param>
-    /// <returns>FDateTime result
+    /// <param name ="InValue">The int64 input.</param>
+    /// <returns>The FDateTime result of the int64 input.
     /// </returns>
     UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Sport")
     static FDateTime ConvertInt64ToDateTime(int64 InValue);
 };
 
+/** @} */ // end of BP_Sport
+/** @} */ // end of BlueprintFunction
 
 UCLASS(BlueprintType)
 class ONLINESUBSYSTEMPICO_API UPico_SportDailySummary : public UObject

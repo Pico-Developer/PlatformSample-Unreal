@@ -36,6 +36,7 @@ class FPicoPresenceInterface;
 class FApplicationLifecycleInterface;
 class FPicoIAPInterface;
 class FPicoUserInterface;
+class FPicoAssetFileInterface;
 class FPicoSportInterface;
 class FPicoAchievementsInterface;
 
@@ -43,7 +44,7 @@ class FPicoAchievementsInterface;
 class ONLINESUBSYSTEMPICO_API FOnlineSubsystemPico : public FOnlineSubsystemImpl
 {
 public:
-    virtual ~FOnlineSubsystemPico() = default;
+	virtual ~FOnlineSubsystemPico() = default;
 
     virtual IOnlineSessionPtr GetSessionInterface() const override;
 
@@ -101,20 +102,21 @@ public:
 
     TSharedPtr<FPicoPresenceInterface> GetPicoPresenceInterface() const;
 
-    TSharedPtr<FPicoSportInterface> GetPicoSportInterface() const;
+    TSharedPtr<FPicoAssetFileInterface> GetPicoAssetFileInterface() const;
 
+    TSharedPtr<FPicoSportInterface> GetPicoSportInterface() const;
 
     // Game
     FOnlineSessionPicoPtr GetGameSessionInterface() const;
 
     TSharedPtr<FPicoAchievementsInterface> GetPicoAchievementsInterface() const;
 
-    /**
-     * Allows for the PicoSDK calls to be used directly with the Delegates in the Pico PSS
-     */
+/**
+ * Allows for the PicoSDK calls to be used directly with the Delegates in the Pico PSS
+ */
     void AddAsyncTask(ppfRequest RequestId, FPicoMessageOnCompleteDelegate Delegate);
 
-    //    void AddAsyncTask(ppfRequest RequestId, FPicoMessageOnCompleteDelegate Delegate);
+//    void AddAsyncTask(ppfRequest RequestId, FPicoMessageOnCompleteDelegate Delegate);
 
     FPicoMulticastMessageOnCompleteDelegate& GetOrAddNotify(ppfMessageType MessageType) const;
     void RemoveNotifyDelegate(ppfMessageType MessageType, const FDelegateHandle& Delegate) const;
@@ -158,6 +160,8 @@ private:
 
     TSharedPtr<FPicoUserInterface> PicoUserInterface;
 
+    TSharedPtr<FPicoAssetFileInterface> PicoAssetFileInterface;
+
     TSharedPtr<FPicoSportInterface> PicoSportInterface;
 
     FOnlineSessionPicoPtr GameSessionInterface;
@@ -165,7 +169,7 @@ private:
     FOnlineLeaderboardPicoPtr LeaderboardInterface;
 
     TSharedPtr<FPicoAchievementsInterface> PicoAchievementsInterface;
-    
+
     /** Online async task runnable */
     class FOnlineAsyncTaskManagerPico* OnlineAsyncTaskThreadRunnable;
 

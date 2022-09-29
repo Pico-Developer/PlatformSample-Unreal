@@ -24,7 +24,7 @@
 #include "PxrApi.h"
 #endif
 
-APicoXRMRC_CastingCameraActor::APicoXRMRC_CastingCameraActor(const FObjectInitializer& ObjectInitializer)
+APICOXRMRC_CastingCameraActor::APICOXRMRC_CastingCameraActor(const FObjectInitializer& ObjectInitializer)
 	:Super(ObjectInitializer)
 	,BackgroundRenderTarget(nullptr)
 	,ForegroundRenderTarget(nullptr)
@@ -41,45 +41,36 @@ APicoXRMRC_CastingCameraActor::APicoXRMRC_CastingCameraActor(const FObjectInitia
 	
 	ForegroundCaptureActor = NULL;
 
-	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> BGRef(TEXT("TextureRenderTarget2D'/PicoXR/Textures/MRCRT_BG.MRCRT_BG'"));
+	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> BGRef(TEXT("TextureRenderTarget2D'/PICOXR/Textures/MRCRT_BG.MRCRT_BG'"));
 	BackgroundRenderTarget = BGRef.Object;
 	check(BackgroundRenderTarget != nullptr);
 	BackgroundRenderTarget->RenderTargetFormat = RTF_RGBA8_SRGB;
 
-	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> FGRef(TEXT("TextureRenderTarget2D'/PicoXR/Textures/MRCRT_FG.MRCRT_FG'"));
+	static ConstructorHelpers::FObjectFinder<UTextureRenderTarget2D> FGRef(TEXT("TextureRenderTarget2D'/PICOXR/Textures/MRCRT_FG.MRCRT_FG'"));
 	ForegroundRenderTarget = FGRef.Object;
 	check(ForegroundRenderTarget != nullptr);
 	ForegroundRenderTarget->RenderTargetFormat = RTF_RGBA8_SRGB;
 }
 
-void APicoXRMRC_CastingCameraActor::InitializeStates(UPXRInGameThirdCamState* MRStateIn)
+void APICOXRMRC_CastingCameraActor::InitializeStates(UPXRInGameThirdCamState* MRStateIn)
 {
 	MRState = MRStateIn;
 }
 
-void APicoXRMRC_CastingCameraActor::BeginPlay()
+void APICOXRMRC_CastingCameraActor::BeginPlay()
 {
 	Super::BeginPlay();
 	PXR_LOGI(LogMRC, "In-Game Camera BeginPlay!");
-	
-	if (FPicoXRMRCModule::Get().SpawnTimes > 1)
-	{
-		InitializeInGameCam();
-	}
-	else
-	{
-		FTimerHandle BeginCalibrateHandle;
-		GetWorldTimerManager().SetTimer(BeginCalibrateHandle, this, &APicoXRMRC_CastingCameraActor::InitializeInGameCam, 0.1, false);
-	}
+	InitializeInGameCam();
 }
 
-void APicoXRMRC_CastingCameraActor::EndPlay(EEndPlayReason::Type Reason)
+void APICOXRMRC_CastingCameraActor::EndPlay(EEndPlayReason::Type Reason)
 {
 	DestroyForeroundCaptureActor();
 	Super::EndPlay(Reason);
 }
 
-void APicoXRMRC_CastingCameraActor::Tick(float DeltaTime)
+void APICOXRMRC_CastingCameraActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
@@ -123,12 +114,12 @@ void APicoXRMRC_CastingCameraActor::Tick(float DeltaTime)
 	}
 }
 
-void APicoXRMRC_CastingCameraActor::BeginDestroy()
+void APICOXRMRC_CastingCameraActor::BeginDestroy()
 {
 	Super::BeginDestroy();
 }
 
-void APicoXRMRC_CastingCameraActor::SpawnForegroundCaptureActor()
+void APICOXRMRC_CastingCameraActor::SpawnForegroundCaptureActor()
 {
 	if (bEnableForeground&&!ForegroundCaptureActor)
 	{
@@ -152,7 +143,7 @@ void APicoXRMRC_CastingCameraActor::SpawnForegroundCaptureActor()
 	}
 }
 
-void APicoXRMRC_CastingCameraActor::DestroyForeroundCaptureActor()
+void APICOXRMRC_CastingCameraActor::DestroyForeroundCaptureActor()
 {
 	if (ForegroundCaptureActor)
 	{
@@ -166,7 +157,7 @@ void APicoXRMRC_CastingCameraActor::DestroyForeroundCaptureActor()
 	}
 }
 
-void APicoXRMRC_CastingCameraActor::SetMRCTrackingReference()
+void APICOXRMRC_CastingCameraActor::SetMRCTrackingReference()
 {
 	if (MRState->CurrentTrackingReference)
 	{
@@ -207,7 +198,7 @@ void APicoXRMRC_CastingCameraActor::SetMRCTrackingReference()
 	}
 }
 
-void APicoXRMRC_CastingCameraActor::UpdateInGameCamPose()
+void APICOXRMRC_CastingCameraActor::UpdateInGameCamPose()
 {
 	bool UseCustomTrans = MRState->bUseCustomTrans;
 	if (UseCustomTrans)
@@ -216,13 +207,13 @@ void APicoXRMRC_CastingCameraActor::UpdateInGameCamPose()
 	}
 	else
 	{
-		FPicoXRMRCModule::Get().GetMRCCalibrationData(MRState->TrackedCamera);
+		FPICOXRMRCModule::Get().GetMRCCalibrationData(MRState->TrackedCamera);
 
-		if (FPicoXRMRCModule::Get().PicoXRHMD && !bHasInitializedInGameCamOnce)
+		if (FPICOXRMRCModule::Get().PICOXRHMD && !bHasInitializedInGameCamOnce)
 		{
 			MRState->ZOffset = 0;
 			FQuat currentQuat; FVector currentPose;
-			FPicoXRMRCModule::Get().PicoXRHMD->GetCurrentPose(0, currentQuat, currentPose);
+			FPICOXRMRCModule::Get().PICOXRHMD->GetCurrentPose(0, currentQuat, currentPose);
 			PXR_LOGI(LogMRC, "HMD Location ZOffset:%f", currentPose.Z);
 			MRState->ZOffset += currentPose.Z;//Eye or Floor Level
 #if PLATFORM_ANDROID
@@ -271,7 +262,7 @@ void MakeProjectionMatrix(float YMultiplier, float FOV, float FarClipPlane, FMat
 	}
 }
 
-void APicoXRMRC_CastingCameraActor::UpdateCamMatrixAndDepth()
+void APICOXRMRC_CastingCameraActor::UpdateCamMatrixAndDepth()
 {
 	float Distance = 0.0f;
 	FQuat HeadOrientation;
@@ -303,7 +294,7 @@ void APicoXRMRC_CastingCameraActor::UpdateCamMatrixAndDepth()
 }
 
 
-void APicoXRMRC_CastingCameraActor::InitializeRTSize()
+void APICOXRMRC_CastingCameraActor::InitializeRTSize()
 {
 	int ViewWidth = MRState->TrackedCamera.Width;
 	int ViewHeight = MRState->TrackedCamera.Height;
@@ -316,9 +307,9 @@ void APicoXRMRC_CastingCameraActor::InitializeRTSize()
 
 }
 
-void APicoXRMRC_CastingCameraActor::InitializeInGameCam()
+void APICOXRMRC_CastingCameraActor::InitializeInGameCam()
 {
-	FPicoXRMRCModule::Get().GetMRCCalibrationData(MRState->TrackedCamera);
+	FPICOXRMRCModule::Get().GetMRCCalibrationData(MRState->TrackedCamera);
 
 	SetMRCTrackingReference();
 
@@ -343,7 +334,7 @@ void APicoXRMRC_CastingCameraActor::InitializeInGameCam()
 		PXR_LOGI(LogMRC, "Final FOV:%f", GetCaptureComponent2D()->FOVAngle);
 	
 		SpawnForegroundCaptureActor();
-		if (FPicoXRMRCModule::IsAvailable()&& FPicoXRMRCModule::Get().GetPicoXRHMD())
+		if (FPICOXRMRCModule::IsAvailable()&& FPICOXRMRCModule::Get().GetPICOXRHMD())
 		{
 			FTextureRHIRef BG=nullptr, FG=nullptr;
 			ExecuteOnRenderThread([this,&BG,&FG]()
@@ -355,27 +346,9 @@ void APicoXRMRC_CastingCameraActor::InitializeInGameCam()
 						});
 				});
 #if PLATFORM_ANDROID
-		    FPicoXRMRCModule::Get().GetPicoXRHMD()->CreateMRCStereoLayer(BG,FG);		
+		    FPICOXRMRCModule::Get().GetPICOXRHMD()->CreateMRCStereoLayer(BG,FG);		
 #endif
-		    FPicoXRMRCModule::Get().PicoXRHMD->EventManager->LongHomePressedDelegate.AddDynamic(this, &APicoXRMRC_CastingCameraActor::OnHMDRecentered);
-		    PXR_LOGI(LogMRC, "LongHomePressedDelegate binded!");
-		    FPicoXRMRCModule::Get().PicoXRHMD->EventManager->ResumeDelegate.AddDynamic(this, &APicoXRMRC_CastingCameraActor::OnHMDResume);
-		    PXR_LOGI(LogMRC, "HMDResume binded!");
 	    }
 	}
 	bHasInitializedInGameCamOnce = true;
-}
-
-void APicoXRMRC_CastingCameraActor::OnHMDRecentered()
-{
-	InitializeInGameCam();
-	PXR_LOGI(LogMRC, "OnHMDRecentered called!");
-}
-
-void APicoXRMRC_CastingCameraActor::OnHMDResume()
-{
-	FTimerHandle ResumeHandle;
-	//Delay in obtaining calibration data
-	GetWorldTimerManager().SetTimer(ResumeHandle, this, &APicoXRMRC_CastingCameraActor::InitializeInGameCam, 0.1, false);
-	PXR_LOGI(LogMRC, "ResumeMRC called!");
 }

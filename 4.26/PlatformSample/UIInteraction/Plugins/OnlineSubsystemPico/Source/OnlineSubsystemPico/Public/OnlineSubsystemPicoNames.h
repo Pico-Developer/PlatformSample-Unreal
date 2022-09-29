@@ -505,6 +505,7 @@ enum class ESportTarget : uint8
     LoseFat,
     KeepFit
 };
+
 UENUM(BlueprintType)
 enum class EAchievementType : uint8
 {
@@ -519,4 +520,24 @@ enum class EAchievementWritePolicy : uint8
     Unknown,
     Client,
     Server,
+};
+
+
+UENUM(BlueprintType)
+enum class EAssetFileDownloadCompleteStatus : uint8
+{
+    Downloading,
+    Succeed,
+    Failed,
+    Unkonw
+};
+
+inline uint64 FStringTouint64(FString InStr)
+{
+    return FCString::Strtoui64(*InStr, NULL, 10);
+};
+
+inline FString uint64ToFString(uint64 Inuint64)
+{
+    return FString::Printf(TEXT("%llu"), Inuint64);
 };

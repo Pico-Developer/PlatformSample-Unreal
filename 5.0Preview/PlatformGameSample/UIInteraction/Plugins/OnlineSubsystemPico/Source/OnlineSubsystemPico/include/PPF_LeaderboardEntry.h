@@ -13,7 +13,7 @@ typedef struct ppfLeaderboardEntry *ppfLeaderboardEntryHandle;
 PPF_PUBLIC_FUNCTION(ppfSupplementaryMetricHandle) ppf_LeaderboardEntry_GetSupplementaryMetric(const ppfLeaderboardEntryHandle obj);
 
 PPF_PUBLIC_FUNCTION(const char *)       ppf_LeaderboardEntry_GetDisplayScore(const ppfLeaderboardEntryHandle obj);
-PPF_PUBLIC_FUNCTION(const char *)       ppf_LeaderboardEntry_GetExtraData(const ppfLeaderboardEntryHandle obj);
+PPF_PUBLIC_FUNCTION(const void *)       ppf_LeaderboardEntry_GetExtraData(const ppfLeaderboardEntryHandle obj);
 PPF_PUBLIC_FUNCTION(unsigned int)       ppf_LeaderboardEntry_GetExtraDataLength(const ppfLeaderboardEntryHandle obj);
 PPF_PUBLIC_FUNCTION(ppfID)              ppf_LeaderboardEntry_GetID(const ppfLeaderboardEntryHandle obj);
 PPF_PUBLIC_FUNCTION(int)                ppf_LeaderboardEntry_GetRank(const ppfLeaderboardEntryHandle obj);

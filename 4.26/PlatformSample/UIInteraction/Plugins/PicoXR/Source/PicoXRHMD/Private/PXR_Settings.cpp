@@ -6,7 +6,7 @@
 #endif
 #include "Engine/RendererSettings.h"
 
-UPicoXRSettings::UPicoXRSettings(const FObjectInitializer& ObjectInitializer)
+UPICOXRSettings::UPICOXRSettings(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
 	bEnablePSensor(false),
 	bIsHMD3Dof(false),
@@ -15,12 +15,14 @@ UPicoXRSettings::UPicoXRSettings(const FObjectInitializer& ObjectInitializer)
 	NeckOffset(FVector::ZeroVector),
 	bEnableHomeKey(false),
 	bIsController3Dof(false),
+	HandTrackingSupport(EPICOXRHandTrackingSupport::ControllersOnly),
 	bEnableLateLatching(false),
 	bUseHWsRGBEncoding(true),
 	bUseRecommendedMSAA(false),
 	bEnableFoveation(false),
 	FoveationLevel(EFoveationLevel::Low),
 	bEnableEyeTracking(false),
+	bEnableFaceTracking(false),
 	bEnableEyeTrackingMarker(false),
 	bUseAdvanceInterface(false),
 	bUseContentProtect(false),
@@ -32,14 +34,14 @@ UPicoXRSettings::UPicoXRSettings(const FObjectInitializer& ObjectInitializer)
 #endif
 }
 
-void UPicoXRSettings::PostInitProperties()
+void UPICOXRSettings::PostInitProperties()
 {
 	Super::PostInitProperties();
 	bUseHWsRGBEncoding = true;
 }
 
 #if WITH_EDITOR
-void UPicoXRSettings::PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent)
+void UPICOXRSettings::PostEditChangeProperty(FPropertyChangedEvent & PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	if (!bIsHMD3Dof ) {
@@ -52,7 +54,7 @@ void UPicoXRSettings::PostEditChangeProperty(FPropertyChangedEvent & PropertyCha
 	HandlesRGBHWSupport();
 }
 
-void UPicoXRSettings::HandlesRGBHWSupport()
+void UPICOXRSettings::HandlesRGBHWSupport()
 {
 	URendererSettings* const Settings = GetMutableDefault<URendererSettings>();
 	static auto* MobileUseHWsRGBEncodingCVAR = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Mobile.UseHWsRGBEncoding"));
@@ -69,10 +71,10 @@ void UPicoXRSettings::HandlesRGBHWSupport()
 	}
 }
 
-void UPicoXRSettings::ResetsRGBConfig()
+void UPICOXRSettings::ResetsRGBConfig()
 {
 	// To Prevent sRGB from being turned off by AndroidSetting
-	FEditorDelegates::RefreshAllBrowsers.AddUObject(this,&UPicoXRSettings::HandlesRGBHWSupport);
+	FEditorDelegates::RefreshAllBrowsers.AddUObject(this,&UPICOXRSettings::HandlesRGBHWSupport);
 }
 #endif
 

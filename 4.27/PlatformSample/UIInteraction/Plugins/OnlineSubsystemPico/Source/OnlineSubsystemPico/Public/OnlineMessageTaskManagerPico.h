@@ -134,7 +134,7 @@ class FOnlineAsyncTaskManagerPico : public FOnlineAsyncTaskManager
 private:
     TMap<ppfMessageType, FPicoMulticastMessageOnCompleteDelegate> NotificationMap;
 
-    TMap<ppfRequest, FOnlineAsyncTaskPico*> RequestTaskMap;
+    TMap<uint64, FOnlineAsyncTaskPico*> RequestTaskMap;
 
 protected:
 

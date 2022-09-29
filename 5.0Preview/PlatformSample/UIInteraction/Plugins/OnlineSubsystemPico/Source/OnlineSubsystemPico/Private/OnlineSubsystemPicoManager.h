@@ -17,6 +17,7 @@
 #include "PicoApplicationInterface.h"
 #include "ApplicationLifecycleInterface.h"
 #include "Pico_Leaderboard.h"
+#include "Pico_AssetFile.h"
 #include "OnlineSubsystemPicoManager.generated.h"
 /**
  * 
@@ -50,6 +51,16 @@ DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FRtcErrorDelegate, UOnlineSub
 DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FRtcConnectStateChangedDelegate, UOnlineSubsystemPicoManager, OnRtcConnectStateChangedDelegate, const FString&, StringMessage);
 DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FRtcUserStartAudioCaptureDelegate, UOnlineSubsystemPicoManager, OnRtcUserStartAudioCaptureDelegate, const FString&, StringMessage);
 DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FRtcUserStopAudioCaptureDelegate, UOnlineSubsystemPicoManager, OnRtcUserStopAudioCaptureDelegate, const FString&, StringMessage);
+
+// Rtc V2
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_ThreeParams(FRtcUserPublishInfoDelegate, UOnlineSubsystemPicoManager, OnRtcUserPublishInfoDelegate, const FString&, RoomId, const FString&, UserId, ERtcMediaStreamType, MediaStreamType);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_FourParams(FRtcUserUnPublishInfoDelegate, UOnlineSubsystemPicoManager, OnRtcUserUnPublishInfoDelegate, const FString&, RoomId, const FString&, UserId, ERtcMediaStreamType, MediaStreamType, ERtcStreamRemoveReason, Reason);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_FiveParams(FGetRtcStreamSyncInfoDelegate, UOnlineSubsystemPicoManager, OnGetRtcStreamSyncInfoDelegate, const FString&, RoomId, const FString&, UserId, ERtcStreamIndex, StreamIndex, ERtcSyncInfoStreamType, RtcSyncInfoStreamType, const FString&, Info);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_ThreeParams(FRtcMessageSendResultDelegate, UOnlineSubsystemPicoManager, OnRtcMessageSendResultDelegate, int64, MessageId, int32, Error, const FString&, RoomId);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_ThreeParams(FRtcBinaryMessageReceivedDelegate, UOnlineSubsystemPicoManager, OnRtcBinaryMessageReceivedDelegate, const FString&, RoomId, const FString&, UserId, const FString&, Info);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_ThreeParams(FRtcRoomMessageReceivedDelegate, UOnlineSubsystemPicoManager, OnRtcRoomMessageReceivedDelegateDelegate, const FString&, RoomId, const FString&, UserId, const FString&, Message);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_ThreeParams(FRtcUserMessageReceivedDelegate, UOnlineSubsystemPicoManager, OnRtcUserMessageReceivedDelegate, const FString&, RoomId, const FString&, UserId, const FString&, Message);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FRtcOnTokenWilExpireCallbackDelegate, UOnlineSubsystemPicoManager, OnRtcTokenWilExpireCallbackDelegate, const FString&, StringMessage);
 
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FOnlineManagerRtcGetTokenDelegate, FString, Token, bool, IsSuccessed, FString, ErrorMessage);
 
@@ -112,6 +123,9 @@ DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_TwoParams(FOnRoomInviteAcceptedNotifyD
 // Leaderboard
 DECLARE_DYNAMIC_DELEGATE_OneParam(FPicoManagerOnReadLeaderboardsCompleteDelegate, bool, bWasSuccessful);
 
+// AssetFile
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FAssetFileDownloadUpdateDelegate, UOnlineSubsystemPicoManager, OnAssetFileDownloadUpdateDelegate, UPico_AssetFileDownloadUpdate*, AssetFileDownloadUpdateObj);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FAssetFileDeleteForSafetyDelegate, UOnlineSubsystemPicoManager, OnAssetFileDeleteForSafetyDelegate, UPico_AssetFileDeleteForSafety*, AssetFileDeleteForSafetyObj);
 
 UCLASS()
 class UOnlineSubsystemPicoManager : public UObject
@@ -126,6 +140,8 @@ public:
 
     TSharedPtr<FRTCPicoUserInterface> RtcInterface;
     TSharedPtr<FPicoPresenceInterface> PresenceInterface;
+    TSharedPtr<FPicoAssetFileInterface> PicoAssetFileInterface;
+
     FOnGetTokenComplete RtcGetTokenCompleteDelegate;
     // Presence
     FOnPresenceClearComplete PresenceClearCompleteDelegate;
@@ -213,6 +229,16 @@ public:
     void OnRtcUserStartAudioCapture(const FString& StringMessage);
     void OnRtcUserStopAudioCapture(const FString& StringMessage);
 
+    // Rtc V2
+    void OnRtcUserPublishInfo(const FString& RoomId, const FString& UserId, ERtcMediaStreamType MediaStreamType);
+    void OnRtcUserUnPublishInfo(const FString& RoomId, const FString& UserId, ERtcMediaStreamType MediaStreamType, ERtcStreamRemoveReason Reason);
+    void OnGetRtcStreamSyncInfo(const FString& RoomId, const FString& UserId, ERtcStreamIndex StreamIndex, ERtcSyncInfoStreamType RtcSyncInfoStreamType, const FString& Info);
+    void OnRtcMessageSendResult(int64 MessageId, int32 Error, const FString& RoomId);
+    void OnRtcBinaryMessageReceived(const FString& RoomId, const FString& UserId, const FString& Info);
+    void OnRtcRoomMessageReceived(const FString& RoomId, const FString& UserId, const FString& Message);
+    void OnRtcUserMessageReceived(const FString& RoomId, const FString& UserId, const FString& Message);
+    void OnRtcTokenWilExpire(const FString& Message);
+
     //Presence Notify React
     void OnPresenceJoinIntentReceivedResult(const FString& DeeplinkMessage, const FString& DestinationApiName, const FString& LobbySessionId, const FString& MatchSessionId);
     void OnPresenceLeavententReceivedResult(const FString& DestinationApiName, const FString& LobbySessionId, const FString& MatchSessionId);
@@ -272,6 +298,30 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Rtc")
     FRtcUserStopAudioCaptureDelegate OnRtcUserStopAudioCaptureDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "Rtc")
+    FRtcUserPublishInfoDelegate OnRtcUserPublishInfoDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "Rtc")
+    FRtcUserUnPublishInfoDelegate OnRtcUserUnPublishInfoDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "Rtc")
+    FGetRtcStreamSyncInfoDelegate OnGetRtcStreamSyncInfoDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "Rtc")
+    FRtcMessageSendResultDelegate OnRtcMessageSendResultDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "Rtc")
+    FRtcBinaryMessageReceivedDelegate OnRtcBinaryMessageReceivedDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "Rtc")
+    FRtcRoomMessageReceivedDelegate OnRtcRoomMessageReceivedDelegateDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "Rtc")
+    FRtcUserMessageReceivedDelegate OnRtcUserMessageReceivedDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "Rtc")
+    FRtcOnTokenWilExpireCallbackDelegate OnRtcTokenWilExpireCallbackDelegate;
 
 
     // Game Notification Delegate
@@ -483,7 +533,7 @@ public:
     static FOnlineManagerLaunchOtherAppByPresenceDelegate LaunchOtherAppByPresenceDelegate;
     static FOnlineManagerGetVersionDelegate GetVersionDelegate;
 
-    bool LaunchOtherApp(UObject* WorldContextObject, const FString& AppID, const FString& Message, FOnlineManagerLaunchOtherAppDelegate InLaunchOtherAppDelegate);
+    bool LaunchOtherApp(UObject* WorldContextObject, const FString& PackageName, const FString& Message, FOnlineManagerLaunchOtherAppDelegate InLaunchOtherAppDelegate);
     void OnLaunchOtherAppComplete(const FString& Message, bool bIsSuccessed, const FString& ErrorMessage);
 
     bool GetVersion(UObject* WorldContextObject, FOnlineManagerGetVersionDelegate InGetVersionDelegate);
@@ -503,4 +553,14 @@ public:
     bool LogDeeplinkResult(UObject* WorldContextObject, const FString& TrackingID, ELaunchResult LaunchResult);
 
     // 
+
+    UPROPERTY(BlueprintAssignable, Category = "AssetFile")
+    FAssetFileDownloadUpdateDelegate OnAssetFileDownloadUpdateDelegate;
+
+    UPROPERTY(BlueprintAssignable, Category = "AssetFile")
+    FAssetFileDeleteForSafetyDelegate OnAssetFileDeleteForSafetyDelegate;
+
+    void OnAssetFileDownloadUpdate(UPico_AssetFileDownloadUpdate* AssetFileDownloadUpdateObj);
+
+    void OnAssetFileDeleteForSafety(UPico_AssetFileDeleteForSafety* AssetFileDeleteForSafetyObj);
 };

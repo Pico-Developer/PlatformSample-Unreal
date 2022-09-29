@@ -13,8 +13,9 @@
 #include "ApplicationLifecycleInterface.h"
 #include "Pico_IAP.h"
 #include "Pico_User.h"
-#include "Pico_Sport.h"
 #include "OnlineLeaderboardInterfacePico.h"
+#include "Pico_Sport.h"
+#include "Pico_AssetFile.h"
 #include "Pico_Achievements.h"
 
 
@@ -187,15 +188,20 @@ TSharedPtr<FPicoSportInterface> FOnlineSubsystemPico::GetPicoSportInterface() co
     return PicoSportInterface;
 }
 
+TSharedPtr<FPicoAssetFileInterface> FOnlineSubsystemPico::GetPicoAssetFileInterface() const
+{
+    return PicoAssetFileInterface;
+}
+
 FOnlineSessionPicoPtr FOnlineSubsystemPico::GetGameSessionInterface() const
 {
     return GameSessionInterface;
 }
+
 TSharedPtr<FPicoAchievementsInterface> FOnlineSubsystemPico::GetPicoAchievementsInterface() const
 {
-	return PicoAchievementsInterface;
+    return PicoAchievementsInterface;
 }
-
 
 bool FOnlineSubsystemPico::Init()
 {
@@ -223,13 +229,14 @@ bool FOnlineSubsystemPico::Init()
         PicoApplicationLifecycleInterface = MakeShareable(new FApplicationLifecycleInterface(*this));
         PicoIAPInterface = MakeShareable(new FPicoIAPInterface(*this));
         PicoUserInterface = MakeShareable(new FPicoUserInterface(*this));
-        GameSessionInterface = MakeShareable(new FOnlineSessionPico(*this));
+        PicoAssetFileInterface = MakeShareable(new FPicoAssetFileInterface(*this));
         PicoSportInterface = MakeShareable(new FPicoSportInterface(*this));
+
+        GameSessionInterface = MakeShareable(new FOnlineSessionPico(*this));
         GameSessionInterface->Uninitialize();
         GameSessionInterface->Initialize();
 		LeaderboardInterface = MakeShareable(new FOnlineLeaderboardPico(*this));
-		PicoAchievementsInterface = MakeShareable(new FPicoAchievementsInterface(*this));
-
+        PicoAchievementsInterface = MakeShareable(new FPicoAchievementsInterface(*this));
 
 #if WITH_EDITOR
         StartTicker();
@@ -257,8 +264,9 @@ bool FOnlineSubsystemPico::Shutdown()
     PicoUserInterface.Reset();
     GameSessionInterface.Reset();
 	LeaderboardInterface.Reset();
+    PicoAssetFileInterface.Reset();
     PicoSportInterface.Reset();
-	PicoAchievementsInterface.Reset();
+    PicoAchievementsInterface.Reset();
 
     if (OnlineAsyncTaskThreadRunnable)
     {

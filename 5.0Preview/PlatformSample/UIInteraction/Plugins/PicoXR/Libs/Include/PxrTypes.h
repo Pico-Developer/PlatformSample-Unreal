@@ -218,10 +218,10 @@ typedef struct PxrLayerHeader2_ {
     int              sensorFrameIndex;
     int              imageIndex;
     PxrPosef         headPose;
-    bool             useLayerBlend;
-    bool             useImageRect;
     PxrLayerShape    layerShape;
+    uint32_t         useLayerBlend;
     PxrLayerBlend    layerBlend;
+    uint32_t         useImageRect;
     PxrRecti         imageRect[2];
     uint64_t         reserved[4];
 } PxrLayerHeader2;
@@ -240,30 +240,30 @@ typedef struct PxrLayerProjection2_ {
 
 typedef struct PxrLayerQuad2_ {
     PxrLayerHeader2   header;
-    PxrPosef          pose;
-    float             size[2];
+    PxrPosef          pose[2];
+    PxrVector2f       size[2];
 } PxrLayerQuad2;
 
 typedef struct PxrLayerCylinder2_ {
     PxrLayerHeader2   header;
-    PxrPosef          pose;
-    float             radius;
-    float             centralAngle;
-    float             height;
+    PxrPosef          pose[2];
+    float             radius[2];
+    float             centralAngle[2];
+    float             height[2];
 } PxrLayerCylinder2;
 
 typedef struct PxrLayerEquirect2_ {
     PxrLayerHeader2   header;
-    PxrPosef          pose;
-    float             radius;
-    float             centralHorizontalAngle;
-    float             upperVerticalAngle;
-    float             lowerVerticalAngle;
+    PxrPosef          pose[2];
+    float             radius[2];
+    float             centralHorizontalAngle[2];
+    float             upperVerticalAngle[2];
+    float             lowerVerticalAngle[2];
 } PxrLayerEquirect2;
 
 typedef struct PxrLayerCube2_ {
     PxrLayerHeader2    header;
-    PxrPosef           pose;
+    PxrPosef           pose[2];
 } PxrLayerCube2;
 
 typedef struct PxrLayerProjection_ {
@@ -286,12 +286,13 @@ typedef struct PxrLayerCylinder_ {
 } PxrLayerCylinder;
 
 typedef struct PxrLayerEquirect_ {
-    PxrLayerHeader    header;
-    PxrPosef          pose;
-    float             radius;
-    float             centralHorizontalAngle;
-    float             upperVerticalAngle;
-    float             lowerVerticalAngle;
+    PxrLayerHeader2   header;
+    PxrPosef          pose[2];
+    float             radius[2];
+    float             scaleX[2];
+    float             scaleY[2];
+    float             biasX[2];
+    float             biasY[2];
 } PxrLayerEquirect;
 
 typedef struct PxrEventDataBaseHeader_ {

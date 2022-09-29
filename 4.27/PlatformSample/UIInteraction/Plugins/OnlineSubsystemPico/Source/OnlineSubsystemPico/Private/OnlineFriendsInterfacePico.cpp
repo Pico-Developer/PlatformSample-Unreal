@@ -193,7 +193,13 @@ bool FOnlineFriendsPico::RejectInvite(int32 LocalUserNum, const FUniqueNetId& Fr
 
 void FOnlineFriendsPico::SetFriendAlias(int32 LocalUserNum, const FUniqueNetId& FriendId, const FString& ListName, const FString& Alias, const FOnSetFriendAliasComplete& Delegate /*= FOnSetFriendAliasComplete()*/)
 {
+#if ENGINE_MAJOR_VERSION > 4
     FUniqueNetIdRef FriendIdRef = FriendId.AsShared();
+#elif ENGINE_MINOR_VERSION > 26
+    FUniqueNetIdRef FriendIdRef = FriendId.AsShared();
+#elif ENGINE_MINOR_VERSION > 24
+    TSharedRef<const FUniqueNetId> FriendIdRef = FriendId.AsShared();
+#endif
     PicoSubsystem.ExecuteNextTick
     (
         [LocalUserNum, FriendIdRef, ListName, Delegate]()
@@ -206,12 +212,18 @@ void FOnlineFriendsPico::SetFriendAlias(int32 LocalUserNum, const FUniqueNetId& 
 
 void FOnlineFriendsPico::DeleteFriendAlias(int32 LocalUserNum, const FUniqueNetId& FriendId, const FString& ListName, const FOnDeleteFriendAliasComplete& Delegate /*= FOnDeleteFriendAliasComplete()*/)
 {
+#if ENGINE_MAJOR_VERSION > 4
     FUniqueNetIdRef FriendIdRef = FriendId.AsShared();
+#elif ENGINE_MINOR_VERSION > 26
+    FUniqueNetIdRef FriendIdRef = FriendId.AsShared();
+#elif ENGINE_MINOR_VERSION > 24
+    TSharedRef<const FUniqueNetId> FriendIdRef = FriendId.AsShared();
+#endif
     PicoSubsystem.ExecuteNextTick
     (
         [LocalUserNum, FriendIdRef, ListName, Delegate]()
         {
-            UE_LOG_ONLINE_FRIEND(Warning, TEXT("FOnlineFriendsPico::SetFriendAlias is not implemented"));
+            UE_LOG_ONLINE_FRIEND(Warning, TEXT("FOnlineFriendsPico::DeleteFriendAlias is not implemented"));
             Delegate.ExecuteIfBound(LocalUserNum, *FriendIdRef, ListName, FOnlineError(EOnlineErrorResult::NotImplemented));
         }
     );

@@ -8,7 +8,6 @@
 #include <vector>
 #include <string>
 
-
 DEFINE_LOG_CATEGORY(PresenceInterface);
 
 FPicoPresenceInterface::FPicoPresenceInterface(FOnlineSubsystemPico& InSubsystem) :

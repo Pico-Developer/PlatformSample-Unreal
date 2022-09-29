@@ -9,12 +9,15 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine",
-				"UMG"
+				"Engine"
 			]
 		}
 	],
 	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true
+		},
 		{
 			"Name": "OnlineSubsystemPico",
 			"Enabled": true
@@ -71,7 +74,7 @@
 			]
 		},
 		{
-			"Name": "PicoXR",
+			"Name": "PICOXR",
 			"Enabled": true,
 			"SupportedTargetPlatforms": [
 				"Win64",

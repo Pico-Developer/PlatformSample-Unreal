@@ -28,6 +28,7 @@ DECLARE_DELEGATE_ThreeParams(FOnLaunchOtherAppComplete, const FString& /*String 
 DECLARE_DELEGATE_ThreeParams(FOnLaunchOtherAppByPresenceComplete, const FString& /*String Message*/, bool /*IsSuccessed*/, const FString& /*Error Message*/);
 DECLARE_DELEGATE_ThreeParams(FOnGetVersion, const FString& /*String Message*/, bool /*IsSuccessed*/, const FString& /*Error Message*/);
 
+// <summary>Pico Application interface class.</summary>
 class ONLINESUBSYSTEMPICO_API FPicoApplicationInterface
 {
 private:
@@ -42,7 +43,7 @@ public:
     /// Launches a different app in a user's library.
     /// @note If the user does not have that app installed, the user will be directed to that app's page on the Pico Store.
     /// </summary>
-    /// <param name ="AppID">The ID of the app to launch.</param> 
+    /// <param name ="PackageName">The package name of the app to launch.</param> 
     /// <param name ="Message">A message to be passed to the launched app.</param> 
     /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
     /// <returns>Bool: 
@@ -51,7 +52,7 @@ public:
     /// <li>`false`: failure</li>
     /// </ul>
     /// </returns>
-	bool LaunchOtherApp(const FString &AppID, const FString &Message, const FOnLaunchOtherAppComplete& Delegate = FOnLaunchOtherAppComplete());
+	bool LaunchOtherApp(const FString &PackageName, const FString &Message, const FOnLaunchOtherAppComplete& Delegate = FOnLaunchOtherAppComplete());
 	void OnQueryLaunchOtherAppComplete(ppfMessageHandle Message, bool bIsError, const FOnLaunchOtherAppComplete& Delegate);
 
 	bool GetVersion(const FOnGetVersion& Delegate = FOnGetVersion());
@@ -59,7 +60,7 @@ public:
 
     /// <summary>
     /// Launches a different app in a user's library.
-    /// @note If the user does not have that app installed, the user will be directed to that app's page in the Pico Store.
+    /// @note If the user does not have that app installed, the user will be directed to that app's page in the PICO Store.
     /// </summary>
     /// <param name ="AppID">The ID of the app to launch.</param> 
     /// <param name ="PackageName">The package name of the app to launch.</param> 
@@ -69,7 +70,7 @@ public:
     /// <param name ="MatchSessionId">The match session ID of the user's presence, which identifies all users within the same destination, such as maps and levels. Users with different lobby session IDs will have the same match session ID when playing the same match.</param> 
     /// <param name ="TrackId">The tracking ID of the app launch event.</param> 
     /// <param name ="Extra">Extra data defined by the developer.</param> 
-    /// <param name ="Delegate">Will be executed when the request has been complete.</param> 
+    /// <param name ="Delegate">Will be executed when the request has been completed.</param> 
     /// <returns>Bool: 
     /// <ul>
     /// <li>`true`: success</li>

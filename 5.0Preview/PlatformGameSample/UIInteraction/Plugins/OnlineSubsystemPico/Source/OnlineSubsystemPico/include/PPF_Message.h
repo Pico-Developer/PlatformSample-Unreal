@@ -1,4 +1,4 @@
-// This file is generated automatically. Please don't edit it.
+
 
 #ifndef PPF_MESSAGE_H
 #define PPF_MESSAGE_H
@@ -18,6 +18,28 @@
 #include "PPF_RtcRoomStats.h"
 #include "PPF_RtcUserJoinInfo.h"
 #include "PPF_RtcUserLeaveInfo.h"
+#include "PPF_RtcJoinRoomResult.h"
+#include "PPF_RtcLeaveRoomResult.h"
+#include "PPF_RtcRoomStats.h"
+#include "PPF_RtcUserJoinInfo.h"
+#include "PPF_RtcUserLeaveInfo.h"
+#include "PPF_RtcRoomWarn.h"
+#include "PPF_RtcRoomError.h"
+#include "PPF_RtcMuteInfo.h"
+#include "PPF_RtcAudioPlaybackDevice.h"
+#include "PPF_RtcMediaDeviceChangeInfo.h"
+#include "PPF_RtcLocalAudioPropertiesReport.h"
+#include "PPF_RtcRemoteAudioPropertiesReport.h"
+#include "PPF_RtcRoomMessageReceived.h"
+#include "PPF_RtcBinaryMessageReceived.h"
+#include "PPF_RtcStreamSyncInfo.h"
+#include "PPF_RtcVideoDeviceStateChangeInfo.h"
+#include "PPF_RtcFirstLocalVideoFrameCapturedInfo.h"
+#include "PPF_RtcLocalVideoSizeChangeInfo.h"
+#include "PPF_RtcScreenVideoFrameSendStateInfo.h"
+#include "PPF_RtcLocalVideoStateChangeInfo.h"
+#include "PPF_RtcUserPublishInfo.h"
+#include "PPF_RtcUserUnPublishInfo.h"
 #include "PPF_MatchmakingBrowseResult.h"
 #include "PPF_MatchmakingEnqueueResult.h"
 #include "PPF_MatchmakingEnqueueResultAndRoom.h"
@@ -35,6 +57,7 @@
 #include "PPF_RtcMediaDeviceChangeInfo.h"
 #include "PPF_RtcLocalAudioPropertiesReport.h"
 #include "PPF_RtcRemoteAudioPropertiesReport.h"
+#include "PPF_RtcMessageSendResult.h"
 #include "PPF_PlatformGameInitialize.h"
 #include "PPF_PlatformGameNotification.h"
 #include "PPF_Destination.h"
@@ -51,14 +74,24 @@
 #include "PPF_LeaderboardArray.h"
 #include "PPF_LeaderboardUpdateStatus.h"
 #include "PPF_LeaderboardEntryArray.h"
+#include "PPF_AchievementDefinitionArray.h"
+#include "PPF_AchievementProgressArray.h"
+#include "PPF_AchievementUpdate.h"
 #include "PPF_PurchaseArray.h"
 #include "PPF_ProductArray.h"
 #include "PPF_Purchase.h"
 #include "PPF_PermissionResult.h"
-#include "PPF_AchievementDefinitionArray.h"
-#include "PPF_AchievementProgressArray.h"
-#include "PPF_AchievementUpdate.h"
 
+// dlc start
+#include "PPF_AssetDetails.h"
+#include "PPF_AssetDetailsArray.h"
+#include "PPF_AssetFileDeleteResult.h"
+#include "PPF_AssetFileDownloadCancelResult.h"
+#include "PPF_AssetFileDownloadResult.h"
+#include "PPF_AssetFileDownloadUpdate.h"
+#include "PPF_AssetFileDeleteForSafety.h"
+#include "PPF_AssetStatus.h"
+// dlc end
 /// @file PPF_Message.h
 /// @ingroup Global
 
@@ -96,6 +129,29 @@ PPF_PUBLIC_FUNCTION(ppfRtcRemoteAudioPropertiesReportHandle)     ppf_Message_Get
 PPF_PUBLIC_FUNCTION(ppfRtcRoomMessageReceivedHandle) ppf_Message_GetRtcRoomMessageReceived(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfRtcUserMessageReceivedHandle) ppf_Message_GetRtcUserMessageReceived(const ppfMessageHandle obj);
 
+PPF_PUBLIC_FUNCTION(ppfRtcBinaryMessageReceivedHandle) ppf_Message_GetRtcBinaryMessageReceived(const ppfMessageHandle obj);
+
+
+PPF_PUBLIC_FUNCTION(ppfRtcStreamSyncInfoHandle) ppf_Message_GetRtcStreamSyncInfo(const ppfMessageHandle obj);
+
+
+PPF_PUBLIC_FUNCTION(ppfRtcVideoDeviceStateChangeInfoHandle) ppf_Message_GetRtcVideoDeviceStateChangeInfo(const ppfMessageHandle obj);
+
+
+PPF_PUBLIC_FUNCTION(ppfRtcFirstLocalVideoFrameCapturedInfoHandle) ppf_Message_GetRtcFirstLocalVideoFrameCapturedInfo(const ppfMessageHandle obj);
+
+
+PPF_PUBLIC_FUNCTION(ppfRtcLocalVideoSizeChangeInfoHandle) ppf_Message_GetRtcLocalVideoSizeChangeInfo(const ppfMessageHandle obj);
+
+
+PPF_PUBLIC_FUNCTION(ppfRtcScreenVideoFrameSendStateInfoHandle) ppf_Message_GetRtcScreenVideoFrameSendStateInfo(const ppfMessageHandle obj);
+
+PPF_PUBLIC_FUNCTION(ppfRtcLocalVideoStateChangeInfoHandle) ppf_Message_GetRtcLocalVideoStateChangeInfo(const ppfMessageHandle obj);
+
+PPF_PUBLIC_FUNCTION(ppfRtcMessageSendResultHandle) ppf_Message_GetRtcMessageSendResult(const ppfMessageHandle obj);
+
+PPF_PUBLIC_FUNCTION(ppfRtcUserPublishInfoHandle) ppf_Message_GetRtcUserPublishInfo(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfRtcUserUnPublishInfoHandle) ppf_Message_GetRtcUserUnPublishInfo(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfMatchmakingAdminSnapshotHandle)           ppf_Message_GetMatchmakingAdminSnapshot(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfMatchmakingBrowseResultHandle)            ppf_Message_GetMatchmakingBrowseResult(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfMatchmakingEnqueueResultHandle)           ppf_Message_GetMatchmakingEnqueueResult(const ppfMessageHandle obj);
@@ -116,6 +172,9 @@ PPF_PUBLIC_FUNCTION(ppfRoomInviteNotificationArrayHandle)        ppf_Message_Get
 PPF_PUBLIC_FUNCTION(ppfLeaderboardArrayHandle)                   ppf_Message_GetLeaderboardArray(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfLeaderboardUpdateStatusHandle)            ppf_Message_GetLeaderboardUpdateStatus(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfLeaderboardEntryArrayHandle)              ppf_Message_GetLeaderboardEntryArray(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAchievementDefinitionArrayHandle)         ppf_Message_GetAchievementDefinitionArray(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAchievementProgressArrayHandle)           ppf_Message_GetAchievementProgressArray(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAchievementUpdateHandle)                  ppf_Message_GetAchievementUpdate(const ppfMessageHandle obj);
 
 PPF_PUBLIC_FUNCTION(ppfPurchaseArrayHandle) ppf_Message_GetPurchaseArray(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfProductArrayHandle) ppf_Message_GetProductArray(const ppfMessageHandle obj);
@@ -127,9 +186,14 @@ PPF_PUBLIC_FUNCTION(ppfSportUserInfoHandle) ppf_Message_GetSportUserInfo(const p
 PPF_PUBLIC_FUNCTION(ppfSportDailySummaryArrayHandle) ppf_Message_GetSportDailySummaryArray(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfSportSummaryHandle) ppf_Message_GetSportSummary(const ppfMessageHandle obj);
 
-PPF_PUBLIC_FUNCTION(ppfAchievementDefinitionArrayHandle)         ppf_Message_GetAchievementDefinitionArray(const ppfMessageHandle obj);
-PPF_PUBLIC_FUNCTION(ppfAchievementProgressArrayHandle)           ppf_Message_GetAchievementProgressArray(const ppfMessageHandle obj);
-PPF_PUBLIC_FUNCTION(ppfAchievementUpdateHandle)                  ppf_Message_GetAchievementUpdate(const ppfMessageHandle obj);
-
+// dlc
+PPF_PUBLIC_FUNCTION(ppfAssetDetailsHandle)                       ppf_Message_GetAssetDetails(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAssetDetailsArrayHandle)                  ppf_Message_GetAssetDetailsArray(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAssetFileDeleteResultHandle)              ppf_Message_GetAssetFileDeleteResult(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAssetFileDownloadCancelResultHandle)      ppf_Message_GetAssetFileDownloadCancelResult(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAssetFileDownloadResultHandle)            ppf_Message_GetAssetFileDownloadResult(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAssetFileDownloadUpdateHandle)            ppf_Message_GetAssetFileDownloadUpdate(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAssetStatusHandle)                        ppf_Message_GetAssetStatus(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfAssetFileDeleteForSafetyHandle)           ppf_Message_GetAssetFileDeleteForSafety(const ppfMessageHandle obj);
 #endif
 

@@ -12,21 +12,21 @@
 /**
 * A pixel shader for rendering a textured screen element.
 */
-class FPicoCubemapPS : public FGlobalShader
+class FPICOCubemapPS : public FGlobalShader
 {
-	DECLARE_EXPORTED_SHADER_TYPE(FPicoCubemapPS, Global, PICOXRHMD_API);
+	DECLARE_EXPORTED_SHADER_TYPE(FPICOCubemapPS, Global, PICOXRHMD_API);
 public:
 
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters) { return true; }
 
-	FPicoCubemapPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer) :
+	FPICOCubemapPS(const ShaderMetaType::CompiledShaderInitializerType& Initializer) :
 		FGlobalShader(Initializer)
 	{
 		InTexture.Bind(Initializer.ParameterMap, TEXT("InTextureCube"), SPF_Mandatory);
 		InTextureSampler.Bind(Initializer.ParameterMap, TEXT("InTextureSampler"));
 		InFaceIndexParameter.Bind(Initializer.ParameterMap, TEXT("CubeFaceIndex"));
 	}
-	FPicoCubemapPS() {}
+	FPICOCubemapPS() {}
 
 	void SetParameters(FRHICommandList& RHICmdList, const FTexture* Texture, int FaceIndex)
 	{

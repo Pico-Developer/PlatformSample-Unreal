@@ -4,7 +4,7 @@
 #include "PicoGameInstance.h"
 #include "OnlineSubsystem.h"
 #include "Pico_Leaderboard.h"
-#include "UObject/CoreOnline.h"
+
 
 UPicoGameInstance::UPicoGameInstance()
 {
@@ -417,9 +417,9 @@ void UPicoGameInstance::OnGameSessionStateChanged(const FString& Log)
     UE_LOG_ONLINE(Display, TEXT("PPF_GAME %s"), *Log);
     OnGameSessionStateChangedDelegates.Broadcast(FString::Printf(TEXT("%s\n"), *Log));
 
- //    FString TextPath = FPaths::ProjectPersistentDownloadDir() + TEXT("Log-PicoGameInstance.txt");
-	// FString WriteLog = FString::Printf(TEXT("%s\n"), *Log);
- //    FFileHelper::SaveStringToFile(*WriteLog, *TextPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
+    //FString TextPath = FPaths::ProjectPersistentDownloadDir() + TEXT("Log-PicoGameInstance.txt");
+	//FString WriteLog = FString::Printf(TEXT("%s\n"), *Log);
+    //FFileHelper::SaveStringToFile(*WriteLog, *TextPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
 }
 void UPicoGameInstance::OnGameConnectionComplete(int Result, bool bWasSuccessful)
 {
@@ -484,7 +484,11 @@ void UPicoGameInstance::OnFindSessionComplete(bool Result)
     OnGameSessionStateChanged(FString::Printf(TEXT("OnFindSessionComplete Result: %d, SearchResults.Num: %d, SearchResults: "), Result, SearchSettings->SearchResults.Num()));
     for (int i = 0; i < SearchSettings->SearchResults.Num(); i++)
     {
+#if ENGINE_MINOR_VERSION > 26
         LogSessionData(SearchSettings->SearchResults[i].Session);
+#elif ENGINE_MINOR_VERSION > 24
+        OnGameSessionStateChanged(FString::Printf(TEXT("OnFindSessionComplete RoomId: %s"), *SearchSettings->SearchResults[i].Session.SessionInfo->ToString()));
+#endif       
     }
 }
 
@@ -1012,9 +1016,19 @@ bool UPicoGameInstance::FindSessionById(const FString& SearchingUserId, const FS
     auto SearchingUserIdPtr = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(SearchingUserId).ToSharedRef();
     auto RoomIdPtr = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(RoomId).ToSharedRef();
     OnGameSessionStateChanged(FString::Printf(TEXT("FindSessionById SearchingUserId: %s, RoomId: %s"), *SearchingUserIdPtr->ToString(), *RoomIdPtr->ToString()));
+
+#if ENGINE_MAJOR_VERSION > 4
+    auto FriendId = FUniqueNetIdString::EmptyId();
+    OnFindSessionByIdCompleteDelegate = FOnSingleSessionResultCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnFindSessionByIdComplete);
+    auto Result = GameInterface->FindSessionById(SearchingUserIdPtr.Get(), RoomIdPtr.Get(), FriendId.Get(), CompleteDelegate);
+#elif ENGINE_MINOR_VERSION > 24
     FUniqueNetIdString FriendId = FUniqueNetIdString();
     OnFindSessionByIdCompleteDelegate = FOnSingleSessionResultCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnFindSessionByIdComplete);
     auto Result = GameInterface->FindSessionById(SearchingUserIdPtr.Get(), RoomIdPtr.Get(), FriendId, CompleteDelegate);
+#endif
+
+
+
     OnGameSessionStateChanged(FString::Printf(TEXT("FindSessionById ExecuteResult: %d"), Result));
     return Result;
 }

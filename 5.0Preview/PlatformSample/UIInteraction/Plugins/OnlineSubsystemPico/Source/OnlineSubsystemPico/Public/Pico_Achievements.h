@@ -41,6 +41,7 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetProgressByName, bool, bIsError, const F
  *  @{
  */
 
+/// @brief PicoAchievementsInterface class.
 class ONLINESUBSYSTEMPICO_API FPicoAchievementsInterface
 {
 private:
@@ -59,13 +60,18 @@ public:
     FGetDefinitionsByName GetDefinitionsByNameDelegate;
     FGetProgressByName GetProgressByNameDelegate;
 
-    /// <summary>Add 'count' to the achievement with the given name. This must be a COUNT
-    /// achievement. The largest number that is supported by this method is the max
-    /// value of a signed 64-bit integer. If the number is larger than that, it is
-    /// clamped to that max value before being passed to the servers.</summary>
-    /// <param name="name">The name of the Achievement.</param>
-    /// <param name="count">The count you want to add.</param>
-    /// <param name="extraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <summary>Adds a count to a specified count achievement. The count will be added to the current count,
+    /// for example, if the current count is 1 and the count you would like to add is 7, the final count will be 8 if the request succeeds.
+    /// @note Available to count achievements only.
+    /// </summary>
+    /// <param name="Name">The API name of the achievement.</param>
+    /// <param name="Count">The count you want to add. The largest count supported by this function is the maximum value of a signed 64-bit integer.
+    /// If the count is larger than that, it is clamped to that maximum value before being passed to the servers.
+    /// </param>
+    /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <param name="InAddCountDelegate">The API requests to do an AddCount operation,
+    /// which is processed by the server and returned to the client as a 'success' or 'failure', and possibly other data.
+    /// </param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -74,10 +80,15 @@ public:
     /// </returns>
     bool AddCount(const FString& Name, const int64& Count, const FString& ExtraData, FAddCount InAddCountDelegate);
 
-    /// <summary>Unlock fields of a BITFIELD achievement.</summary>
-    /// <param name="name">The name of the achievement to unlock.</param>
-    /// <param name="fields">A string containing either '0' or '1' characters. Every '1' will unlock the field in the corresponding position.</param>
-    /// <param name="extraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <summary>Unlocks the bit(s) of a specified bitfield achievement. The status of the bit(s) is then unchangeable.
+    /// @note Available to bitfield achievements only.
+    /// </summary>
+    /// <param name="Name">The API name of the achievement to unlock bit(s) for.</param>
+    /// <param name="Fields">A string containing either '0' or '1' characters, for example '100011'.
+    /// Every '1' will unlock a bit in the corresponding position of a bitfield.
+    /// </param>
+    /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <param name="InAddFieldsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -86,10 +97,10 @@ public:
     /// </returns>
     bool AddFields(const FString& Name, const FString& Fields, const FString& ExtraData, FAddFields InAddFieldsCallback);
 
-    /// <summary>Unlock the achievement with the given name. This can be of any achievement
-    /// type.</summary>
-    /// <param name="name">The name of the achievement you want to unlock.</param>
-    /// <param name="extraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <summary>Unlocks a specified achievement of any type even if the target for unlocking this achievement is not reached.</summary>
+    /// <param name="Name">The API name of the achievement to unlock.</param>
+    /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <param name="InUnlockCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -98,9 +109,12 @@ public:
     /// </returns>
     bool Unlock(const FString& Name, const FString& ExtraData, FUnlock InUnlockCallback);
 
-    /// <summary>Request all achievement definitions for the app.</summary>
-    /// <param name="pageIdx">The start index of the pages.</param>
-    /// <param name="pageSize">The size of the page.</param>
+    /// <summary>Gets the information about all achievements,
+    /// including API names, descriptions, types, the targets which must be reached to unlock those achievements, and more.
+    /// </summary>
+    /// <param name="PageIndex">The start index of the pages.</param>
+    /// <param name="PageSize">The size of the page.</param>
+    /// <param name="InGetAllDefinitionsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -109,9 +123,13 @@ public:
     /// </returns>
     bool GetAllDefinitions(int32 PageIndex, int32 PageSize, FGetAllDefinitions InGetAllDefinitionsCallback);
 
-    /// <summary>Request the progress for the user on all achievements in the app.</summary>
-    /// <param name="pageIdx">The start index of the pages.</param>
-    /// <param name="pageSize">The size of the page.</param>
+    /// <summary>Gets the user's progress on all achievements,
+    /// including API names, whether or not the achievements are unlocked, the time at which they were unlocked, achievement types and,
+    /// depending on the type, the progress made towards unlocking them, and more.
+    /// </summary>
+    /// <param name="PageIndex">The start index of the pages.</param>
+    /// <param name="PageSize">The size of the page.</param>
+    /// <param name="InGetAllProgressCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -120,8 +138,11 @@ public:
     /// </returns>
     bool GetAllProgress(int32 PageIndex, int32 PageSize, FGetAllProgress InGetAllProgressCallback);
 
-    /// <summary>Request the achievement definitions that match the specified names.</summary>
-    /// <param name="names">The names of the achievement you want to get.</param>
+    /// <summary>Gets the information about specified achievements,
+    /// including API names, descriptions, types, the targets which must be reached to unlock those achievements, and more.
+    /// </summary>
+    /// <param name="NameArray">The API names of the achievements.</param>
+    /// <param name="InGetDefinitionsByNameCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -130,8 +151,12 @@ public:
     /// </returns>
     bool GetDefinitionsByName(const TArray<FString>& NameArray, FGetDefinitionsByName InGetDefinitionsByNameCallback);
 
-    /// <summary>Request the user's progress on the specified achievements</summary>
-    /// <param name="names">The names of the achievement you want to get.</param>
+    /// <summary>Gets the user's progress on specified achievements,
+    /// including API names, whether or not the achievements are unlocked, the time at which they were unlocked, achievement types and,
+    /// depending on the type, the progress made towards unlocking them, and more.
+    /// </summary>
+    /// <param name="NameArray">The API names of the achievements.</param>
+    /// <param name="InGetProgressByNameCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -155,6 +180,7 @@ public:
  *  @{
  */
 
+/// @brief OnlinePicoAchievements Blueprint Function class.
 UCLASS()
 class ONLINESUBSYSTEMPICO_API UOnlinePicoAchievementsFunction : public UBlueprintFunctionLibrary
 {
@@ -163,15 +189,17 @@ class ONLINESUBSYSTEMPICO_API UOnlinePicoAchievementsFunction : public UBlueprin
 
 public:
 
-    /// <summary>Add 'count' to the achievement with the given name. This must be a COUNT
-    /// achievement. The largest number that is supported by this method is the max
-    /// value of a signed 64-bit integer. If the number is larger than that, it is
-    /// clamped to that max value before being passed to the servers.</summary>
+    /// <summary>Adds a count to a specified count achievement. The count will be added to the current count,
+    /// for example, if the current count is 1 and the count you would like to add is 7, the final count will be 8 if the request succeeds.
+    /// @note Available to count achievements only.
+    /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="name">The name of the Achievement.</param>
-    /// <param name="count">The count you want to add.</param>
-    /// <param name="extraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
-    /// <param name="InAddCountCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="Name">The API name of the achievement.</param>
+    /// <param name="Count">The count you want to add. The largest count supported by this function is the maximum value of a signed 64-bit integer.
+    /// If the count is larger than that, it is clamped to that maximum value before being passed to the servers.
+    /// </param>
+    /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <param name="InAddCountCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -181,12 +209,16 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoAddCount(UObject* WorldContextObject, const FString& Name, const FString& Count, const FString& ExtraData, FAddCount InAddCountCallback);
 
-    /// <summary>Unlock fields of a BITFIELD achievement.</summary>
+    /// <summary>Unlocks the bit(s) of a specified bitfield achievement. The status of the bit(s) is then unchangeable.
+    /// @note Available to bitfield achievements only.
+    /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="name">The name of the achievement to unlock.</param>
-    /// <param name="fields">A string containing either '0' or '1' characters. Every '1' will unlock the field in the corresponding position.</param>
-    /// <param name="extraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
-    /// <param name="InAddFieldsCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="Name">The API name of the achievement to unlock bit(s) for.</param>
+    /// <param name="Fields">A string containing either '0' or '1' characters, for example '100011'.
+    /// Every '1' will unlock a bit in the corresponding position of a bitfield.
+    /// </param>
+    /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <param name="InAddFieldsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -196,12 +228,12 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoAddFields(UObject* WorldContextObject, const FString& Name, const FString& Fields, const FString& ExtraData, FAddFields InAddFieldsCallback);
 
-    /// <summary>Unlock the achievement with the given name. This can be of any achievement
-    /// type.</summary>
+    /// <summary>Unlocks a specified achievement of any type even if the target for unlocking this achievement is not reached.
+    /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="name">The name of the achievement you want to unlock.</param>
-    /// <param name="extraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
-    /// <param name="InUnlockCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="Name">The API name of the achievement to unlock.</param>
+    /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
+    /// <param name="InUnlockCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -211,11 +243,13 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoUnlock(UObject* WorldContextObject, const FString& Name, const FString& ExtraData, FUnlock InUnlockCallback);
 
-    /// <summary>Request all achievement definitions for the app.</summary>
+    /// <summary>Gets the information about all achievements,
+    /// including API names, descriptions, types, the targets which must be reached to unlock those achievements, and more.
+    /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="pageIdx">The start index of the pages.</param>
-    /// <param name="pageSize">The size of the page.</param>
-    /// <param name="InGetAllDefinitionsCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="PageIndex">The start index of the pages.</param>
+    /// <param name="PageSize">The size of the page.</param>
+    /// <param name="InGetAllDefinitionsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -225,11 +259,14 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoGetAllDefinitions(UObject* WorldContextObject, int32 PageIndex, int32 PageSize, FGetAllDefinitions InGetAllDefinitionsCallback);
 
-    /// <summary>Request the progress for the user on all achievements in the app.</summary>
+    /// <summary>Gets the user's progress on all achievements,
+    /// including API names, whether or not the achievements are unlocked, the time at which they were unlocked, achievement types and,
+    /// depending on the type, the progress made towards unlocking them, and more.
+    /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="pageIdx">The start index of the pages.</param>
-    /// <param name="pageSize">The size of the page.</param>
-    /// <param name="InGetAllProgressCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="PageIndex">The start index of the pages.</param>
+    /// <param name="PageSize">The size of the page.</param>
+    /// <param name="InGetAllProgressCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -239,10 +276,12 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoGetAllProgress(UObject* WorldContextObject, int32 PageIndex, int32 PageSize, FGetAllProgress InGetAllProgressCallback);
 
-    /// <summary>Request the achievement definitions that match the specified names.</summary>
+    /// <summary>Gets the information about specified achievements,
+    /// including API names, descriptions, types, the targets which must be reached to unlock those achievements, and more.
+    /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="names">The names of the achievement you want to get.</param>
-    /// <param name="InGetDefinitionsByNameCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="NameArray">The API names of the achievements.</param>
+    /// <param name="InGetDefinitionsByNameCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>
@@ -252,10 +291,13 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoGetDefinitionsByName(UObject* WorldContextObject, const TArray<FString>& NameArray, FGetDefinitionsByName InGetDefinitionsByNameCallback);
 
-    /// <summary>Request the user's progress on the specified achievements</summary>
+    /// <summary>Gets the user's progress on specified achievements,
+    /// including API names, whether or not the achievements are unlocked, the time at which they were unlocked, achievement types and,
+    /// depending on the type, the progress made towards unlocking them, and more.
+    /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
-    /// <param name="names">The names of the achievement you want to get.</param>
-    /// <param name="InGetProgressByNameCallback">Will be executed when the request has been complete. Delegate will contain the requested object class.</param>
+    /// <param name="NameArray">The API names of the achievements.</param>
+    /// <param name="InGetProgressByNameCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
     /// <returns>Bool:
     /// <ul>
     /// <li>`true`: success</li>

@@ -69,38 +69,6 @@ public:
 
 void FOnlineSubsystemPicoModule::StartupModule()
 {
-//	UE_LOG_ONLINE(Log, TEXT("Pico Module Startup"));
-//	FString BaseDir = IPluginManager::Get().FindPlugin("OnlineSubsystemPico")->GetBaseDir();
-//	FString LibraryPath;
-//	FString BuildDir = FPaths::ProjectDir() + TEXT("Build/");
-//	FString Projectdir = FPaths::ProjectDir();
-//	if (!FPaths::DirectoryExists(BuildDir))
-//	{
-//		if (FPaths::DirectoryExists(FPaths::ProjectDir()))
-//		{
-//			UE_LOG_ONLINE(Log, TEXT("No Build Dir!, &s"), *Projectdir);
-//		}
-//		UE_LOG_ONLINE(Log, TEXT("No Build Dir!"));
-//	}
-//	else
-//	{
-//		FString LibsPath = BuildDir + TEXT("libs/armeabi-v7a/");
-//		if (!FPaths::DirectoryExists(LibsPath))
-//		{
-//			UE_LOG_ONLINE(Log, TEXT("No Lib Dir!"));
-//		}
-//	}
-//#if PLATFORM_ANDROID
-//	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/OnlineSubsystemPico/lib/armeabi-v7a/libpxrplatformloader.so"));
-//	if (FPaths::FileExists(LibraryPath))
-//	{
-//		ExampleLibraryHandle = FPlatformProcess::GetDllHandle(*LibraryPath);
-//	}
-//	else
-//	{
-//		UE_LOG_ONLINE(Log, TEXT("Open So Failed!"));
-//	}
-//#endif
     PicoFactory = new FOnlineFactoryPico();
     PicoFactory->CreateSubsystem(FName(TEXT("Pico")));
     // Create and register our singleton factory with the main online subsystem for easy access
@@ -118,16 +86,6 @@ void FOnlineSubsystemPicoModule::ShutdownModule()
     delete PicoFactory;
     PicoFactory = nullptr;
 	UnregisterSettings();
-	//if (ExampleLibraryHandle)
-	//{
- //       FOnlineSubsystemModule& PSS = FModuleManager::GetModuleChecked<FOnlineSubsystemModule>("OnlineSubsystem");
- //       PSS.UnregisterPlatformService(PICO_SUBSYSTEM);
- //       FPlatformProcess::FreeDllHandle(ExampleLibraryHandle);
- //       ExampleLibraryHandle = nullptr;
- //       delete PicoFactory;
- //       PicoFactory = nullptr;
-	//}
-
 }
 
 void FOnlineSubsystemPicoModule::RegisterSettings()

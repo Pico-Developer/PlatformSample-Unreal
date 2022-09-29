@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "3.0",
+	"VersionName": "4.0",
 	"FriendlyName": "OnlineSubsystemPico",
 	"Description": "",
   "Category": "OnlineSubsystem",
@@ -10,7 +10,7 @@
   "DocsURL": "http://sdk.picovr.com/docs/UnrealSDK/cn/index.html",
 	"MarketplaceURL": "",
 	"SupportURL": "",
-	"EngineVersion": "4.27.0",
+	"EngineVersion": "",
 	"CanContainContent": true,
 	"Installed": true,
 	"Modules": [

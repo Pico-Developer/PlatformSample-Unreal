@@ -6,7 +6,7 @@
 class FDelayDeleteLayerManager
 {
 public:
-	void AddLayerToDeferredDeletionQueue(const FPicoLayerPtr& ptr);
+	void AddLayerToDeferredDeletionQueue(const FPICOLayerPtr& ptr);
 	void AddPxrLayerToDeferredDeletionQueue(const uint32 layerID);
 	void HandleLayerDeferredDeletionQueue_RenderThread(bool bDeleteImmediately = false);
 
@@ -19,7 +19,7 @@ private:
 			PxrLayer
 		};
 
-		FPicoLayerPtr Layer;
+		FPICOLayerPtr Layer;
 		uint32 PxrLayerId;
 		
 		uint32 FrameEnqueued;

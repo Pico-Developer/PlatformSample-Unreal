@@ -160,12 +160,12 @@ bool UOnlinePicoSportFunction::GetSportUserInfo(UObject* WorldContextObject, FGe
     }
 }
 
-int64 UOnlinePicoSportFunction::ConvertDateTimeToInt64(FDateTime InDataTime)
+int64 UOnlinePicoSportFunction::ConvertDateTimeToInt64(FDateTime InDateTime)
 {
     // ms
     FTimespan DiffTicks = FDateTime::Now() - FDateTime::UtcNow();
-    InDataTime = InDataTime.operator-(DiffTicks);
-    return InDataTime.ToUnixTimestamp() * 1000;
+    InDateTime = InDateTime.operator-(DiffTicks);
+    return InDateTime.ToUnixTimestamp() * 1000;
 }
 
 

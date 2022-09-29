@@ -2,7 +2,11 @@
 
 #include "PicoUpdateSessionCallbackProxy.h"
 #include "OnlineSubsystemPicoPrivate.h"
+#if ENGINE_MAJOR_VERSION > 4
+#include "Online/CoreOnline.h"
+#elif ENGINE_MINOR_VERSION > 24
 #include "UObject/CoreOnline.h"
+#endif
 #include "Online.h"
 #include "OnlineSessionInterfacePico.h"
 
@@ -31,7 +35,12 @@ void UPicoUpdateSessionCallbackProxy::Activate()
 
 		FOnlineSessionSettings Settings;
 		Settings.bShouldAdvertise = bShouldEnqueueInMatchmakingPool;
+#if ENGINE_MAJOR_VERSION > 4
+		PicoSessionInterface->UpdateSession(NAME_GameSession, Settings);
+#elif ENGINE_MINOR_VERSION > 24
 		PicoSessionInterface->UpdateSession(GameSessionName, Settings);
+#endif
+
 	}
 	else
 	{

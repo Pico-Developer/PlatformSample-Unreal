@@ -43,9 +43,9 @@ FPxrLayer::~FPxrLayer()
 uint64_t OverlayImages[2] = {};
 uint64_t OverlayNativeImages[2][3] = {};
 
-uint32 FPicoXRStereoLayer::PxrLayerIDCounter = 0;
+uint32 FPICOXRStereoLayer::PxrLayerIDCounter = 0;
 
-FPicoXRStereoLayer::FPicoXRStereoLayer(FPicoXRHMD* InHMDDevice, uint32 InPXRLayerId, const IStereoLayers::FLayerDesc& InDesc)
+FPICOXRStereoLayer::FPICOXRStereoLayer(FPICOXRHMD* InHMDDevice, uint32 InPXRLayerId, const IStereoLayers::FLayerDesc& InDesc)
 	: bSplashLayer(false)
 	, bSplashBlackProjectionLayer(false)
 	, bMRCLayer(false)
@@ -57,7 +57,7 @@ FPicoXRStereoLayer::FPicoXRStereoLayer(FPicoXRHMD* InHMDDevice, uint32 InPXRLaye
     , UnderlayActor(NULL)
     , PxrLayer(nullptr)
 {
-    PXR_LOGD(PxrUnreal, "FPicoXRStereoLayer with ID=%d", ID);
+    PXR_LOGD(PxrUnreal, "FPICOXRStereoLayer with ID=%d", ID);
 
 #if PLATFORM_ANDROID
 	FMemory::Memzero(PxrLayerCreateParam);
@@ -66,7 +66,7 @@ FPicoXRStereoLayer::FPicoXRStereoLayer(FPicoXRHMD* InHMDDevice, uint32 InPXRLaye
     SetPXRLayerDesc(InDesc);
 }
 
-FPicoXRStereoLayer::FPicoXRStereoLayer(const FPicoXRStereoLayer& InPXRLayer)
+FPICOXRStereoLayer::FPICOXRStereoLayer(const FPICOXRStereoLayer& InPXRLayer)
     : bSplashLayer(InPXRLayer.bSplashLayer)
 	, bSplashBlackProjectionLayer(InPXRLayer.bSplashBlackProjectionLayer)
     , bMRCLayer(InPXRLayer.bMRCLayer)
@@ -87,16 +87,16 @@ FPicoXRStereoLayer::FPicoXRStereoLayer(const FPicoXRStereoLayer& InPXRLayer)
 #endif
 }
 
-FPicoXRStereoLayer::~FPicoXRStereoLayer()
+FPICOXRStereoLayer::~FPICOXRStereoLayer()
 {
 }
 
-TSharedPtr<FPicoXRStereoLayer, ESPMode::ThreadSafe> FPicoXRStereoLayer::CloneMyself() const
+TSharedPtr<FPICOXRStereoLayer, ESPMode::ThreadSafe> FPICOXRStereoLayer::CloneMyself() const
 {
-	return MakeShareable(new FPicoXRStereoLayer(*this));
+	return MakeShareable(new FPICOXRStereoLayer(*this));
 }
 
-void FPicoXRStereoLayer::SetPXRLayerDesc(const IStereoLayers::FLayerDesc& InDesc)
+void FPICOXRStereoLayer::SetPXRLayerDesc(const IStereoLayers::FLayerDesc& InDesc)
 {
 	if (LayerDesc.Texture != InDesc.Texture || LayerDesc.LeftTexture != InDesc.LeftTexture)
 	{
@@ -107,11 +107,11 @@ void FPicoXRStereoLayer::SetPXRLayerDesc(const IStereoLayers::FLayerDesc& InDesc
 	ManageUnderlayComponent();
 }
 
-void FPicoXRStereoLayer::ManageUnderlayComponent()
+void FPICOXRStereoLayer::ManageUnderlayComponent()
 {
 	if (IsLayerSupportDepth())
 	{
-		const FString UnderlayNameStr = FString::Printf(TEXT("PicoUnderlay_%d"), ID);
+		const FString UnderlayNameStr = FString::Printf(TEXT("PICOUnderlay_%d"), ID);
 		const FName UnderlayComponentName(*UnderlayNameStr);
 		if (UnderlayMeshComponent == NULL)
 		{
@@ -149,19 +149,6 @@ void FPicoXRStereoLayer::ManageUnderlayComponent()
 		}
 		UnderlayMeshComponent->SetWorldTransform(LayerDesc.Transform);
 	}
-	else
-	{
-		if (UnderlayActor)
-		{
-			if (UnderlayMeshComponent)
-			{
-				UnderlayMeshComponent->DestroyComponent();
-				UnderlayMeshComponent = nullptr;
-			}
-			UnderlayActor->Destroy();
-			UnderlayActor = nullptr;
-		}
-	}
 	return;
 }
 
@@ -187,7 +174,7 @@ static void AddFaceIndices(const int v0, const int v1, const int v2, const int v
 	}
 }
 
-void FPicoXRStereoLayer::CreateUnderlayMesh(TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FVector2D>& UV0)
+void FPICOXRStereoLayer::CreateUnderlayMesh(TArray<FVector>& Vertices, TArray<int32>& Triangles, TArray<FVector2D>& UV0)
 {
 #if ENGINE_MINOR_VERSION > 24
 	if (LayerDesc.HasShape<FQuadLayer>())
@@ -305,7 +292,7 @@ void FPicoXRStereoLayer::CreateUnderlayMesh(TArray<FVector>& Vertices, TArray<in
 	}
 }
 
-void FPicoXRStereoLayer::PXRLayersCopy_RenderThread(FPicoXRRenderBridge* RenderBridge, FRHICommandListImmediate& RHICmdList)
+void FPICOXRStereoLayer::PXRLayersCopy_RenderThread(FPICOXRRenderBridge* RenderBridge, FRHICommandListImmediate& RHICmdList)
 {
 	check(IsInRenderingThread());
 
@@ -346,10 +333,23 @@ void FPicoXRStereoLayer::PXRLayersCopy_RenderThread(FPicoXRRenderBridge* RenderB
 
 			bTextureNeedUpdate = false;
 		}
+		else
+		{
+			if (UnderlayActor)
+			{
+				if (UnderlayMeshComponent)
+				{
+					UnderlayMeshComponent->DestroyComponent();
+					UnderlayMeshComponent = nullptr;
+				}
+				UnderlayActor->Destroy();
+				UnderlayActor = nullptr;
+			}
+		}
 	}
 }
 
-bool FPicoXRStereoLayer::InitPXRLayer_RenderThread(FPicoXRRenderBridge* CustomPresent, FDelayDeleteLayerManager* DelayDeletion, FRHICommandListImmediate& RHICmdList, const FPicoXRStereoLayer* InLayer)
+bool FPICOXRStereoLayer::InitPXRLayer_RenderThread(FPICOXRRenderBridge* CustomPresent, FDelayDeleteLayerManager* DelayDeletion, FRHICommandListImmediate& RHICmdList, const FPICOXRStereoLayer* InLayer)
 {
 	check(IsInRenderingThread());
 
@@ -420,7 +420,8 @@ bool FPicoXRStereoLayer::InitPXRLayer_RenderThread(FPicoXRRenderBridge* CustomPr
 		}
 		PxrLayerCreateParam.arraySize = 1;
 
-		if (!(LayerDesc.Flags & IStereoLayers::LAYER_FLAG_TEX_CONTINUOUS_UPDATE))
+		//TODO:if bSplashLayer,create swapchain count=1,to avoid flicker between color and black.
+		if ((bSplashLayer && CustomPresent->RHIString == TEXT("Vulkan")) || !(LayerDesc.Flags & IStereoLayers::LAYER_FLAG_TEX_CONTINUOUS_UPDATE))
 		{
 			PxrLayerCreateParam.layerFlags |= PXR_LAYER_FLAG_STATIC_IMAGE;
 		}
@@ -564,7 +565,7 @@ bool FPicoXRStereoLayer::InitPXRLayer_RenderThread(FPicoXRRenderBridge* CustomPr
     return true;
 }
 
-bool FPicoXRStereoLayer::IfCanReuseLayers(const FPicoXRStereoLayer* InLayer) const
+bool FPICOXRStereoLayer::IfCanReuseLayers(const FPICOXRStereoLayer* InLayer) const
 {
 	if (!InLayer || !InLayer->PxrLayer.IsValid())
 	{
@@ -574,7 +575,7 @@ bool FPicoXRStereoLayer::IfCanReuseLayers(const FPicoXRStereoLayer* InLayer) con
 #if PLATFORM_ANDROID
 	if (PxrLayerCreateParam.width != InLayer->PxrLayerCreateParam.width				||
 		PxrLayerCreateParam.height != InLayer->PxrLayerCreateParam.height			||
-		PxrLayerCreateParam.layerShape != InLayer->PxrLayerCreateParam.layerShape	||
+		PxrLayerCreateParam.layerShape != InLayer->PxrLayerCreateParam.layerShape   ||
 		PxrLayerCreateParam.layerLayout != InLayer->PxrLayerCreateParam.layerLayout ||
 		PxrLayerCreateParam.mipmapCount != InLayer->PxrLayerCreateParam.mipmapCount ||
 		PxrLayerCreateParam.sampleCount != InLayer->PxrLayerCreateParam.sampleCount ||
@@ -588,7 +589,7 @@ bool FPicoXRStereoLayer::IfCanReuseLayers(const FPicoXRStereoLayer* InLayer) con
 	return true;
 }
 
-void FPicoXRStereoLayer::IncrementSwapChainIndex_RHIThread(FPicoXRRenderBridge* RenderBridge)
+void FPICOXRStereoLayer::IncrementSwapChainIndex_RHIThread(FPICOXRRenderBridge* RenderBridge)
 {
     if ((LayerDesc.Flags & IStereoLayers::LAYER_FLAG_HIDDEN) != 0)
 	{
@@ -624,7 +625,7 @@ void FPicoXRStereoLayer::IncrementSwapChainIndex_RHIThread(FPicoXRRenderBridge* 
 	}
 }
 
-void FPicoXRStereoLayer::SubmitLayer_RHIThread(FPXRGameFrame* Frame)
+void FPICOXRStereoLayer::SubmitLayer_RHIThread(FPXRGameFrame* Frame)
 {
 	PXR_LOGV(PxrUnreal, "Submit Layer:%u", ID);
 #if PLATFORM_ANDROID
@@ -679,16 +680,16 @@ void FPicoXRStereoLayer::SubmitLayer_RHIThread(FPXRGameFrame* Frame)
 
 		FVector LayerPosition = GetLayerLocation();
 		LayerPosition = BaseTransform.InverseTransformPosition(LayerPosition);
-		LayerPosition = FPicoXRUtils::ConvertUnrealVectorToXRVector(LayerPosition, Frame->WorldToMetersScale);
+		LayerPosition = FPICOXRUtils::ConvertUnrealVectorToXRVector(LayerPosition, Frame->WorldToMetersScale);
 
 		FQuat LayerOrientation = GetLayerOrientation();
 		LayerOrientation = BaseTransform.InverseTransformRotation(LayerOrientation);
-		LayerOrientation = FPicoXRUtils::ConvertUnrealQuatToXRQuat(LayerOrientation);
+		LayerOrientation = FPICOXRUtils::ConvertUnrealQuatToXRQuat(LayerOrientation);
 
 		int SizeX = PxrLayerCreateParam.width;
 		int SizeY = PxrLayerCreateParam.height;
 		float AspectRatio = SizeX ? (float)SizeY / (float)SizeX : 3.0f / 4.0f;
-		FVector Scale = FPicoXRUtils::ConvertUnrealVectorToXRVector(LayerDesc.Transform.GetScale3D(), Frame->WorldToMetersScale);
+		FVector Scale = FPICOXRUtils::ConvertUnrealVectorToXRVector(LayerDesc.Transform.GetScale3D(), Frame->WorldToMetersScale);
 
 		bool bAdjustLayersColor = HMDDevice->GbApplyToAllLayers && (!bSplashLayer);
 
@@ -891,7 +892,7 @@ void FPicoXRStereoLayer::SubmitLayer_RHIThread(FPXRGameFrame* Frame)
 #endif
 }
 
-int32 FPicoXRStereoLayer::GetShapeType()
+int32 FPICOXRStereoLayer::GetShapeType()
 {
 	int32 ShapeType = 0;
 #if PLATFORM_ANDROID
@@ -936,7 +937,7 @@ int32 FPicoXRStereoLayer::GetShapeType()
 	return ShapeType;
 }
 
-void FPicoXRStereoLayer::SetProjectionLayerParams(uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, FString RHIString)
+void FPICOXRStereoLayer::SetProjectionLayerParams(uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, FString RHIString)
 {
 #if PLATFORM_ANDROID
 	PxrLayerCreateParam.layerShape = PXR_LAYER_PROJECTION;

@@ -54,6 +54,7 @@ public:
 	void AddPXRSplashLayers(const FPXRSplashDesc& Splash);
 	void SwitchActiveSplash_GameThread();
 	TArray<FPicoLayerPtr> PXRLayers_RHIThread;
+	FPicoLayerPtr BlackLayer;
 
 protected:
 	void SplashTick_RenderThread(float DeltaTime);

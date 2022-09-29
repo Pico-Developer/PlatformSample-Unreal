@@ -18,13 +18,12 @@
 #include "PxrApi.h"
 #endif
 
-#define LOCTEXT_NAMESPACE "FPicoXRMRCModule"
+#define LOCTEXT_NAMESPACE "FPICOXRMRCModule"
 
-FPicoXRHMD* FPicoXRMRCModule::PicoXRHMD = nullptr;
+FPICOXRHMD* FPICOXRMRCModule::PICOXRHMD = nullptr;
 
-FPicoXRMRCModule::FPicoXRMRCModule()
+FPICOXRMRCModule::FPICOXRMRCModule()
 	:bSimulateEnableMRC(false)
-	, SpawnTimes(0)
 	, InGameThirdCamState(nullptr)
 	, WorldAddedDelegate()
 	, WorldDestroyedDelegate()
@@ -34,62 +33,62 @@ FPicoXRMRCModule::FPicoXRMRCModule()
 #endif
 
 {
-	PXR_LOGI(LogMRC, "PicoXRMRCModule Constructed!");
+	PXR_LOGI(LogMRC, "PICOXRMRCModule Constructed!");
 }
 
-FPicoXRMRCModule::~FPicoXRMRCModule()
+FPICOXRMRCModule::~FPICOXRMRCModule()
 {
 }
 
-void FPicoXRMRCModule::StartupModule()
+void FPICOXRMRCModule::StartupModule()
 {
-	PXR_LOGI(LogMRC, "PicoXRMRCModule startup!");
+	PXR_LOGI(LogMRC, "PICOXRMRCModule startup!");
 #if PLATFORM_ANDROID 
-	PicoXRHMD = GetPicoXRHMD();
+	PICOXRHMD = GetPICOXRHMD();
 	if (GEngine)
 	{
-		InitialWorldAddedDelegate = GEngine->OnWorldAdded().AddRaw(this, &FPicoXRMRCModule::OnInitialWorldCreated);
+		InitialWorldAddedDelegate = GEngine->OnWorldAdded().AddRaw(this, &FPICOXRMRCModule::OnInitialWorldCreated);
 	}
-	InitialWorldLoadDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddRaw(this, &FPicoXRMRCModule::OnInitialWorldCreated);
+	InitialWorldLoadDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddRaw(this, &FPICOXRMRCModule::OnInitialWorldCreated);
 #endif 
 }
 
-void FPicoXRMRCModule::ShutdownModule()
+void FPICOXRMRCModule::ShutdownModule()
 {
 }
 
-FPicoXRHMD* FPicoXRMRCModule::GetPicoXRHMD()
+FPICOXRHMD* FPICOXRMRCModule::GetPICOXRHMD()
 {
-	if (!PicoXRHMD)
+	if (!PICOXRHMD)
 	{
-		static FName SystemName(TEXT("PicoXRHMD"));
+		static FName SystemName(TEXT("PICOXRHMD"));
 		if (GEngine)
 		{
 			if (GEngine->XRSystem.IsValid() && (GEngine->XRSystem->GetSystemName() == SystemName))
 			{
-				PicoXRHMD = static_cast<FPicoXRHMD*>(GEngine->XRSystem.Get());
+				PICOXRHMD = static_cast<FPICOXRHMD*>(GEngine->XRSystem.Get());
 			}
-			if (PicoXRHMD == nullptr)
+			if (PICOXRHMD == nullptr)
 			{
-				PXR_LOGI(LogMRC, "GetPicoXRHMD Failed!");
+				PXR_LOGI(LogMRC, "GetPICOXRHMD Failed!");
 			}
 		}
 	}
-	return PicoXRHMD;
+	return PICOXRHMD;
 }
 
-bool FPicoXRMRCModule::IsMrcEnabled()
+bool FPICOXRMRCModule::IsMrcEnabled()
 {
 #if PLATFORM_ANDROID
-	if (PicoXRHMD)
+	if (PICOXRHMD)
 	{
-		return PicoXRHMD->MRCEnabled || bSimulateEnableMRC;
+		return PICOXRHMD->MRCEnabled || bSimulateEnableMRC;
 	}
 #endif
 	return false;
 }
 
-bool FPicoXRMRCModule::IsMrcActivated()
+bool FPICOXRMRCModule::IsMrcActivated()
 {
 	if (IsMrcEnabled() && bCpture2DActorActivated && InGameThirdCam && InGameThirdCam->HasInitializedOnce())
 	{
@@ -98,7 +97,7 @@ bool FPicoXRMRCModule::IsMrcActivated()
 	return false;
 }
 
-bool FPicoXRMRCModule::GetMRCCalibrationData(FPXRTrackedCamera& CameraState)
+bool FPICOXRMRCModule::GetMRCCalibrationData(FPXRTrackedCamera& CameraState)
 {
 	if (RawCameraDateFromXML.refreshed)
 	{
@@ -129,7 +128,7 @@ bool FPicoXRMRCModule::GetMRCCalibrationData(FPXRTrackedCamera& CameraState)
 	return false;
 }
 
-bool FPicoXRMRCModule::GetMRCRT(UTextureRenderTarget2D*& Background_RT, UTextureRenderTarget2D*& Forground_RT)
+bool FPICOXRMRCModule::GetMRCRT(UTextureRenderTarget2D*& Background_RT, UTextureRenderTarget2D*& Forground_RT)
 {
 #if PLATFORM_ANDROID
 	if (InGameThirdCam)
@@ -152,7 +151,7 @@ bool FPicoXRMRCModule::GetMRCRT(UTextureRenderTarget2D*& Background_RT, UTexture
 	return false;
 }
 
-void FPicoXRMRCModule::EnableForeground(bool enable)
+void FPICOXRMRCModule::EnableForeground(bool enable)
 {
 	if (IsMrcActivated() && InGameThirdCam)
 	{
@@ -160,25 +159,25 @@ void FPicoXRMRCModule::EnableForeground(bool enable)
 	}
 }
 
-UPXRInGameThirdCamState* FPicoXRMRCModule::GetMRCState()
+UPXRInGameThirdCamState* FPICOXRMRCModule::GetMRCState()
 {
 	return InGameThirdCamState;
 }
 
-void FPicoXRMRCModule::InitMRC()
+void FPICOXRMRCModule::InitMRC()
 {
 	PXR_LOGI(LogMRC, "InitMixedRealityCapture");
-	InGameThirdCamState = NewObject<UPXRInGameThirdCamState>((UObject*)GetTransientPackage(), FName("PicoXRMRC_State"), RF_MarkAsRootSet);
+	InGameThirdCamState = NewObject<UPXRInGameThirdCamState>((UObject*)GetTransientPackage(), FName("PICOXRMRC_State"), RF_MarkAsRootSet);
 
 	ResetInGameThirdCamState();
 	ReadCameraRawDataFromXML();
 	
-	WorldAddedDelegate = GEngine->OnWorldAdded().AddRaw(this, &FPicoXRMRCModule::OnWorldCreated);
-	WorldDestroyedDelegate = GEngine->OnWorldDestroyed().AddRaw(this, &FPicoXRMRCModule::OnWorldDestroyed);
-	WorldLoadDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddRaw(this, &FPicoXRMRCModule::OnWorldCreated);
+	WorldAddedDelegate = GEngine->OnWorldAdded().AddRaw(this, &FPICOXRMRCModule::OnWorldCreated);
+	WorldDestroyedDelegate = GEngine->OnWorldDestroyed().AddRaw(this, &FPICOXRMRCModule::OnWorldDestroyed);
+	WorldLoadDelegate = FCoreUObjectDelegates::PostLoadMapWithWorld.AddRaw(this, &FPICOXRMRCModule::OnWorldCreated);
 }
 
-void FPicoXRMRCModule::OpenInGameCam()
+void FPICOXRMRCModule::OpenInGameCam()
 {
 	PXR_LOGI(LogMRC, "Setup In Game Capture!");
 	// Don't do anything if we don't have a UWorld or if we are not casting
@@ -187,7 +186,7 @@ void FPicoXRMRCModule::OpenInGameCam()
 		return;
 	}
 	// Don't add another actor if there's already a MRC camera actor
-	for (TActorIterator<APicoXRMRC_CastingCameraActor> ActorIt(CurrentWorld); ActorIt; ++ActorIt)
+	for (TActorIterator<APICOXRMRC_CastingCameraActor> ActorIt(CurrentWorld); ActorIt; ++ActorIt)
 	{
 		if (!ActorIt->IsPendingKillOrUnreachable() && ActorIt->IsValidLowLevel())
 		{
@@ -195,15 +194,14 @@ void FPicoXRMRCModule::OpenInGameCam()
 			return;
 		}
 	}
-	SpawnTimes++;
 	// Spawn an MRC camera actor if one wasn't already there
-	InGameThirdCam = CurrentWorld->SpawnActorDeferred<APicoXRMRC_CastingCameraActor>(APicoXRMRC_CastingCameraActor::StaticClass(), FTransform::Identity);
+	InGameThirdCam = CurrentWorld->SpawnActorDeferred<APICOXRMRC_CastingCameraActor>(APICOXRMRC_CastingCameraActor::StaticClass(), FTransform::Identity);
 	InGameThirdCam->InitializeStates(InGameThirdCamState);
 	UGameplayStatics::FinishSpawningActor(InGameThirdCam, FTransform::Identity);
 
 }
 
-void FPicoXRMRCModule::CloseInGameCam()
+void FPICOXRMRCModule::CloseInGameCam()
 {
 	PXR_LOGI(LogMRC, "Close In Game Capture");
 	// Destory actor and close the camera when we turn MRC off
@@ -214,7 +212,7 @@ void FPicoXRMRCModule::CloseInGameCam()
 	}
 }
 
-void FPicoXRMRCModule::ResetInGameThirdCamState()
+void FPICOXRMRCModule::ResetInGameThirdCamState()
 {
 	PXR_LOGI(LogMRC, "ResetInGameThirdCamState");
 	if (InGameThirdCamState)
@@ -228,7 +226,7 @@ void FPicoXRMRCModule::ResetInGameThirdCamState()
 	}
 }
 
-void FPicoXRMRCModule::OnWorldCreated(UWorld* NewWorld)
+void FPICOXRMRCModule::OnWorldCreated(UWorld* NewWorld)
 {
 	ResetInGameThirdCamState();
 #if PLATFORM_ANDROID
@@ -236,12 +234,12 @@ void FPicoXRMRCModule::OnWorldCreated(UWorld* NewWorld)
 	CurrentWorld = NewWorld;
 	SwitchCaptureActive();
 
-	PreWorldTickDelegate = FWorldDelegates::OnWorldPreActorTick.AddRaw(this, &FPicoXRMRCModule::OnWorldTick);
+	PreWorldTickDelegate = FWorldDelegates::OnWorldPreActorTick.AddRaw(this, &FPICOXRMRCModule::OnWorldTick);
 
 #endif
 }
 
-void FPicoXRMRCModule::OnWorldDestroyed(UWorld* NewWorld)
+void FPICOXRMRCModule::OnWorldDestroyed(UWorld* NewWorld)
 {
 	CurrentWorld = nullptr;
 #if PLATFORM_ANDROID
@@ -255,7 +253,7 @@ void FPicoXRMRCModule::OnWorldDestroyed(UWorld* NewWorld)
 #endif
 }
 
-bool FPicoXRMRCModule::ReadCameraRawDataFromXML()
+bool FPICOXRMRCModule::ReadCameraRawDataFromXML()
 {
 	FString XmlConfigPath = FPaths::Combine(FPaths::ProjectPersistentDownloadDir(), TEXT("mrc.xml"));
 	PXR_LOGI(LogMRC, "ReadCameraRawDataFromXML:%s", PLATFORM_CHAR(*XmlConfigPath));
@@ -313,7 +311,7 @@ bool FPicoXRMRCModule::ReadCameraRawDataFromXML()
 }
 
 #if PLATFORM_ANDROID
-void FPicoXRMRCModule::SwitchCaptureActive()
+void FPICOXRMRCModule::SwitchCaptureActive()
 {
 	if (IsMrcEnabled())
 	{
@@ -330,10 +328,10 @@ void FPicoXRMRCModule::SwitchCaptureActive()
 		{
 			PXR_LOGI(LogMRC, "Deactivating MRC Capture");
 			CloseInGameCam();
-			if (PicoXRHMD && PicoXRHMD->CurrentMRCLayer)
+			if (PICOXRHMD && PICOXRHMD->CurrentMRCLayer)
 			{
 				PXR_LOGI(LogMRC, "Destroy All MRCLayers One Time!");
-				PicoXRHMD->DestroyMRCLayer();
+				PICOXRHMD->DestroyMRCLayer();
 			}
 			bCpture2DActorActivated = false;
 		}
@@ -342,7 +340,7 @@ void FPicoXRMRCModule::SwitchCaptureActive()
 
 }
 
-void FPicoXRMRCModule::OnWorldTick(UWorld* World, ELevelTick Tick, float Delta)
+void FPICOXRMRCModule::OnWorldTick(UWorld* World, ELevelTick Tick, float Delta)
 {
 	// Poll MRC activation state
 	if (CurrentWorld && World == CurrentWorld)
@@ -351,7 +349,7 @@ void FPicoXRMRCModule::OnWorldTick(UWorld* World, ELevelTick Tick, float Delta)
 	}
 }
 
-void FPicoXRMRCModule::OnInitialWorldCreated(UWorld* NewWorld)
+void FPICOXRMRCModule::OnInitialWorldCreated(UWorld* NewWorld)
 {
 	// Remove the initial world load handlers 
 	if (InitialWorldAddedDelegate.IsValid())
@@ -384,4 +382,4 @@ void FPicoXRMRCModule::OnInitialWorldCreated(UWorld* NewWorld)
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FPicoXRMRCModule, PicoXRMRC)
+IMPLEMENT_MODULE(FPICOXRMRCModule, PICOXRMRC)

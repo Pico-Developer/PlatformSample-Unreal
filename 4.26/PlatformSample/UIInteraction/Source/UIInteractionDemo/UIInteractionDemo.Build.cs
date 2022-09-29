@@ -13,8 +13,10 @@ public class UIInteractionDemo : ModuleRules
 			"Core", 
 			"CoreUObject", 
 			"Engine", 
-			"InputCore", 
+			"InputCore",
 			"OnlineSubsystem",
+			"HTTP", 
+			"Json",
 			"OnlineSubsystemPico",
 			"OnlineSubsystemUtils"
 		});

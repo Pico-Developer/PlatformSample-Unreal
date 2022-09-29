@@ -36,6 +36,7 @@ class FPicoPresenceInterface;
 class FApplicationLifecycleInterface;
 class FPicoIAPInterface;
 class FPicoUserInterface;
+class FPicoAssetFileInterface;
 class FPicoSportInterface;
 class FPicoAchievementsInterface;
 
@@ -101,8 +102,9 @@ public:
 
     TSharedPtr<FPicoPresenceInterface> GetPicoPresenceInterface() const;
 
-    TSharedPtr<FPicoSportInterface> GetPicoSportInterface() const;
+    TSharedPtr<FPicoAssetFileInterface> GetPicoAssetFileInterface() const;
 
+    TSharedPtr<FPicoSportInterface> GetPicoSportInterface() const;
 
     // Game
     FOnlineSessionPicoPtr GetGameSessionInterface() const;
@@ -158,6 +160,8 @@ private:
 
     TSharedPtr<FPicoUserInterface> PicoUserInterface;
 
+    TSharedPtr<FPicoAssetFileInterface> PicoAssetFileInterface;
+
     TSharedPtr<FPicoSportInterface> PicoSportInterface;
 
     FOnlineSessionPicoPtr GameSessionInterface;
@@ -165,7 +169,7 @@ private:
     FOnlineLeaderboardPicoPtr LeaderboardInterface;
 
     TSharedPtr<FPicoAchievementsInterface> PicoAchievementsInterface;
-    
+
     /** Online async task runnable */
     class FOnlineAsyncTaskManagerPico* OnlineAsyncTaskThreadRunnable;
 

@@ -398,7 +398,7 @@ UPico_User* FOnlineIdentityPico::GetLoginPicoUser(int32 LocalUserNum)
 FOnlineIdentityPico::FOnlineIdentityPico(FOnlineSubsystemPico& InSubsystem)
     : PicoSubsystem(InSubsystem)
 {
-    FOnlineIdentityPico::AutoLogin(0);
+    //FOnlineIdentityPico::AutoLogin(0);
 }
 
 void FOnlineIdentityPico::OnLoginComplete(ppfMessageHandle Message, bool bIsError, int32 LocalUserNum)

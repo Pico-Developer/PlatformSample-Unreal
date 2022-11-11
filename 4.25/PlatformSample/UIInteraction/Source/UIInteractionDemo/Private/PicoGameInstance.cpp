@@ -1109,19 +1109,24 @@ void UPicoGameInstance::ReadLeaderboardData(TArray<FString> Players, const FStri
         auto UniqueNetIdRef = Online::GetIdentityInterface()->CreateUniquePlayerId(Players[i]).ToSharedRef();
         LeaderboardPlayers.Add(UniqueNetIdRef);
     }
-
-    LeaderboardRead = MakeShareable(new Pico_OnlineLeaderboardRead(LeaderboardName, PageIndex, PageSize));
-    FOnlineLeaderboardReadRef ReadObjectRef = LeaderboardRead.ToSharedRef();
-    
     if (!OnLeaderboardReadCompleteDelegate.IsBound())
     {
         OnLeaderboardReadCompleteDelegate = FOnLeaderboardReadCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnLeaderboardReadComplete);
         LeaderboardInterface->AddOnLeaderboardReadCompleteDelegate_Handle(OnLeaderboardReadCompleteDelegate);
     }
-	auto Result = LeaderboardInterface->ReadLeaderboards(LeaderboardPlayers, ReadObjectRef);
-	OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboards ExecuteResult: %d"), Result));
-
+    // use Pico_OnlineLeaderboardRead
+    PicoLeaderboardReadPtr = new Pico_OnlineLeaderboardRead(LeaderboardName, PageIndex, PageSize);
+    auto PicoRef = new FOnlineLeaderboardReadRef(PicoLeaderboardReadPtr);
+	auto Result = LeaderboardInterface->ReadLeaderboards(LeaderboardPlayers, *PicoRef);
+	OnGameSessionStateChanged(FString::Printf(TEXT("use Pico_OnlineLeaderboardRead Result: %s"), Result ? TEXT("true") : TEXT("false")));
 	//LeaderboardInterface->FlushLeaderboards(TEXT("Test"));
+
+    // use FOnlineLeaderboardRead
+    LeaderboardReadPtr = new FOnlineLeaderboardRead(); 
+    auto Ref = new FOnlineLeaderboardReadRef(LeaderboardReadPtr);
+    LeaderboardReadPtr->LeaderboardName = FName(LeaderboardName);
+    Result = LeaderboardInterface->ReadLeaderboards(LeaderboardPlayers, *Ref);
+    OnGameSessionStateChanged(FString::Printf(TEXT("use FOnlineLeaderboardRead Result: %s"), Result ? TEXT("true") : TEXT("false")));
 }
 
 void UPicoGameInstance::ReadLeaderboardsForFriends(const FString& LeaderboardName, int PageIndex, int PageSize)
@@ -1130,49 +1135,55 @@ void UPicoGameInstance::ReadLeaderboardsForFriends(const FString& LeaderboardNam
     OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboardsForFriends input LeaderboardName: %s"), *LeaderboardName));
     TArray<TSharedRef<const FUniqueNetId>> Players;
 
-    LeaderboardRead = MakeShareable(new Pico_OnlineLeaderboardRead(LeaderboardName, PageIndex, PageSize));
-    FOnlineLeaderboardReadRef ReadObjectRef = LeaderboardRead.ToSharedRef();
+    PicoLeaderboardReadPtr = new Pico_OnlineLeaderboardRead(LeaderboardName, PageIndex, PageSize);
+    auto PicoRef = new FOnlineLeaderboardReadRef(PicoLeaderboardReadPtr);
     
     if (!OnLeaderboardReadCompleteDelegate.IsBound())
     {
         OnLeaderboardReadCompleteDelegate = FOnLeaderboardReadCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnLeaderboardReadComplete);
         LeaderboardInterface->AddOnLeaderboardReadCompleteDelegate_Handle(OnLeaderboardReadCompleteDelegate);
     }
-    auto Result = LeaderboardInterface->ReadLeaderboardsForFriends(0, ReadObjectRef);
+    auto Result = LeaderboardInterface->ReadLeaderboardsForFriends(0, *PicoRef);
 	OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboardsForFriends ExecuteResult: %d"), Result));
 }
 
 void UPicoGameInstance::OnLeaderboardReadComplete(bool bWasSuccessful)
 {
     OnGameSessionStateChanged(FString::Printf(TEXT("OnLeaderboardReadComplete bWasSuccessful: %d"), bWasSuccessful));
+    PrintLeaderboardData(PicoLeaderboardReadPtr, PicoLeaderboardReadPtr->PicoLeaderboardName);
+    PrintLeaderboardData(LeaderboardReadPtr, LeaderboardReadPtr->LeaderboardName.ToString());
+    
+}
+void UPicoGameInstance::PrintLeaderboardData(FOnlineLeaderboardRead* ReadPtr, const FString LeaderboardName)
+{
     FStatsColumnArray ColumnArray;
-    OnGameSessionStateChanged(FString::Printf(TEXT("OnLeaderboardReadComplete LeaderboardRead: Name: %s, ReadState: %d"),
-    *LeaderboardRead->LeaderboardName.ToString(), LeaderboardRead->ReadState));
-	for (auto row : LeaderboardRead->Rows)
-	{
-	    FString Log;
-	    if (row.PlayerId.IsValid())
-	    {
-	        Log = FString::Printf(TEXT("OnLeaderboardReadComplete LeaderboardEntry data: PlayerID: %s, Nickname: %s, Rank: %i\n"),
+    OnGameSessionStateChanged(FString::Printf(TEXT("PrintLeaderboardData Name: %s, ReadState: %d"),
+    *LeaderboardName, ReadPtr->ReadState));
+    for (auto row : ReadPtr->Rows)
+    {
+        FString Log;
+        if (row.PlayerId.IsValid())
+        {
+            Log = FString::Printf(TEXT("PrintLeaderboardData LeaderboardEntry: PlayerID: %s, Nickname: %s, Rank: %i\n"),
                *row.PlayerId->ToString(),
                *row.NickName,
                row.Rank);
-	    }
+        }
         else
         {
-            Log = FString::Printf(TEXT("OnLeaderboardReadComplete LeaderboardEntry data: Nickname: %s, Rank: %i\n"),
+            Log = FString::Printf(TEXT("PrintLeaderboardData LeaderboardEntry: Nickname: %s, Rank: %i\n"),
                *row.NickName,
                row.Rank);
         }
-	    FString ColumnsLog;
-	    for (auto col : row.Columns)
-	    {
-	        ColumnsLog.Append(FString::Printf(TEXT("row.Columns[ Key: %s, Value: %s]\n"),
+        FString ColumnsLog;
+        for (auto col : row.Columns)
+        {
+            ColumnsLog.Append(FString::Printf(TEXT("row.Columns[ Key: %s, Value: %s]\n"),
                    *col.Key.ToString(),
                    *col.Value.ToString()));
-	    }
-	    OnGameSessionStateChanged(FString::Printf(TEXT("%s, %s"), *Log, *ColumnsLog));
-	}
+        }
+        OnGameSessionStateChanged(FString::Printf(TEXT("%s, %s"), *Log, *ColumnsLog));
+    }
 }
 
 void UPicoGameInstance::WriteLeaderboardData(const FString& LeaderboardName, int32 ValueToWrite, int UpdateMethod, FString RatedStat)
@@ -1190,15 +1201,39 @@ void UPicoGameInstance::WriteLeaderboardData(const FString& LeaderboardName, int
         OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards Please login first!")));
         return;
     }
- 
-	Pico_OnlineLeaderboardWrite LeaderboardWriteObj;
-	TArray<FString> LBNames;
- 
-	LBNames.Add(LeaderboardName);
+
+    // test FOnlineLeaderboardWrite
+    FOnlineLeaderboardWrite WriteObj;
+    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards, use FOnlineLeaderboardWrite")));
+    WriteObj.LeaderboardNames.Add(FName(LeaderboardName));
+    WriteObj.RatedStat = FName(LeaderboardName);
+    WriteObj.SortMethod = ELeaderboardSort::Descending;
+    WriteObj.DisplayFormat = ELeaderboardFormat::Number;
+    WriteObj.UpdateMethod = ELeaderboardUpdateMethod::KeepBest;
+    WriteObj.SetIntStat(FName(LeaderboardName), 777);
+    FVariantData va1;
+    va1.SetValue(777);
+    WriteObj.Properties.Add(FName(LeaderboardName), va1);
+    if (IOnlineSubsystem* const OnlineSub = IOnlineSubsystem::IsLoaded() ? IOnlineSubsystem::Get() : nullptr)
+    {
+        IOnlineLeaderboardsPtr Leaderboards = OnlineSub->GetLeaderboardsInterface();
+        if (Leaderboards.IsValid())
+        {
+            bool bResult = Leaderboards->WriteLeaderboards(TEXT("test"), *UserId, WriteObj);
+            OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards bResult: %d"), bResult));
+        }
+    }
+
+    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards, use Pico_OnlineLeaderboardWrite")));
+    Pico_OnlineLeaderboardWrite LeaderboardWriteObj;
+    TArray<FString> LBNames;
+    LBNames.Add("1");
     LeaderboardWriteObj.PicoLeaderboardNames = LBNames;
-	LeaderboardWriteObj.RatedStat = FName(*RatedStat);// TEXT("SCORE");
-	LeaderboardWriteObj.SetIntStat(*RatedStat, ValueToWrite);
+    LeaderboardWriteObj.RatedStat = FName(*RatedStat);// TEXT("SCORE");
+    LeaderboardWriteObj.SetIntStat(*RatedStat, ValueToWrite);
     LeaderboardWriteObj.UpdateMethod = (ELeaderboardUpdateMethod::Type)UpdateMethod;
-	auto Result = LeaderboardInterface->WriteLeaderboards(TEXT("test"), *UserId, LeaderboardWriteObj);
+    auto Result = LeaderboardInterface->WriteLeaderboards(TEXT("test"), *UserId, LeaderboardWriteObj);
     OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards ExecuteResult: %d"), Result));
 }
+
+

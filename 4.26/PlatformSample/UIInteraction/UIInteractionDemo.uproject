@@ -74,7 +74,15 @@
 			]
 		},
 		{
-			"Name": "PicoXR",
+			"Name": "PICOXR",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Android"
+			]
+		},
+		{
+			"Name": "PicoSpatialAudio",
 			"Enabled": true,
 			"SupportedTargetPlatforms": [
 				"Win64",

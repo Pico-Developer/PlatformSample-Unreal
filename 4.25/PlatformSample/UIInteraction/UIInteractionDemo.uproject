@@ -82,6 +82,14 @@
 			]
 		},
 		{
+			"Name": "PicoSpatialAudio",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Android"
+			]
+		},
+		{
 			"Name": "OnlineSubsystemNull",
 			"Enabled": false
 		}

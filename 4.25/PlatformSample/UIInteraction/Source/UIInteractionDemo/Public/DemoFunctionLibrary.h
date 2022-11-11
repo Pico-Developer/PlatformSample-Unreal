@@ -4,6 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+
+// include test
+//#include "PicoPresenceInterface.h"
+//#include "ApplicationLifecycleInterface.h"
+//#include "OnlineMessageTaskManagerPico.h"
+//#include "OnlineSessionInterfacePico.h"
+//#include "Pico_Achievements.h"
+//#include "Pico_AssetFile.h"
+//#include "Pico_Challenges.h"
+//#include "Pico_DataStore.h"
+//#include "Pico_IAP.h"
+//#include "Pico_Leaderboard.h"
+//#include "Pico_Leaderboards.h"
+//#include "Pico_Room.h"
+//#include "Pico_Sport.h"
+//#include "Pico_User.h"
+//#include "PicoApplicationInterface.h"
+//#include "PicoPresenceInterface.h"
+//#include "RTCPicoUserInterface.h"
+//#include "OnlineSubsystemPico.h"
+//#include "OnlinePicoFunctionLibrary.h"
+
 #include "Runtime/Online//HTTP/Public/Http.h"
 #include "DemoFunctionLibrary.generated.h"
 

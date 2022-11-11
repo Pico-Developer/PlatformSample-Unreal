@@ -10,7 +10,13 @@ void UDemoFunctionLibrary::RequestGetHttpString(const FString& InHttpAdr, FGetSt
 {
     UDemoFunctionLibrary::StringHttpDelegate = OnStringHttpDelegateCallback;
     FHttpModule* Http = &FHttpModule::Get();
+#if ENGINE_MAJOR_VERSION > 4
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+#elif ENGINE_MINOR_VERSION > 25
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = Http->CreateRequest();
+#elif ENGINE_MINOR_VERSION > 24
     TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+#endif
     Request->OnProcessRequestComplete().BindStatic(UDemoFunctionLibrary::OnRequestComplete);
     Request->SetURL(InHttpAdr);
     Request->SetVerb("GET");

@@ -327,6 +327,8 @@ public:
     
     void OnLeaderboardReadComplete(bool bInIsError);
 
+    void PrintLeaderboardData(FOnlineLeaderboardRead* ReadPtr, const FString LeaderboardName);
+
     UFUNCTION(BlueprintCallable, Category = PicoGame)
     void ReadLeaderboardsForFriends(const FString& LeaderboardName, int PageIndex, int PageSize);
     
@@ -357,7 +359,8 @@ private:
     FOnlineSessionSearchResult FindSessionByIdResult;
 
     // leaderboard
-    FOnlineLeaderboardReadPtr LeaderboardRead;
+    Pico_OnlineLeaderboardRead* PicoLeaderboardReadPtr;
+    FOnlineLeaderboardRead* LeaderboardReadPtr;
     FOnLeaderboardReadCompleteDelegate OnLeaderboardReadCompleteDelegate;
 
     // todo

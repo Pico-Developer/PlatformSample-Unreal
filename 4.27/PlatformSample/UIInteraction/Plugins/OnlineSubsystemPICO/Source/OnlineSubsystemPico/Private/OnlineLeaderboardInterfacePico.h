@@ -35,7 +35,7 @@ private:
     FOnlineSubsystemPico& PicoSubsystem;
 
     bool ReadPicoLeaderboards(bool bOnlyFriends, bool bOnlyLoggedInUser, FOnlineLeaderboardReadRef& ReadObject);
-    void OnReadLeaderboardsComplete(ppfMessageHandle Message, bool bIsError, const FOnlineLeaderboardReadRef& ReadObject);
+    void OnReadLeaderboardsComplete(ppfMessageHandle Message, bool bIsError, bool bOnlyFriends, bool bOnlyLoggedInUser, const FOnlineLeaderboardReadRef& ReadObject);
 
     const char* FilterTypeNames[4] = { "None", "Friends", "Unknown", "UserIds" };
     const char* StartAtNames[4] = { "Top", "CenteredOnViewer", "CenteredOnViewerOrTop", "Unknown" };
@@ -43,7 +43,8 @@ private:
     static void SaveLog(const ELogVerbosity::Type Verbosity, const FString& Log);
 
 public:
-
+    const int MAX_REQUEST_SIZE = 100; // single max
+    int ReadIndex = 0;
 
     //Constructor * @param InSubsystem - A reference to the owning subsystem
     FOnlineLeaderboardPico(FOnlineSubsystemPico& InSubsystem);

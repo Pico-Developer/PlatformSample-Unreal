@@ -23,7 +23,9 @@
 /// PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Challenges_Create(const char *leaderboardName, ppfChallengeOptionsHandle challengeOptions);
 
 /// Invite a user to a challenge.
-///
+/// \param challengeID The id of the challenge.
+/// \param userIDs Defines a list of user ids to be invited.
+/// \param userIDLength The number of user IDs provided.
 /// A message with type ::ppfMessage_Challenges_Invite will be generated in response.
 ///
 /// First call ::ppf_Message_IsError() to check if an error occurred.
@@ -52,7 +54,7 @@ PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Challenges_Invites(ppfID challengeID, const 
 ///
 /// If no error occurred, the message will contain a payload of type ::ppfChallengeHandle.
 /// Extract the payload from the message handle with ::ppf_Message_GetChallenge().
-PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Challenges_AcceptInvite(ppfID challengeID);
+/// PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Challenges_AcceptInvite(ppfID challengeID);
 
 /// DEPRECATED. Use server-to-server API call instead.
 ///
@@ -156,5 +158,14 @@ PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Challenges_Leave(ppfID challengeID);
 /// If no error occurred, the message will contain a payload of type ::ppfChallengeHandle.
 /// Extract the payload from the message handle with ::ppf_Message_GetChallenge().
 /// PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Challenges_UpdateInfo(ppfID challengeID, ppfChallengeOptionsHandle challengeOptions);
+
+/// @brief Launch the invitable user flow to invite to the challenge
+/// @param challengeID The challenge to be invited.
+/// @return The request ID of this async function.
+///
+/// This is intended to be a nice shortcut for developers not wanting to
+/// build out their own Invite UI although it has the same rules as if you
+/// build it yourself.
+PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Challenges_LaunchInvitableUserFlow(ppfID challengeID);
 
 #endif

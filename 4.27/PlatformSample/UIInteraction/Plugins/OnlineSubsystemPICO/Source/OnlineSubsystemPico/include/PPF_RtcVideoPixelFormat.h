@@ -7,8 +7,6 @@
 
 typedef enum {
     ppfRtcVideoPixelFormat_Unknown = 0,
-    ppfRtcVideoPixelFormat_TextureOES = 0,
-    ppfRtcVideoPixelFormat_Texture2D = 0,
     ppfRtcVideoPixelFormat_I420 = 1,
     ppfRtcVideoPixelFormat_NV12 = 2,
     ppfRtcVideoPixelFormat_NV21 = 3,
@@ -16,8 +14,8 @@ typedef enum {
     ppfRtcVideoPixelFormat_RGBA = 5,
     ppfRtcVideoPixelFormat_ARGB = 6,
     ppfRtcVideoPixelFormat_BGRA = 7,
-    ppfRtcVideoPixelFormat_x0DE1 = 8,
-    ppfRtcVideoPixelFormat_x8D65 = 9
+    ppfRtcVideoPixelFormat_Texture2D = 0x0DE1,
+    ppfRtcVideoPixelFormat_TextureOES = 0x8D65,
 } ppfRtcVideoPixelFormat;
 #endif
 

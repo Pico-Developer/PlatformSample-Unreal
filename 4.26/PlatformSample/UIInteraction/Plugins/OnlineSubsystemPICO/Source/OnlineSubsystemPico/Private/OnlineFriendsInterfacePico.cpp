@@ -17,7 +17,8 @@ void FOnlineFriendsPico::OnQueryFriendsComplete(ppfMessageHandle Message, bool b
     {
         auto Error = ppf_Message_GetError(Message);
         auto ErrorMessage = ppf_Error_GetMessage(Error);
-        FString ErrorMessageStr = UTF8_TO_TCHAR(ErrorMessage);
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        FString ErrorMessageStr = UTF8_TO_TCHAR(ErrorMessage) + FString(". Error Code: ") + ErrorCode;
         UE_LOG_ONLINE_FRIEND(Log, TEXT("PPF_GAME FOnlineFriendsPico::On Query Friends Complete Recive Failed :%s"), *ErrorMessageStr);
         ErrorStr = UTF8_TO_TCHAR(ErrorMessage);
         if (bAppendToExistingMap)

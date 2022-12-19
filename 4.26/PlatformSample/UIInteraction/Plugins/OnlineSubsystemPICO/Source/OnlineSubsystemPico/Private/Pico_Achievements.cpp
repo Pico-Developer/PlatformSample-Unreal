@@ -153,6 +153,8 @@ bool FPicoAchievementsInterface::AddCount(const FString& Name, const int64& Coun
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoAchievements, Log, TEXT("AddCount return failed:%s"), *ErrorMessage);
                 this->AddCountDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InAddCountDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -187,6 +189,8 @@ bool FPicoAchievementsInterface::AddFields(const FString& Name, const FString& F
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoAchievements, Log, TEXT("AddFields return failed:%s"), *ErrorMessage);
                 this->AddFieldsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InAddFieldsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -221,6 +225,8 @@ bool FPicoAchievementsInterface::Unlock(const FString& Name, const FString& Extr
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoAchievements, Log, TEXT("AddFields return failed:%s"), *ErrorMessage);
                 this->UnlockDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InUnlockDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -248,6 +254,8 @@ bool FPicoAchievementsInterface::GetAllDefinitions(int32 PageIndex, int32 PageSi
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoAchievements, Log, TEXT("GetAllDefinitions return failed:%s"), *ErrorMessage);
                 this->GetAllDefinitionsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetAllDefinitionsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -275,6 +283,8 @@ bool FPicoAchievementsInterface::GetAllProgress(int32 PageIndex, int32 PageSize,
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoAchievements, Log, TEXT("GetAllProgress return failed:%s"), *ErrorMessage);
                 this->GetAllProgressDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetAllProgressDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -313,6 +323,8 @@ bool FPicoAchievementsInterface::GetDefinitionsByName(const TArray<FString>& Nam
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoAchievements, Log, TEXT("GetDefinitionsByName return failed:%s"), *ErrorMessage);
                 this->GetDefinitionsByNameDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetDefinitionsByNameDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -351,6 +363,8 @@ bool FPicoAchievementsInterface::GetProgressByName(const TArray<FString>& NameAr
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoAchievements, Log, TEXT("GetProgressByName return failed:%s"), *ErrorMessage);
                 this->GetProgressByNameDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetProgressByNameDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);

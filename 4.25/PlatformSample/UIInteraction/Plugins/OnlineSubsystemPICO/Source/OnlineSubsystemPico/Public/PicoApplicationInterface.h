@@ -26,8 +26,9 @@ DECLARE_LOG_CATEGORY_EXTERN(ApplicationInterface, Log, All);
 // Request
 DECLARE_DELEGATE_ThreeParams(FOnLaunchOtherAppComplete, const FString& /*String Message*/, bool /*IsSuccessed*/, const FString& /*Error Message*/);
 DECLARE_DELEGATE_ThreeParams(FOnLaunchOtherAppByPresenceComplete, const FString& /*String Message*/, bool /*IsSuccessed*/, const FString& /*Error Message*/);
-DECLARE_DELEGATE_ThreeParams(FOnGetVersion, const FString& /*String Message*/, bool /*IsSuccessed*/, const FString& /*Error Message*/);
+DECLARE_DELEGATE_SixParams(FOnGetVersionComplete, int64 /*CurrentCode*/, const FString& /*CurrentName*/, int64 /*LatestCode*/, const FString& /*LatestName*/, bool /*IsSuccessed*/, const FString& /*Error Message*/);
 DECLARE_DELEGATE_ThreeParams(FOnLaunchOtherAppByAppIdComplete, const FString& /*String Message*/, bool /*IsSuccessed*/, const FString& /*Error Message*/);
+DECLARE_DELEGATE_ThreeParams(FOnLaunchStoreComplete, const FString& /*String Message*/, bool /*IsSuccessed*/, const FString& /*Error Message*/);
 
 /// <summary>Pico Application interface class.</summary>
 class ONLINESUBSYSTEMPICO_API FPicoApplicationInterface
@@ -56,8 +57,17 @@ public:
     bool LaunchOtherApp(const FString& PackageName, const FString& Message, const FOnLaunchOtherAppComplete& Delegate = FOnLaunchOtherAppComplete());
     void OnQueryLaunchOtherAppComplete(ppfMessageHandle Message, bool bIsError, const FOnLaunchOtherAppComplete& Delegate);
 
-    bool GetVersion(const FOnGetVersion& Delegate = FOnGetVersion());
-    void OnQueryGetVersionComplete(ppfMessageHandle Message, bool bIsError, const FOnGetVersion& Delegate);
+    /// <summary>
+    /// Get the version information of the current app in the PICO Store.
+    /// </summary>
+    /// <returns>Bool: 
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>
+    bool GetVersion(const FOnGetVersionComplete& Delegate = FOnGetVersionComplete());
+    void OnQueryGetVersionComplete(ppfMessageHandle Message, bool bIsError, const FOnGetVersionComplete& Delegate);
 
     /// <summary>
     /// Launches a different app in a user's library.
@@ -96,6 +106,18 @@ public:
     /// </returns>
     bool LaunchOtherAppByAppId(const FString& AppId, const FString& Message, const FOnLaunchOtherAppByAppIdComplete& Delegate = FOnLaunchOtherAppByAppIdComplete());
     void OnQueryLaunchOtherAppByAppIdComplete(ppfMessageHandle Message, bool bIsError, const FOnLaunchOtherAppByAppIdComplete& Delegate);
+
+    /// <summary>
+    /// Launch the PICO Store and jump to the details page of the current app
+    /// </summary>
+    /// <returns>Bool: 
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>
+    bool LaunchStore(const FOnLaunchStoreComplete& Delegate = FOnLaunchStoreComplete());
+    void OnQueryLaunchStoreComplete(ppfMessageHandle Message, bool bIsError, const FOnLaunchStoreComplete& Delegate);
 };
 /** @} */ // end of Application
 /** @} */ // end of Function

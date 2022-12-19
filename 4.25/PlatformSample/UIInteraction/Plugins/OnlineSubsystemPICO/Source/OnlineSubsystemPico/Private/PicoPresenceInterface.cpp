@@ -55,13 +55,13 @@ bool FPicoPresenceInterface::PresenceClear(const FOnPresenceClearComplete& Deleg
 void FPicoPresenceInterface::OnQueryPresenceClearComplete(ppfMessageHandle Message, bool bIsError, const FOnPresenceClearComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryPresenceClearComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = FString(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     else
@@ -98,14 +98,14 @@ bool FPicoPresenceInterface::ReadInvitableUser(TArray<FString> SuggestedUserList
 void FPicoPresenceInterface::OnQueryReadInvitableUserComplete(ppfMessageHandle Message, bool bIsError, TMap<FString, TSharedRef<FOnlinePicoFriend>>& OutList, bool bAppendToExistingMap, const FOnReadInvitableUserComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryReadInvitableUserComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        UE_LOG_ONLINE_FRIEND(Log, TEXT("FPicoPresenceInterface::On Read Invitable User Complete Recive Failed :%s"), ErrorMessage);
-        ErrorStr = UTF8_TO_TCHAR(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        UE_LOG_ONLINE_FRIEND(Log, TEXT("FPicoPresenceInterface::On Read Invitable User Complete Recive Failed :%s"), *ErrorMessage);
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     auto UserArray = ppf_Message_GetUserArray(Message);
@@ -158,7 +158,7 @@ void FPicoPresenceInterface::OnQueryReadInvitableUserComplete(ppfMessageHandle M
     }
     else
     {
-        Delegate.ExecuteIfBound(true, ErrorStr);
+        Delegate.ExecuteIfBound(true, FString());
     }
 }
 
@@ -196,13 +196,13 @@ bool FPicoPresenceInterface::PresenceSet(const FString& ApiName, const FString& 
 void FPicoPresenceInterface::OnQueryPresenceSetComplete(ppfMessageHandle Message, bool bIsError, const FOnPresenceSetComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryPresenceSetComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = FString(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     else
@@ -231,13 +231,13 @@ bool FPicoPresenceInterface::PresenceSetDestination(const FString& ApiName, cons
 void FPicoPresenceInterface::OnQueryPresenceSetDestinationComplete(ppfMessageHandle Message, bool bIsError, const FOnPresenceSetDestinationComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryPresenceSetDestinationComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = FString(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     else
@@ -266,13 +266,13 @@ bool FPicoPresenceInterface::PresenceSetSetIsJoinable(bool bIsJoinable, const FO
 void FPicoPresenceInterface::OnQueryPresenceSetSetIsJoinableComplete(ppfMessageHandle Message, bool bIsError, const FOnPresenceSetIsJoinableComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryPresenceSetSetIsJoinableComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = FString(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     else
@@ -301,13 +301,13 @@ bool FPicoPresenceInterface::PresenceSetLobbySession(const FString& LobbySession
 void FPicoPresenceInterface::OnQueryPresenceSetLobbySessionComplete(ppfMessageHandle Message, bool bIsError, const FOnPresenceSetLobbySessionComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryPresenceSetLobbySessionComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = FString(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
 
         return;
     }
@@ -337,13 +337,13 @@ bool FPicoPresenceInterface::PresenceSetMatchSession(const FString& MatchSession
 void FPicoPresenceInterface::OnQueryPresenceSetMatchSessionComplete(ppfMessageHandle Message, bool bIsError, const FOnPresenceSetMatchSessionComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryPresenceSetMatchSessionComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = FString(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     else
@@ -372,13 +372,13 @@ bool FPicoPresenceInterface::PresenceSetExtra(const FString& Extra, const FOnPre
 void FPicoPresenceInterface::OnQueryPresenceSetExtraComplete(ppfMessageHandle Message, bool bIsError, const FOnPresenceSetPresenceExtraComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryPresenceSetExtraComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = FString(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     else
@@ -407,13 +407,13 @@ bool FPicoPresenceInterface::PresenceReadSendInvites(const FOnReadSentInvitesCom
 void FPicoPresenceInterface::OnQueryPresenceReadSendInvitesComplete(ppfMessageHandle Message, bool bIsError, TArray<FPicoApplicationInvite>& OutList, bool bAppendToExistingMap, const FOnReadSentInvitesComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryPresenceReadSendInvitesComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = UTF8_TO_TCHAR(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     auto ApplicationInviteArray = ppf_Message_GetApplicationInviteArray(Message);
@@ -503,7 +503,7 @@ void FPicoPresenceInterface::OnQueryPresenceReadSendInvitesComplete(ppfMessageHa
     }
     else
     {
-        Delegate.ExecuteIfBound(true, ErrorStr);
+        Delegate.ExecuteIfBound(true, FString());
     }
 }
 
@@ -538,13 +538,13 @@ bool FPicoPresenceInterface::PresenceGetDestinations(const FOnGetDestinationsCom
 void FPicoPresenceInterface::OnQueryGetDestinationsComplete(ppfMessageHandle Message, bool bIsError, TArray<FPicoDestination>& OutList, bool bAppendToExistingArray, const FOnGetDestinationsComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQueryGetDestinationsComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = UTF8_TO_TCHAR(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     auto GetDestinationArray = ppf_Message_GetDestinationArray(Message);
@@ -583,7 +583,7 @@ void FPicoPresenceInterface::OnQueryGetDestinationsComplete(ppfMessageHandle Mes
     }
     else
     {
-        Delegate.ExecuteIfBound(true, ErrorStr);
+        Delegate.ExecuteIfBound(true, FString());
     }
 }
 
@@ -733,13 +733,13 @@ bool FPicoPresenceInterface::PresenceSendInvites(TArray<FString> UserIdArray, co
 void FPicoPresenceInterface::OnQuerySendInvitesComplete(ppfMessageHandle Message, bool bIsError, TArray<FPicoApplicationInvite>& OutList, bool bAppendToExistingMap, const FOnSentInvitesComplete& Delegate)
 {
     UE_LOG(PresenceInterface, Log, TEXT("FPicoPresenceInterface::OnQuerySendInvitesComplete"));
-    FString ErrorStr;
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        ErrorStr = UTF8_TO_TCHAR(ErrorMessage);
-        Delegate.ExecuteIfBound(false, ErrorStr);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        Delegate.ExecuteIfBound(false, ErrorMessage);
         return;
     }
     auto SendInvitesResult = ppf_Message_GetSendInvitesResult(Message);
@@ -830,6 +830,6 @@ void FPicoPresenceInterface::OnQuerySendInvitesComplete(ppfMessageHandle Message
     }
     else
     {
-        Delegate.ExecuteIfBound(true, ErrorStr);
+        Delegate.ExecuteIfBound(true, FString());
     }
 }

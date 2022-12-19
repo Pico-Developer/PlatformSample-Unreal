@@ -30,59 +30,71 @@ int32 UOnlinePicoFunctionLibrary::VerifyAppCode = 1;
 UOnlineSubsystemPicoManager* UOnlinePicoFunctionLibrary::PicoSubsystemManager = nullptr;
 UOnlinePicoFunctionLibrary::UOnlinePicoFunctionLibrary()
 {
-    PicoSubsystemManager = NewObject<UOnlineSubsystemPicoManager>();
 }
 
 void UOnlinePicoFunctionLibrary::PicoReadFriendList(UObject* WorldContextObject, int32 LocalUserNum, const FString& ListName, FOnlineManagerReadFriendListDelegate InReadFriendListDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->PicoReadFriendList(WorldContextObject, LocalUserNum, ListName, InReadFriendListDelegate);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->PicoReadFriendList(WorldContextObject, LocalUserNum, ListName, InReadFriendListDelegate);
     }
 }
 
 void UOnlinePicoFunctionLibrary::PicoGetFriendList(UObject* WorldContextObject, int32 LocalUserNum, const FString& ListName, TArray<FPicoUserInfo>& OutFriends)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->PicoGetFriendList(WorldContextObject, LocalUserNum, ListName, OutFriends);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->PicoGetFriendList(WorldContextObject, LocalUserNum, ListName, OutFriends);
     }
 }
 
 FPicoUserInfo UOnlinePicoFunctionLibrary::PicoGetFriend(UObject* WorldContextObject, int32 LocalUserNum, const FString& FriendId, const FString& ListName)
 {
     FPicoUserInfo NewFriend;
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        NewFriend = PicoSubsystemManager->PicoGetFriend(WorldContextObject, LocalUserNum, FriendId, ListName);
+        NewFriend = GetOnlineSubsystemPicoManager(WorldContextObject)->PicoGetFriend(WorldContextObject, LocalUserNum, FriendId, ListName);
     }
     return NewFriend;
 }
 
 ERtcEngineInitResult UOnlinePicoFunctionLibrary::PicoGetRtcEngineInit(UObject* WorldContextObject)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PicoRtcEngineInit(WorldContextObject);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PicoRtcEngineInit(WorldContextObject);
     }
     return ERtcEngineInitResult::None;
 }
 
 UOnlineSubsystemPicoManager* UOnlinePicoFunctionLibrary::GetOnlineSubsystemPicoManager(UObject* WorldContextObject)
 {
-
     FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
+
     if (Subsystem)
     {
         if (!PicoSubsystemManager)
         {
-            PicoSubsystemManager = NewObject<UOnlineSubsystemPicoManager>();
+            PicoSubsystemManager = NewObject<UOnlineSubsystemPicoManager>(WorldContextObject);
         }
         return PicoSubsystemManager;
     }
     return nullptr;
 }
 
+
+bool UOnlinePicoFunctionLibrary::ParseErrorInfo(FString InErrorMessage, int32& ErrorCode)
+{
+    ErrorCode = -1;
+    int32 ErrorCodeStart = InErrorMessage.Find(TEXT("Error Code: "));
+    if (ErrorCodeStart == -1)
+    {
+        return false;
+    }
+    FString ErrorCodeStr = InErrorMessage.RightChop(ErrorCodeStart + 12);
+    ErrorCode = FCString::Atoi(*ErrorCodeStr);
+    return true;
+}
 
 void UOnlinePicoFunctionLibrary::FindFileOrForder(TArray<FString>& OutFindArray, const FString& FindName, const FString& FindPath, bool IsFile /*= false*/, bool IsInDirectories /*= true*/)
 {
@@ -124,9 +136,9 @@ void UOnlinePicoFunctionLibrary::FindFileOrForder(TArray<FString>& OutFindArray,
 
 void UOnlinePicoFunctionLibrary::PicoLogin(UObject* WorldContextObject, int32 LocalUserNum, const FString& UserId, const FString& InToken, const FString& InType, FOnlineManagerLoginCompleteDelegate InLoginComleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->PicoLogin(WorldContextObject, LocalUserNum, UserId, InType, InToken, InLoginComleteDelegate);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->PicoLogin(WorldContextObject, LocalUserNum, UserId, InType, InToken, InLoginComleteDelegate);
     }
 }
 
@@ -134,174 +146,174 @@ void UOnlinePicoFunctionLibrary::PicoLogin(UObject* WorldContextObject, int32 Lo
 FString UOnlinePicoFunctionLibrary::PicoGetNickName(UObject* WorldContextObject, int32 LocalUserNum)
 {
     FString NickName = FString();
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        NickName = PicoSubsystemManager->PicoGetNickName(WorldContextObject, LocalUserNum);
+        NickName = GetOnlineSubsystemPicoManager(WorldContextObject)->PicoGetNickName(WorldContextObject, LocalUserNum);
     }
     return NickName;
 }
 
 UPico_User* UOnlinePicoFunctionLibrary::GetLoginPicoUser(UObject* WorldContextObject, int32 LocalUserNum)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->GetLoginPicoUser(WorldContextObject, LocalUserNum);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->GetLoginPicoUser(WorldContextObject, LocalUserNum);
     }
     return nullptr;
 }
 
 void UOnlinePicoFunctionLibrary::PicoRtcGetToken(UObject* WorldContextObject, const FString& UserId, const FString& RoomId, int Ttl, int InValue, FOnlineManagerRtcGetTokenDelegate InRtcGetTokenDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->PicoRtcGetToken(WorldContextObject, UserId, RoomId, Ttl, InValue, InRtcGetTokenDelegate);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->PicoRtcGetToken(WorldContextObject, UserId, RoomId, Ttl, InValue, InRtcGetTokenDelegate);
     }
 }
 
 int UOnlinePicoFunctionLibrary::PicoRtcJoinRoom(UObject* WorldContextObject, const FString& RoomId, const FString& UserId, const FString& Token, const FString& UserExtra, ERtcRoomProfileType InRoomProfileType, bool bIsAutoSubscribeAudio)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->RtcJoinRoom(WorldContextObject, RoomId, UserId, Token, UserExtra, InRoomProfileType, bIsAutoSubscribeAudio);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->RtcJoinRoom(WorldContextObject, RoomId, UserId, Token, UserExtra, InRoomProfileType, bIsAutoSubscribeAudio);
     }
     return 999;
 }
 
 int UOnlinePicoFunctionLibrary::RtcDestroyRoom(UObject* WorldContextObject, const FString& RoomId)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->RtcDestroyRoom(WorldContextObject, RoomId);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->RtcDestroyRoom(WorldContextObject, RoomId);
     }
     return 999;
 }
 
 void UOnlinePicoFunctionLibrary::RtcEnableAudioPropertiesReport(UObject* WorldContextObject, int Interval)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcEnableAudioPropertiesReport(WorldContextObject, Interval);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcEnableAudioPropertiesReport(WorldContextObject, Interval);
     }
 }
 
 int UOnlinePicoFunctionLibrary::RtcLeaveRoom(UObject* WorldContextObject, const FString& RoomId)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->RtcLeaveRoom(WorldContextObject, RoomId);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->RtcLeaveRoom(WorldContextObject, RoomId);
     }
     return 999;
 }
 
 void UOnlinePicoFunctionLibrary::RtcMuteLocalAudio(UObject* WorldContextObject, ERtcMuteState InRtcMuteState)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcMuteLocalAudio(WorldContextObject, InRtcMuteState);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcMuteLocalAudio(WorldContextObject, InRtcMuteState);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcPublishRoom(UObject* WorldContextObject, const FString& RoomId)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcPublishRoom(WorldContextObject, RoomId);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcPublishRoom(WorldContextObject, RoomId);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcRoomPauseAllSubscribedStream(UObject* WorldContextObject, const FString& RoomId, ERtcPauseResumeMediaType InPauseResumeMediaType)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcRoomPauseAllSubscribedStream(WorldContextObject, RoomId, InPauseResumeMediaType);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcRoomPauseAllSubscribedStream(WorldContextObject, RoomId, InPauseResumeMediaType);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcRoomResumeAllSubscribedStream(UObject* WorldContextObject, const FString& RoomId, ERtcPauseResumeMediaType InPauseResumeMediaType)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcRoomResumeAllSubscribedStream(WorldContextObject, RoomId, InPauseResumeMediaType);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcRoomResumeAllSubscribedStream(WorldContextObject, RoomId, InPauseResumeMediaType);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcSetAudioPlaybackDevice(UObject* WorldContextObject, ERtcAudioPlaybackDevice InRtcAudioPlaybackDevice)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcSetAudioPlaybackDevice(WorldContextObject, InRtcAudioPlaybackDevice);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcSetAudioPlaybackDevice(WorldContextObject, InRtcAudioPlaybackDevice);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcSetAudioScenario(UObject* WorldContextObject, ERtcAudioScenarioType InRtcAudioScenarioType)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcSetAudioScenario(WorldContextObject, InRtcAudioScenarioType);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcSetAudioScenario(WorldContextObject, InRtcAudioScenarioType);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcSetCaptureVolume(UObject* WorldContextObject, ERtcStreamIndex InRtcStreamIndex, int InVolume)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcSetCaptureVolume(WorldContextObject, InRtcStreamIndex, InVolume);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcSetCaptureVolume(WorldContextObject, InRtcStreamIndex, InVolume);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcSetEarMonitorMode(UObject* WorldContextObject, ERtcEarMonitorMode InRtcEarMonitorMode)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcSetEarMonitorMode(WorldContextObject, InRtcEarMonitorMode);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcSetEarMonitorMode(WorldContextObject, InRtcEarMonitorMode);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcSetEarMonitorVolume(UObject* WorldContextObject, int InVolume)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcSetEarMonitorVolume(WorldContextObject, InVolume);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcSetEarMonitorVolume(WorldContextObject, InVolume);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcSetPlaybackVolume(UObject* WorldContextObject, int InVolume)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcSetPlaybackVolume(WorldContextObject, InVolume);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcSetPlaybackVolume(WorldContextObject, InVolume);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcStartAudioCapture(UObject* WorldContextObject)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcStartAudioCapture(WorldContextObject);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcStartAudioCapture(WorldContextObject);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcStopAudioCapture(UObject* WorldContextObject)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcStopAudioCapture(WorldContextObject);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcStopAudioCapture(WorldContextObject);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcUnPublishRoom(UObject* WorldContextObject, const FString& RoomId)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcUnPublishRoom(WorldContextObject, RoomId);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcUnPublishRoom(WorldContextObject, RoomId);
     }
 }
 
 void UOnlinePicoFunctionLibrary::RtcUpdateToken(UObject* WorldContextObject, const FString& RoomId, const FString& Token)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->RtcUpdateToken(WorldContextObject, RoomId, Token);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->RtcUpdateToken(WorldContextObject, RoomId, Token);
     }
 }
 
@@ -571,73 +583,73 @@ FOnlineSession UOnlinePicoFunctionLibrary::GetOnlineSession(const FPicoOnlineSes
 
 bool UOnlinePicoFunctionLibrary::CreateSession(UObject* WorldContextObject, int HostingPlayerNum, FName SessionName, const FPicoOnlineSessionSettings& NewSessionSettings, FPicoManagerOnCreateSessionCompleteDelegate OnCreateSessionCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
         if (!IsInputSessionSettingsDataStoreValid(NewSessionSettings))
         {
             return false;
         }
         auto SessionSettings = GetOnlineSessionSettings(NewSessionSettings);
-        return PicoSubsystemManager->CreateSession(WorldContextObject, HostingPlayerNum, SessionName, SessionSettings, OnCreateSessionCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->CreateSession(WorldContextObject, HostingPlayerNum, SessionName, SessionSettings, OnCreateSessionCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::StartSession(UObject* WorldContextObject, FName SessionName, FPicoManagerOnStartSessionCompleteDelegate OnStartSessionCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->StartSession(WorldContextObject, SessionName, OnStartSessionCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->StartSession(WorldContextObject, SessionName, OnStartSessionCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::UpdateSession(UObject* WorldContextObject, FName SessionName, const FPicoOnlineSessionSettings& UpdatedSessionSettings, FPicoManagerOnUpdateSessionCompleteDelegate OnUpdateSessionCompleteDelegate, bool bShouldRefreshOnlineData)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
         if (!IsInputSessionSettingsDataStoreValid(UpdatedSessionSettings))
         {
             return false;
         }
         auto SessionSettings = GetOnlineSessionSettings(UpdatedSessionSettings);
-        return PicoSubsystemManager->UpdateSession(WorldContextObject, SessionName, SessionSettings, OnUpdateSessionCompleteDelegate, bShouldRefreshOnlineData);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->UpdateSession(WorldContextObject, SessionName, SessionSettings, OnUpdateSessionCompleteDelegate, bShouldRefreshOnlineData);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::EndSession(UObject* WorldContextObject, FName SessionName, FPicoManagerOnEndSessionCompleteDelegate OnEndSessionCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->EndSession(WorldContextObject, SessionName, OnEndSessionCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->EndSession(WorldContextObject, SessionName, OnEndSessionCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::DestroySession(UObject* WorldContextObject, FName SessionName, FPicoManagerOnDestroySessionCompleteDelegate OnDestroySessionCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->DestroySession(WorldContextObject, SessionName, OnDestroySessionCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->DestroySession(WorldContextObject, SessionName, OnDestroySessionCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::IsPlayerInSession(UObject* WorldContextObject, FName SessionName, const FString& UniqueId)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
         IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get(TEXT("Pico"));
         auto NetId = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(UniqueId).ToSharedRef();
-        return PicoSubsystemManager->IsPlayerInSession(WorldContextObject, SessionName, NetId.Get());
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->IsPlayerInSession(WorldContextObject, SessionName, NetId.Get());
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::StartMatchmaking(UObject* WorldContextObject, const TArray<FString>& LocalPlayers, FName SessionName, const FPicoOnlineSessionSettings& NewSessionSettings, UPARAM(ref)FPicoOnlineSessionSearch& NewSessionSearch, FPicoManagerOnMatchmakingCompleteDelegate OnMatchmakingCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
 
 
@@ -648,42 +660,42 @@ bool UOnlinePicoFunctionLibrary::StartMatchmaking(UObject* WorldContextObject, c
             auto UniqueNetIdRef = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(LocalPlayers[i]).ToSharedRef();
             GameLocalPlayers.Add(UniqueNetIdRef);
         }
-        return PicoSubsystemManager->StartMatchmaking(WorldContextObject, GameLocalPlayers, SessionName, NewSessionSettings, NewSessionSearch, OnMatchmakingCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->StartMatchmaking(WorldContextObject, GameLocalPlayers, SessionName, NewSessionSettings, NewSessionSearch, OnMatchmakingCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::CancelMatchmaking(UObject* WorldContextObject, int SearchingPlayerNum, FName SessionName, FPicoManagerOnCancelMatchmakingCompleteDelegate OnCancelMatchmakingCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->CancelMatchmaking(WorldContextObject, SearchingPlayerNum, SessionName, OnCancelMatchmakingCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->CancelMatchmaking(WorldContextObject, SearchingPlayerNum, SessionName, OnCancelMatchmakingCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::FindSessions(UObject* WorldContextObject, int32 SearchingPlayerNum, UPARAM(ref)FPicoOnlineSessionSearch& NewSessionSearch, FPicoManagerOnFindSessionCompleteDelegate OnFindSessionCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->FindSessions(WorldContextObject, SearchingPlayerNum, NewSessionSearch, OnFindSessionCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->FindSessions(WorldContextObject, SearchingPlayerNum, NewSessionSearch, OnFindSessionCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::FindSessionById(UObject* WorldContextObject, const FString& SearchingUserId, const FString& SessionId, FPicoManagerOnSingleSessionResultCompleteDelegate OnSingleSessionResultCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
         IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get(TEXT("Pico"));
         auto SearchingUserIdPtr = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(SearchingUserId).ToSharedRef();
         auto SessionIdIdPtr = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(SessionId).ToSharedRef();
 #if ENGINE_MAJOR_VERSION > 4
         FUniqueNetIdStringRef FriendId = FUniqueNetIdString::Create(FString(), FName("PicoSubsystem"));
-        return PicoSubsystemManager->FindSessionById(WorldContextObject, SearchingUserIdPtr.Get(), SessionIdIdPtr.Get(), FriendId.Get(), OnSingleSessionResultCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->FindSessionById(WorldContextObject, SearchingUserIdPtr.Get(), SessionIdIdPtr.Get(), FriendId.Get(), OnSingleSessionResultCompleteDelegate);
 #elif ENGINE_MINOR_VERSION > 24
         FUniqueNetIdString FriendId = FUniqueNetIdString();
-        return PicoSubsystemManager->FindSessionById(WorldContextObject, SearchingUserIdPtr.Get(), SessionIdIdPtr.Get(), FriendId, OnSingleSessionResultCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->FindSessionById(WorldContextObject, SearchingUserIdPtr.Get(), SessionIdIdPtr.Get(), FriendId, OnSingleSessionResultCompleteDelegate);
 #endif
 
     }
@@ -692,7 +704,7 @@ bool UOnlinePicoFunctionLibrary::FindSessionById(UObject* WorldContextObject, co
 
 bool UOnlinePicoFunctionLibrary::JoinSession(UObject* WorldContextObject, int PlayerNum, FName SessionName, const FPicoOnlineSessionSearchResult& SearchResult, FPicoManagerOnJoinSessionCompleteDelegate OnJoinSessionCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
         auto newSession = SearchResult.Session;
         FOnlineSessionSearchResult newResult;
@@ -708,33 +720,33 @@ bool UOnlinePicoFunctionLibrary::JoinSession(UObject* WorldContextObject, int Pl
         newResult.Session.NumOpenPrivateConnections = newSession.NumOpenPrivateConnections;
         newResult.Session.NumOpenPublicConnections = newSession.NumOpenPublicConnections;
         newResult.PingInMs = SearchResult.PingInMs;
-        return PicoSubsystemManager->JoinSession(WorldContextObject, PlayerNum, SessionName, newResult, OnJoinSessionCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->JoinSession(WorldContextObject, PlayerNum, SessionName, newResult, OnJoinSessionCompleteDelegate);
     }
     return false;
 }
 
 void UOnlinePicoFunctionLibrary::DumpSessionState(UObject* WorldContextObject)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->DumpSessionState(WorldContextObject);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->DumpSessionState(WorldContextObject);
     }
 }
 
 EOnlineSessionStatePicoType UOnlinePicoFunctionLibrary::GetSessionState(UObject* WorldContextObject, FName SessionName)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return (EOnlineSessionStatePicoType)PicoSubsystemManager->GetSessionState(WorldContextObject, SessionName);
+        return (EOnlineSessionStatePicoType)GetOnlineSubsystemPicoManager(WorldContextObject)->GetSessionState(WorldContextObject, SessionName);
     }
     return EOnlineSessionStatePicoType::NoSession;
 }
 
 FPicoNamedOnlineSession UOnlinePicoFunctionLibrary::GetNamedSession(UObject* WorldContextObject, FName SessionName)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        auto SessionPtr = PicoSubsystemManager->GetNamedSession(WorldContextObject, SessionName);
+        auto SessionPtr = GetOnlineSubsystemPicoManager(WorldContextObject)->GetNamedSession(WorldContextObject, SessionName);
         if (SessionPtr == nullptr)
             return FPicoNamedOnlineSession();
         return GetPicoOnlineSession(*SessionPtr);
@@ -744,27 +756,27 @@ FPicoNamedOnlineSession UOnlinePicoFunctionLibrary::GetNamedSession(UObject* Wor
 
 FPicoNamedOnlineSession UOnlinePicoFunctionLibrary::AddNamedSessionBySettings(UObject* WorldContextObject, FName SessionName, const FPicoOnlineSessionSettings& SessionSettings)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return GetPicoOnlineSession(*PicoSubsystemManager->AddNamedSession(WorldContextObject, SessionName, GetOnlineSessionSettings(SessionSettings)));
+        return GetPicoOnlineSession(*GetOnlineSubsystemPicoManager(WorldContextObject)->AddNamedSession(WorldContextObject, SessionName, GetOnlineSessionSettings(SessionSettings)));
     }
     return FPicoNamedOnlineSession();
 }
 
 FPicoNamedOnlineSession UOnlinePicoFunctionLibrary::AddNamedSession(UObject* WorldContextObject, FName SessionName, const FPicoOnlineSession& Session)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return GetPicoOnlineSession(*PicoSubsystemManager->AddNamedSession(WorldContextObject, SessionName, GetOnlineSession(Session)));
+        return GetPicoOnlineSession(*GetOnlineSubsystemPicoManager(WorldContextObject)->AddNamedSession(WorldContextObject, SessionName, GetOnlineSession(Session)));
     }
     return FPicoNamedOnlineSession();
 }
 
 FPicoOnlineSessionSettings UOnlinePicoFunctionLibrary::GetSessionSettings(UObject* WorldContextObject, FName SessionName)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        FOnlineSessionSettings* Settings = PicoSubsystemManager->GetSessionSettings(WorldContextObject, SessionName);
+        FOnlineSessionSettings* Settings = GetOnlineSubsystemPicoManager(WorldContextObject)->GetSessionSettings(WorldContextObject, SessionName);
         return GetPicoOnlineSessionSettings(*Settings);
     }
     return FPicoOnlineSessionSettings();
@@ -772,11 +784,11 @@ FPicoOnlineSessionSettings UOnlinePicoFunctionLibrary::GetSessionSettings(UObjec
 
 bool UOnlinePicoFunctionLibrary::SendSessionInviteToFriend(UObject* WorldContextObject, int32 LocalUserNum, FName SessionName, const FString& Friend)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
         IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get(TEXT("Pico"));
         auto ID = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(Friend).ToSharedRef();
-        return PicoSubsystemManager->SendSessionInviteToFriend(WorldContextObject, LocalUserNum, SessionName, ID.Get());
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->SendSessionInviteToFriend(WorldContextObject, LocalUserNum, SessionName, ID.Get());
     }
     return false;
 }
@@ -784,196 +796,206 @@ bool UOnlinePicoFunctionLibrary::SendSessionInviteToFriend(UObject* WorldContext
 // Presence
 bool UOnlinePicoFunctionLibrary::PresenceClear(UObject* WorldContextObject, FOnlineManagerPresenceClearDelegate InPresenceClearDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceClear(WorldContextObject, InPresenceClearDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceClear(WorldContextObject, InPresenceClearDelegate);
     }
     return false;
 }
 
 void UOnlinePicoFunctionLibrary::ReadInvitableUser(UObject* WorldContextObject, TArray<FString> SuggestedUserList, FOnlineManagerPresenceReadInvitableUserDelegate InReadInvitableUserDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        PicoSubsystemManager->ReadInvitableUser(WorldContextObject, SuggestedUserList, InReadInvitableUserDelegate);
+        GetOnlineSubsystemPicoManager(WorldContextObject)->ReadInvitableUser(WorldContextObject, SuggestedUserList, InReadInvitableUserDelegate);
     }
 }
 
 bool UOnlinePicoFunctionLibrary::GetInvitableFriendList(UObject* WorldContextObject, TArray<FPicoUserInfo>& OutFriendsList)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->GetInvitableFriendList(WorldContextObject, OutFriendsList);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->GetInvitableFriendList(WorldContextObject, OutFriendsList);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceSet(UObject* WorldContextObject, const FString& ApiName, const FString& LobbySessionId, const FString& MatchSessionId, bool bIsJoinable, const FString& Extra, FOnlineManagerPresenceSetDelegate InPresenceSetDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceSet(WorldContextObject, ApiName, LobbySessionId, MatchSessionId, bIsJoinable, Extra, InPresenceSetDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceSet(WorldContextObject, ApiName, LobbySessionId, MatchSessionId, bIsJoinable, Extra, InPresenceSetDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceSetDestination(UObject* WorldContextObject, const FString& ApiName, FOnlineManagerPresenceSetDestinationDelegate InPresenceSetDestinationDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceSetDestination(WorldContextObject, ApiName, InPresenceSetDestinationDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceSetDestination(WorldContextObject, ApiName, InPresenceSetDestinationDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceSetIsJoinable(UObject* WorldContextObject, bool bIsJoinable, FOnlineManagerPresenceSetIsJoinableDelegate InPresenceSetIsJoinableDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceSetIsJoinable(WorldContextObject, bIsJoinable, InPresenceSetIsJoinableDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceSetIsJoinable(WorldContextObject, bIsJoinable, InPresenceSetIsJoinableDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceSetLobbySession(UObject* WorldContextObject, const FString& LobbySession, FOnlineManagerPresenceSetLobbySessionDelegate InPresenceSetLobbySessionDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceSetLobbySession(WorldContextObject, LobbySession, InPresenceSetLobbySessionDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceSetLobbySession(WorldContextObject, LobbySession, InPresenceSetLobbySessionDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceSetMatchSession(UObject* WorldContextObject, const FString& MatchSession, FOnlineManagerPresenceSetMatchSessionDelegate InPresenceSetMatchSessionDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceSetMatchSession(WorldContextObject, MatchSession, InPresenceSetMatchSessionDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceSetMatchSession(WorldContextObject, MatchSession, InPresenceSetMatchSessionDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceSetExtra(UObject* WorldContextObject, const FString& Extra, FOnlineManagerPresenceSetExtraDelegate InPresenceSetExtraDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceSetExtra(WorldContextObject, Extra, InPresenceSetExtraDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceSetExtra(WorldContextObject, Extra, InPresenceSetExtraDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceReadSendInvites(UObject* WorldContextObject, FOnlineManagerPresenceReadSentInvitesDelegate InPresenceReadSendInvitesDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceReadSendInvites(WorldContextObject, InPresenceReadSendInvitesDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceReadSendInvites(WorldContextObject, InPresenceReadSendInvitesDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceSendInvites(UObject* WorldContextObject, TArray<FString> UserIdArray, FOnlineManagerPresenceSentInvitesDelegate InPresenceSentInvitesDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceSendInvites(WorldContextObject, UserIdArray, InPresenceSentInvitesDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceSendInvites(WorldContextObject, UserIdArray, InPresenceSentInvitesDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::GetSendInvitesList(UObject* WorldContextObject, TArray<FPicoApplicationInvite>& OutList)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->GetSendInvitesList(WorldContextObject, OutList);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->GetSendInvitesList(WorldContextObject, OutList);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceGetDestinations(UObject* WorldContextObject, FOnlineManagerPresenceGetDestinationsDelegate InPresenceGetDestinationsDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceGetDestinations(WorldContextObject, InPresenceGetDestinationsDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceGetDestinations(WorldContextObject, InPresenceGetDestinationsDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::PresenceGetDestinationsList(UObject* WorldContextObject, TArray<FPicoDestination>& OutList)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->PresenceGetDestinationsList(WorldContextObject, OutList);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->PresenceGetDestinationsList(WorldContextObject, OutList);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::LaunchInvitePanel(UObject* WorldContextObject, FOnlineManagerLaunchInvitePanelDelegate InLaunchInvitePanelDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->LaunchInvitePanel(WorldContextObject, InLaunchInvitePanelDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->LaunchInvitePanel(WorldContextObject, InLaunchInvitePanelDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::ShareMedia(UObject* WorldContextObject, EShareMediaType InMediaType, const FString& InVideoPath, const FString& InVideoThumbPath, TArray<FString> InImagePaths, EShareAppTyp InShareType, FOnlineManagerShareMediaDelegate InShareMediaDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->ShareMedia(WorldContextObject, InMediaType, InVideoPath, InVideoThumbPath, InImagePaths, InShareType, InShareMediaDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->ShareMedia(WorldContextObject, InMediaType, InVideoPath, InVideoThumbPath, InImagePaths, InShareType, InShareMediaDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::LaunchOtherApp(UObject* WorldContextObject, const FString& PackageName, const FString& Message, FOnlineManagerLaunchOtherAppDelegate InLaunchOtherAppDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->LaunchOtherApp(WorldContextObject, PackageName, Message, InLaunchOtherAppDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->LaunchOtherApp(WorldContextObject, PackageName, Message, InLaunchOtherAppDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::GetVersion(UObject* WorldContextObject, FOnlineManagerGetVersionDelegate InGetVersionDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->GetVersion(WorldContextObject, InGetVersionDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->GetVersion(WorldContextObject, InGetVersionDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::LaunchOtherAppByPresence(UObject* WorldContextObject, const FString& AppID, const FString& PackageName, const FString& Message, const FString& ApiName, const FString& LobbySessionId, const FString& MatchSessionId, const FString& TrackId, const FString& Extra, FOnlineManagerLaunchOtherAppByPresenceDelegate InLaunchOtherAppByPresenceDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->LaunchOtherAppByPresence(WorldContextObject, AppID, PackageName, Message, ApiName, LobbySessionId, MatchSessionId, TrackId, Extra, InLaunchOtherAppByPresenceDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->LaunchOtherAppByPresence(WorldContextObject, AppID, PackageName, Message, ApiName, LobbySessionId, MatchSessionId, TrackId, Extra, InLaunchOtherAppByPresenceDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::LaunchOtherAppByAppId(UObject* WorldContextObject, const FString& AppId, const FString& Message, FOnlineManagerLaunchOtherAppByAppIdDelegate InLaunchOtherAppByAppIdDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->LaunchOtherAppByAppId(WorldContextObject, AppId, Message, InLaunchOtherAppByAppIdDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->LaunchOtherAppByAppId(WorldContextObject, AppId, Message, InLaunchOtherAppByAppIdDelegate);
     }
     return false;
 }
-bool UOnlinePicoFunctionLibrary::GetLaunchDetails(UObject* WorldContextObject, FLaunchDetails& OutLaunchDetails)
+
+bool UOnlinePicoFunctionLibrary::LaunchStore(UObject* WorldContextObject, FOnlineManagerLaunchStoreDelegate InLaunchStoreDelegate)
 {
     if (PicoSubsystemManager)
     {
-        return PicoSubsystemManager->GetLaunchDetails(WorldContextObject, OutLaunchDetails);
+        return PicoSubsystemManager->LaunchStore(WorldContextObject, InLaunchStoreDelegate);
+    }
+    return false;
+}
+
+bool UOnlinePicoFunctionLibrary::GetLaunchDetails(UObject* WorldContextObject, FLaunchDetails& OutLaunchDetails)
+{
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
+    {
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->GetLaunchDetails(WorldContextObject, OutLaunchDetails);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::LogDeeplinkResult(UObject* WorldContextObject, const FString& TrackingID, ELaunchResult LaunchResult)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->LogDeeplinkResult(WorldContextObject, TrackingID, LaunchResult);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->LogDeeplinkResult(WorldContextObject, TrackingID, LaunchResult);
     }
     return false;
 }
@@ -1072,7 +1094,7 @@ extern "C" JNIEXPORT void  JNICALL Java_com_epicgames_ue4_GameActivity_JavaToCVe
 // Leaderboard
 bool UOnlinePicoFunctionLibrary::ReadLeaderboards(UObject* WorldContextObject, const TArray<FString>& Players, UPARAM(ref)FPicoOnlineLeaderboardRead& PicoReadObject, FPicoManagerOnReadLeaderboardsCompleteDelegate OnReadLeaderboardsCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
         // Players
         IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get(TEXT("Pico"));
@@ -1083,23 +1105,23 @@ bool UOnlinePicoFunctionLibrary::ReadLeaderboards(UObject* WorldContextObject, c
             auto UniqueNetIdRef = Subsystem->GetIdentityInterface()->CreateUniquePlayerId(Players[i]).ToSharedRef();
             LeaderboardPlayers.Add(UniqueNetIdRef);
         }
-        return PicoSubsystemManager->ReadLeaderboards(WorldContextObject, LeaderboardPlayers, PicoReadObject, OnReadLeaderboardsCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->ReadLeaderboards(WorldContextObject, LeaderboardPlayers, PicoReadObject, OnReadLeaderboardsCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::ReadLeaderboardsForFriends(UObject* WorldContextObject, int32 LocalUserNum, UPARAM(ref)FPicoOnlineLeaderboardRead& PicoReadObject, FPicoManagerOnReadLeaderboardsCompleteDelegate OnReadLeaderboardsCompleteDelegate)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
-        return PicoSubsystemManager->ReadLeaderboardsForFriends(WorldContextObject, LocalUserNum, PicoReadObject, OnReadLeaderboardsCompleteDelegate);
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->ReadLeaderboardsForFriends(WorldContextObject, LocalUserNum, PicoReadObject, OnReadLeaderboardsCompleteDelegate);
     }
     return false;
 }
 
 bool UOnlinePicoFunctionLibrary::WriteLeaderboards(UObject* WorldContextObject, const FString& SessionName, const FString& Player, UPARAM(ref)FPicoOnlineLeaderboardWrite& PicoWriteObject)
 {
-    if (PicoSubsystemManager)
+    if (GetOnlineSubsystemPicoManager(WorldContextObject))
     {
         IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get(TEXT("Pico"));
         UE_LOG_ONLINE_LEADERBOARD(Display, TEXT("PPF_GAME Library WriteLeaderboards begin"));
@@ -1111,7 +1133,7 @@ bool UOnlinePicoFunctionLibrary::WriteLeaderboards(UObject* WorldContextObject, 
         PicoWritePtr->SetIntStat(PicoWritePtr->RatedStat, PicoWriteObject.ValueToWrite);
         TSharedRef<FOnlineLeaderboardWrite, ESPMode::ThreadSafe> PicoWriteRef = PicoWritePtr.ToSharedRef();
 
-        return PicoSubsystemManager->WriteLeaderboards(WorldContextObject, FName(SessionName), LeaderboardPlayer.Get(), PicoWriteRef.Get());
+        return GetOnlineSubsystemPicoManager(WorldContextObject)->WriteLeaderboards(WorldContextObject, FName(SessionName), LeaderboardPlayer.Get(), PicoWriteRef.Get());
     }
     return false;
 }

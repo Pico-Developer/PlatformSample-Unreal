@@ -948,6 +948,17 @@ public:
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Application")
     static bool LaunchOtherApp(UObject* WorldContextObject, const FString& PackageName, const FString& Message, FOnlineManagerLaunchOtherAppDelegate InLaunchOtherAppDelegate);
 
+
+    /// <summary>
+    /// Get the version information of the current app in the PICO Store.
+    /// </summary>
+    /// <param name="WorldContextObject">Used to get the information about the current world.</param> 
+    /// <returns>Bool: 
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Application")
     static bool GetVersion(UObject* WorldContextObject, FOnlineManagerGetVersionDelegate InGetVersionDelegate);
 
@@ -984,6 +995,20 @@ public:
     /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Application")
     static bool LaunchOtherAppByAppId(UObject* WorldContextObject, const FString& AppId, const FString& Message, FOnlineManagerLaunchOtherAppByAppIdDelegate InLaunchOtherAppByAppIdDelegate);
+
+
+    /// <summary>
+    /// Launch the PICO Store and jump to the details page of the current app
+    /// </summary>
+    /// <param name="WorldContextObject">Used to get the information about the current world.</param> 
+    /// <returns>Bool: 
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Application")
+    static bool LaunchStore(UObject* WorldContextObject, FOnlineManagerLaunchStoreDelegate InLaunchStoreDelegate);
 
     /** @} */ // end of BP_Application
 
@@ -1093,6 +1118,17 @@ public:
     UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico")
     static UOnlineSubsystemPicoManager* GetOnlineSubsystemPicoManager(UObject* WorldContextObject);
 
+    /// <summary>Extract ErrorCode from ErrorMessage.</summary>
+    /// <param name="InErrorMessage">Returned from the OnlineSubsystem interface.</param>
+    /// <param name="ErrorCode">Error code returned as a reference.</param>
+    /// <returns>Bool: 
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>
+    UFUNCTION(BlueprintPure, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico")
+    static bool ParseErrorInfo(FString InErrorMessage, int32& ErrorCode);
 
 
     UFUNCTION(BlueprintCallable, Category = "OnlinePico")
@@ -1109,5 +1145,6 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "OnlinePico|PicoEntitlement")
     static FString PicoGetDeviceSN();
+
 };
 

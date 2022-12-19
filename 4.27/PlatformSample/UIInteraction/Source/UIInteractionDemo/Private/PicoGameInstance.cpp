@@ -43,6 +43,8 @@ void UPicoGameInstance::Init()
             //GameInterface = PicoSubsystem->GetSessionInterface();
             GameInterface = PicoSubsystem->GetGameSessionInterface();
             LeaderboardInterface = PicoSubsystem->GetLeaderboardsInterface();
+            AchievementInterface = PicoSubsystem->GetAchievementsInterface();
+            PicoUserInterface = PicoSubsystem->GetPicoUserInterface();
         }
         if (RtcInterface)
         {
@@ -71,6 +73,10 @@ void UPicoGameInstance::Init()
             GameInterface->AddOnSessionUserInviteAcceptedDelegate_Handle(OnSessionUserInviteAcceptedDelegate);
             //GameInterface->GameConnectionCallback.AddUObject(this, &UPicoGameInstance::OnGameConnectionComplete);
             //GameInterface->GameStateResetCallback.AddUObject(this, &UPicoGameInstance::OnGameStateResetComplete);
+        }
+        if (PicoUserInterface)
+        {
+            GetAccessTokenDelegate.BindDynamic(this, &UPicoGameInstance::OnGetAccessTokenComplete);
         }
     }
 }
@@ -144,6 +150,15 @@ void UPicoGameInstance::OnLoginComplete(int LocalUserNum, bool bWasSuccessful, c
     BPLoginComplete(LocalUserNum, bWasSuccessful, UserId.ToString(), ErrorString);
 
     ShowErrorString = ErrorString;
+}
+
+void UPicoGameInstance::OnGetAccessTokenComplete(bool bIsError, const FString& ErrorMessage, const FString& AccessToken)
+{
+    if (bIsError)
+    {
+        UE_LOG(LogTemp, Error, TEXT("OnGetAccessTokenComplete Failed : %s"), *ErrorMessage);
+    }
+    UE_LOG(LogTemp, Display, TEXT("OnGetAccessTokenComplete AccessToken : %s"), *AccessToken);
 }
 
 ERtcEngineInitResult UPicoGameInstance::RtcEngineInit()
@@ -433,7 +448,7 @@ void UPicoGameInstance::OnGameStateResetComplete(bool bWasSuccessful)
 // Game OnComplete
 void UPicoGameInstance::OnStartSessionComplete(FName SessionName, bool bWasSuccessful)
 {
-    OnGameSessionStateChanged(FString::Printf(TEXT("OnStartSessionComplete SessionName: %s, bWasSuccessful: %d"), *SessionName.ToString(), bWasSuccessful));
+    OnGameSessionStateChanged(FString::Printf(TEXT("OnStartSessionComplete %s, SessionName: %s"), bWasSuccessful?TEXT("success"):TEXT("failed"), *SessionName.ToString()));
     if (bWasSuccessful)
     {
         LogSessionData(SessionName);
@@ -474,6 +489,10 @@ void UPicoGameInstance::OnMatchmakingComplete(FName SessionName, bool bWasSucces
         OnGameSessionStateChanged(FString::Printf(TEXT("OnMatchmakingComplete Error! Did not successfully find a matchmaking session!")));
         return;
     }
+    if (!OnJoinSessionCompleteDelegate.IsBound()) {
+        OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnJoinSessionComplete);
+        GameInterface->AddOnJoinSessionCompleteDelegate_Handle(OnJoinSessionCompleteDelegate);
+    }
     bool Result = GameInterface->JoinSession(0, SessionName, SearchSettings->SearchResults[0]);
     FString RoomId = SearchSettings->SearchResults[0].GetSessionIdStr();
     OnGameSessionStateChanged(FString::Printf(TEXT("OnMatchmakingComplete Found a matchmaking session.  JoiningSession RoomId: %s, ExecuteResult: %d"), *RoomId, Result));
@@ -481,11 +500,11 @@ void UPicoGameInstance::OnMatchmakingComplete(FName SessionName, bool bWasSucces
 
 void UPicoGameInstance::OnFindSessionComplete(bool Result)
 {
-    OnGameSessionStateChanged(FString::Printf(TEXT("OnFindSessionComplete Result: %d, SearchResults.Num: %d, SearchResults: "), Result, SearchSettings->SearchResults.Num()));
+    OnGameSessionStateChanged(FString::Printf(TEXT("OnFindSessionComplete %s\nSearchResults.Num: %d\nSearchResults:"), Result?TEXT("success"):TEXT("failed"), SearchSettings->SearchResults.Num()));
     for (int i = 0; i < SearchSettings->SearchResults.Num(); i++)
     {
 #if ENGINE_MINOR_VERSION > 26
-        LogSessionData(SearchSettings->SearchResults[i].Session);
+        LogSessionData(SearchSettings->SearchResults[i].Session, false);
 #elif ENGINE_MINOR_VERSION > 24
         OnGameSessionStateChanged(FString::Printf(TEXT("OnFindSessionComplete RoomId: %s"), *SearchSettings->SearchResults[i].Session.SessionInfo->ToString()));
 #endif       
@@ -508,14 +527,15 @@ void UPicoGameInstance::OnJoinSessionComplete(FName SessionName, EOnJoinSessionC
 
 void UPicoGameInstance::OnFindFriendSessionComplete(int32 LocalPlayerNum, bool bWasSuccessful, const TArray<FOnlineSessionSearchResult>& FriendSearchResults)
 {
-    OnGameSessionStateChanged(FString::Printf(TEXT("OnFindFriendSessionComplete LocalPlayerNum: %d, bWasSuccessful: %d, FriendSearchResults.Num(): %d"), LocalPlayerNum, bWasSuccessful, FriendSearchResults.Num()));
+    OnGameSessionStateChanged(FString::Printf(TEXT("[OnFindFriendSessionComplete]\nLocalPlayerNum: %d\nbWasSuccessful: %d\nFriendSearchResults.Num(): %d\n"), LocalPlayerNum, bWasSuccessful, FriendSearchResults.Num()));
     if (bWasSuccessful)
     {
         if (FriendSearchResults.Num() > 0)
         {
+            OnGameSessionStateChanged(FString::Printf(TEXT("FriendsSessions:\n")));
             for (auto FriendSearchResult : FriendSearchResults)
             {
-                OnGameSessionStateChanged(FString::Printf(TEXT("OnFindFriendSessionComplete add OwningUserName(%s) in FriendsSessions"), *FriendSearchResult.Session.OwningUserName));
+                OnGameSessionStateChanged(FString::Printf(TEXT("key: %s"), *FriendSearchResult.Session.OwningUserId->ToString()));
                 FriendsSessions.Add(FriendSearchResult.Session.OwningUserId->ToString(), FriendSearchResult);
             }
         }
@@ -578,6 +598,10 @@ void UPicoGameInstance::OnFindSessionByIdCompleteAndJoin(int32 LocalUserNum, boo
             OnGameSessionStateChanged(FString::Printf(TEXT("JoinFriendSession GameInterface is invalid")));
             return;
         }
+        if (!OnJoinSessionCompleteDelegate.IsBound()) {
+            OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnJoinSessionComplete);
+            GameInterface->AddOnJoinSessionCompleteDelegate_Handle(OnJoinSessionCompleteDelegate);
+        }
         auto Result = GameInterface->JoinSession(0, TEXT("Game"), SearchResult);
         OnGameSessionStateChanged(FString::Printf(TEXT("OnFindSessionByIdCompleteAndJoin JoinSession ExecuteResult: %d"), Result));
     }
@@ -600,6 +624,10 @@ void UPicoGameInstance::OnSessionUserInviteAccepted(const bool bWasSuccessful, c
         return;
     }
     OnGameSessionStateChanged(FString::Printf(TEXT("OnSessionUserInviteAccepted Start Joining session....")));
+    if (!OnJoinSessionCompleteDelegate.IsBound()) {
+        OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnJoinSessionComplete);
+        GameInterface->AddOnJoinSessionCompleteDelegate_Handle(OnJoinSessionCompleteDelegate);
+    }
     bool Result = GameInterface->JoinSession(ControllerId, TEXT("Game"), InviteResult);
     OnGameSessionStateChanged(FString::Printf(TEXT("OnSessionUserInviteAccepted JoinSession return: %d"), Result));
 }
@@ -621,24 +649,26 @@ void UPicoGameInstance::TestDumpNamedSession(const FNamedOnlineSession* NamedSes
     FString Log;
 	if (NamedSession != NULL)
 	{
-		//LOG_SCOPE_VERBOSITY_OVERRIDE(LogOnlineSession, ELogVerbosity::VeryVerbose);
 		Log = FString::Printf(TEXT("dumping NamedSession: \n"));
 		Log.Append(FString::Printf(TEXT("	SessionName: %s\n"), *NamedSession->SessionName.ToString()));
 		Log.Append(FString::Printf(TEXT("	HostingPlayerNum: %d\n"), NamedSession->HostingPlayerNum));
 		Log.Append(FString::Printf(TEXT("	SessionState: %s\n"), EOnlineSessionState::ToString(NamedSession->SessionState)));
 		Log.Append(FString::Printf(TEXT("	RegisteredPlayers: \n")));
-		if (NamedSession->RegisteredPlayers.Num())
+	    OnGameSessionStateChanged(FString::Printf(TEXT("		num: %d"), NamedSession->RegisteredPlayers.Num()));
+		if (NamedSession->RegisteredPlayers.Num() > 0)
 		{
 			for (int32 UserIdx = 0; UserIdx < NamedSession->RegisteredPlayers.Num(); UserIdx++)
 			{
-				Log.Append(FString::Printf(TEXT("	    %d: %s\n"), UserIdx, *NamedSession->RegisteredPlayers[UserIdx]->ToString()));
+			    if (NamedSession->RegisteredPlayers[UserIdx].Get().IsValid())
+			    {
+			        Log.Append(FString::Printf(TEXT("	    %d: %s\n"), UserIdx, *NamedSession->RegisteredPlayers[UserIdx]->ToString()));
+			    }
 			}
 		}
 		else
 		{
 			Log.Append(FString::Printf(TEXT("	    0 registered players\n")));
 		}
-
 		TestDumpSession(NamedSession, Log);
 	}
     else
@@ -693,8 +723,17 @@ void UPicoGameInstance::TestDumpSessionSettings(const FOnlineSessionSettings* Se
 	}
 }
 
-void UPicoGameInstance::LogSessionData(FOnlineSession& Session)
+void UPicoGameInstance::LogSessionData(FOnlineSession& Session, bool ForceToNamedOnlineSession)
 {
+    OnGameSessionStateChanged(FString::Printf(TEXT("LogSessionData ForceToNamedOnlineSession: %d"), ForceToNamedOnlineSession));
+    if (!ForceToNamedOnlineSession)
+    {
+        FString Log;
+        TestDumpSession(&Session, Log);
+        OnGameSessionStateChanged(FString::Printf(TEXT("%s"), *Log));
+        return;
+    }
+    
     FNamedOnlineSession& NamedSession = static_cast<FNamedOnlineSession&>(Session);
     TestDumpNamedSession(&NamedSession);
 }
@@ -1056,6 +1095,10 @@ bool UPicoGameInstance::JoinSearchResultSession(int SearchResultIndex)
     }
     FOnlineSessionSearchResult SearchResult = SearchSettings->SearchResults[SearchResultIndex];
     OnGameSessionStateChanged(FString::Printf(TEXT("JoinSearchResultSession Trying to join OwningUserId:%s's session"), *SearchResult.Session.OwningUserId->ToString()));
+    if (!OnJoinSessionCompleteDelegate.IsBound()) {
+        OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnJoinSessionComplete);
+        GameInterface->AddOnJoinSessionCompleteDelegate_Handle(OnJoinSessionCompleteDelegate);
+    }
     auto Result = GameInterface->JoinSession(0, TEXT("Game"), SearchResult);
     OnGameSessionStateChanged(FString::Printf(TEXT("JoinSearchResultSession JoinSession ExecuteResult: %d"), Result));
     return Result;
@@ -1065,6 +1108,15 @@ void UPicoGameInstance::JoinFriendSession(const FString& UserID) {
     if (!GameInterface)
     {
         OnGameSessionStateChanged(FString::Printf(TEXT("JoinFriendSession GameInterface is invalid")));
+        return;
+    }
+    if (!OnJoinSessionCompleteDelegate.IsBound()) {
+        OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnJoinSessionComplete);
+        GameInterface->AddOnJoinSessionCompleteDelegate_Handle(OnJoinSessionCompleteDelegate);
+    }
+    if (!FriendsSessions.Contains(UserID))
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("JoinFriendSession input UserID cannot find!")));
         return;
     }
     auto Result = GameInterface->JoinSession(0, TEXT("Game"), FriendsSessions[UserID]);
@@ -1099,7 +1151,7 @@ void UPicoGameInstance::InviteFriendToSession(const FString& FriendUserID)
 
 
 // leaderboard
-void UPicoGameInstance::ReadLeaderboardData(TArray<FString> Players, const FString& LeaderboardName, int PageIndex, int PageSize)
+void UPicoGameInstance::ReadLeaderboards(TArray<FString> Players, const FString& LeaderboardName)
 {
 	auto UserId = IdentityInterface->GetUniquePlayerId(0);
     OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboards input LeaderboardName: %s"), *LeaderboardName));
@@ -1109,51 +1161,71 @@ void UPicoGameInstance::ReadLeaderboardData(TArray<FString> Players, const FStri
         auto UniqueNetIdRef = Online::GetIdentityInterface()->CreateUniquePlayerId(Players[i]).ToSharedRef();
         LeaderboardPlayers.Add(UniqueNetIdRef);
     }
+    LeaderboardInterface->ClearOnLeaderboardReadCompleteDelegates(this);
     if (!OnLeaderboardReadCompleteDelegate.IsBound())
     {
         OnLeaderboardReadCompleteDelegate = FOnLeaderboardReadCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnLeaderboardReadComplete);
-        LeaderboardInterface->AddOnLeaderboardReadCompleteDelegate_Handle(OnLeaderboardReadCompleteDelegate);
     }
-    // use Pico_OnlineLeaderboardRead
-    PicoLeaderboardReadPtr = new Pico_OnlineLeaderboardRead(LeaderboardName, PageIndex, PageSize);
-    auto PicoRef = new FOnlineLeaderboardReadRef(PicoLeaderboardReadPtr);
-	auto Result = LeaderboardInterface->ReadLeaderboards(LeaderboardPlayers, *PicoRef);
-	OnGameSessionStateChanged(FString::Printf(TEXT("use Pico_OnlineLeaderboardRead Result: %s"), Result ? TEXT("true") : TEXT("false")));
-	//LeaderboardInterface->FlushLeaderboards(TEXT("Test"));
+    LeaderboardInterface->AddOnLeaderboardReadCompleteDelegate_Handle(OnLeaderboardReadCompleteDelegate);
 
     // use FOnlineLeaderboardRead
     LeaderboardReadPtr = new FOnlineLeaderboardRead(); 
     auto Ref = new FOnlineLeaderboardReadRef(LeaderboardReadPtr);
     LeaderboardReadPtr->LeaderboardName = FName(LeaderboardName);
-    Result = LeaderboardInterface->ReadLeaderboards(LeaderboardPlayers, *Ref);
+    bool Result = LeaderboardInterface->ReadLeaderboards(LeaderboardPlayers, *Ref);
     OnGameSessionStateChanged(FString::Printf(TEXT("use FOnlineLeaderboardRead Result: %s"), Result ? TEXT("true") : TEXT("false")));
 }
 
-void UPicoGameInstance::ReadLeaderboardsForFriends(const FString& LeaderboardName, int PageIndex, int PageSize)
+void UPicoGameInstance::ReadLeaderboardsWithPicoObject(TArray<FString> Players, const FString& LeaderboardName, int PageIndex, int PageSize)
 {
-    auto UserId = IdentityInterface->GetUniquePlayerId(0);
-    OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboardsForFriends input LeaderboardName: %s"), *LeaderboardName));
-    TArray<TSharedRef<const FUniqueNetId>> Players;
-
-    PicoLeaderboardReadPtr = new Pico_OnlineLeaderboardRead(LeaderboardName, PageIndex, PageSize);
-    auto PicoRef = new FOnlineLeaderboardReadRef(PicoLeaderboardReadPtr);
-    
-    if (!OnLeaderboardReadCompleteDelegate.IsBound())
+    TArray<TSharedRef<const FUniqueNetId>> LeaderboardPlayers;
+    for (int i = 0; i < Players.Num(); i++)
     {
-        OnLeaderboardReadCompleteDelegate = FOnLeaderboardReadCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnLeaderboardReadComplete);
-        LeaderboardInterface->AddOnLeaderboardReadCompleteDelegate_Handle(OnLeaderboardReadCompleteDelegate);
+        auto UniqueNetIdRef = Online::GetIdentityInterface()->CreateUniquePlayerId(Players[i]).ToSharedRef();
+        LeaderboardPlayers.Add(UniqueNetIdRef);
     }
-    auto Result = LeaderboardInterface->ReadLeaderboardsForFriends(0, *PicoRef);
-	OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboardsForFriends ExecuteResult: %d"), Result));
+    LeaderboardInterface->ClearOnLeaderboardReadCompleteDelegates(this);
+    if (!OnLeaderboardReadWithPicoObjectCompleteDelegate.IsBound())
+    {
+        OnLeaderboardReadWithPicoObjectCompleteDelegate = FOnLeaderboardReadCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnLeaderboardReadWithPicoObjectComplete);
+    }
+    LeaderboardInterface->AddOnLeaderboardReadCompleteDelegate_Handle(OnLeaderboardReadWithPicoObjectCompleteDelegate);
+    
+    PicoLeaderboardReadPtr = new Pico_OnlineLeaderboardRead(LeaderboardName, PageIndex, PageSize);
+    const auto PicoRef = new FOnlineLeaderboardReadRef(PicoLeaderboardReadPtr);
+    const auto Result = LeaderboardInterface->ReadLeaderboards(LeaderboardPlayers, *PicoRef);
+    OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboardDataWithPicoObject Result: %s"), Result ? TEXT("true") : TEXT("false")));
+    //LeaderboardInterface->FlushLeaderboards(TEXT("Test")); // todo
+}
+
+void UPicoGameInstance::ReadLeaderboardsForFriendsWithPicoObject(const FString& LeaderboardName, int PageIndex, int PageSize)
+{
+    PicoLeaderboardReadPtr = new Pico_OnlineLeaderboardRead(LeaderboardName, PageIndex, PageSize);
+    const auto PicoRef = new FOnlineLeaderboardReadRef(PicoLeaderboardReadPtr);
+    
+    LeaderboardInterface->ClearOnLeaderboardReadCompleteDelegates(this);
+    if (!OnLeaderboardReadWithPicoObjectCompleteDelegate.IsBound())
+    {
+        OnLeaderboardReadWithPicoObjectCompleteDelegate = FOnLeaderboardReadCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnLeaderboardReadWithPicoObjectComplete);
+    }
+    LeaderboardInterface->AddOnLeaderboardReadCompleteDelegate_Handle(OnLeaderboardReadWithPicoObjectCompleteDelegate);
+    
+    const auto Result = LeaderboardInterface->ReadLeaderboardsForFriends(0, *PicoRef);
+	OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboardsForFriendsWithPicoObject ExecuteResult: %d"), Result));
 }
 
 void UPicoGameInstance::OnLeaderboardReadComplete(bool bWasSuccessful)
 {
     OnGameSessionStateChanged(FString::Printf(TEXT("OnLeaderboardReadComplete bWasSuccessful: %d"), bWasSuccessful));
-    PrintLeaderboardData(PicoLeaderboardReadPtr, PicoLeaderboardReadPtr->PicoLeaderboardName);
     PrintLeaderboardData(LeaderboardReadPtr, LeaderboardReadPtr->LeaderboardName.ToString());
-    
 }
+
+void UPicoGameInstance::OnLeaderboardReadWithPicoObjectComplete(bool bWasSuccessful)
+{
+    OnGameSessionStateChanged(FString::Printf(TEXT("OnLeaderboardReadWithPicoObjectComplete bWasSuccessful: %d"), bWasSuccessful));
+    PrintLeaderboardData(PicoLeaderboardReadPtr, PicoLeaderboardReadPtr->PicoLeaderboardName);
+}
+
 void UPicoGameInstance::PrintLeaderboardData(FOnlineLeaderboardRead* ReadPtr, const FString LeaderboardName)
 {
     FStatsColumnArray ColumnArray;
@@ -1186,7 +1258,7 @@ void UPicoGameInstance::PrintLeaderboardData(FOnlineLeaderboardRead* ReadPtr, co
     }
 }
 
-void UPicoGameInstance::WriteLeaderboardData(const FString& LeaderboardName, int32 ValueToWrite, int UpdateMethod, FString RatedStat)
+void UPicoGameInstance::WriteLeaderboards(const FString& LeaderboardName, const FString& ValueToWrite, int UpdateMethod, FString RatedStat)
 {
 	if (LeaderboardName.IsEmpty())
 	{
@@ -1194,7 +1266,7 @@ void UPicoGameInstance::WriteLeaderboardData(const FString& LeaderboardName, int
 		return;
 	}
  
-    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards Trying to write to leaderboard: %s with data: %i"), *LeaderboardName, ValueToWrite));
+    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards Trying to write to leaderboard: %s with data: %s"), *LeaderboardName, *ValueToWrite));
 	auto UserId = IdentityInterface->GetUniquePlayerId(0);
     if (!UserId.IsValid())
     {
@@ -1206,14 +1278,12 @@ void UPicoGameInstance::WriteLeaderboardData(const FString& LeaderboardName, int
     FOnlineLeaderboardWrite WriteObj;
     OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards, use FOnlineLeaderboardWrite")));
     WriteObj.LeaderboardNames.Add(FName(LeaderboardName));
-    WriteObj.RatedStat = FName(LeaderboardName);
-    WriteObj.SortMethod = ELeaderboardSort::Descending;
-    WriteObj.DisplayFormat = ELeaderboardFormat::Number;
-    WriteObj.UpdateMethod = ELeaderboardUpdateMethod::KeepBest;
-    WriteObj.SetIntStat(FName(LeaderboardName), 777);
-    FVariantData va1;
-    va1.SetValue(777);
-    WriteObj.Properties.Add(FName(LeaderboardName), va1);
+    WriteObj.RatedStat = FName(*RatedStat);
+    FVariantData VariantData;
+    VariantData.SetValue(FCString::Strtoi64(*ValueToWrite, NULL, 10));
+    WriteObj.Properties.Add(*RatedStat, VariantData);
+    // WriteObj.SetIntStat(*RatedStat, ValueToWrite);
+    WriteObj.UpdateMethod = (ELeaderboardUpdateMethod::Type)UpdateMethod;
     if (IOnlineSubsystem* const OnlineSub = IOnlineSubsystem::IsLoaded() ? IOnlineSubsystem::Get() : nullptr)
     {
         IOnlineLeaderboardsPtr Leaderboards = OnlineSub->GetLeaderboardsInterface();
@@ -1223,17 +1293,142 @@ void UPicoGameInstance::WriteLeaderboardData(const FString& LeaderboardName, int
             OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards bResult: %d"), bResult));
         }
     }
+}
 
-    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards, use Pico_OnlineLeaderboardWrite")));
+void UPicoGameInstance::WriteLeaderboardsWithPicoObject(const FString& LeaderboardName, const FString& ValueToWrite, int UpdateMethod, FString RatedStat)
+{
+	if (LeaderboardName.IsEmpty())
+	{
+		OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboardDataWithPicoObject input LeaderboardName is empty!")));
+		return;
+	}
+ 
+    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboardDataWithPicoObject Trying to write to leaderboard: %s with data: %s"), *LeaderboardName, *ValueToWrite));
+	auto UserId = IdentityInterface->GetUniquePlayerId(0);
+    if (!UserId.IsValid())
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboardDataWithPicoObject Please login first!")));
+        return;
+    }
+
+    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboardDataWithPicoObject, use Pico_OnlineLeaderboardWrite")));
     Pico_OnlineLeaderboardWrite LeaderboardWriteObj;
     TArray<FString> LBNames;
-    LBNames.Add("1");
+    LBNames.Add(LeaderboardName);
     LeaderboardWriteObj.PicoLeaderboardNames = LBNames;
     LeaderboardWriteObj.RatedStat = FName(*RatedStat);// TEXT("SCORE");
-    LeaderboardWriteObj.SetIntStat(*RatedStat, ValueToWrite);
+    FVariantData VariantData;
+    VariantData.SetValue(FCString::Strtoi64(*ValueToWrite, NULL, 10));
+    LeaderboardWriteObj.Properties.Add(*RatedStat, VariantData);
+    // LeaderboardWriteObj.SetIntStat(*RatedStat, ValueToWrite);
     LeaderboardWriteObj.UpdateMethod = (ELeaderboardUpdateMethod::Type)UpdateMethod;
     auto Result = LeaderboardInterface->WriteLeaderboards(TEXT("test"), *UserId, LeaderboardWriteObj);
-    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboards ExecuteResult: %d"), Result));
+    OnGameSessionStateChanged(FString::Printf(TEXT("WriteLeaderboardDataWithPicoObject ExecuteResult: %d"), Result));
+}
+
+// achievements
+void UPicoGameInstance::WriteAchievements(const FString& AchievementName, const FString& Value)
+{
+    auto UserId = IdentityInterface->GetUniquePlayerId(0);
+    if (!UserId.IsValid())
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("WriteAchievements Please login first!")));
+        return;
+    }
+    FOnlineAchievement Achievement;
+    Achievement.Id = TEXT(""); // empty
+    OnGameSessionStateChanged(FString::Printf(TEXT("WriteAchievements Trying to get cached achievement: %s"), *AchievementName));
+    AchievementInterface->GetCachedAchievement(*UserId.Get(), AchievementName, Achievement);
+    if (!Achievement.Id.IsEmpty()) {
+        OnGameSessionStateChanged(FString::Printf(TEXT("WriteAchievements Trying to update player achievements to server....")));
+        const FOnlineAchievementsWritePtr WriteObject = MakeShareable(new FOnlineAchievementsWrite());
+        WriteObject->SetIntStat(FName(AchievementName), FCString::Atoi(*Value));
+        FOnlineAchievementsWriteRef WriteObjectRef = WriteObject.ToSharedRef();
+        AchievementInterface->WriteAchievements(
+            *UserId.Get(),
+            WriteObjectRef,
+            FOnAchievementsWrittenDelegate::CreateUObject(this, &UPicoGameInstance::OnAchievementsWriteComplete));
+    }
+}
+void UPicoGameInstance::OnAchievementsWriteComplete(const FUniqueNetId& PlayerId, bool bSuccessful)
+{
+    OnGameSessionStateChanged(FString::Printf(TEXT("OnAchievementsWriteComplete PlayerId: %s, bSuccessful: %s"), *PlayerId.ToString(), bSuccessful?TEXT("true"):TEXT("false")));
+}
+void UPicoGameInstance::RefreshAllAchievementsProgress()
+{
+    auto UserId = IdentityInterface->GetUniquePlayerId(0);
+    if (!UserId.IsValid())
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("RefreshAllAchievementsProgress Please login first!")));
+        return;
+    }
+    OnGameSessionStateChanged(FString::Printf(TEXT("RefreshAllAchievementsProgress UserId: %s"), *UserId->ToString()));
+    AchievementInterface->QueryAchievements(
+        *UserId,
+        FOnQueryAchievementsCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnRefreshAllAchievementsProgressComplete));
+}
+void UPicoGameInstance::OnRefreshAllAchievementsProgressComplete(const FUniqueNetId& PlayerId, bool bSuccessful)
+{
+    OnGameSessionStateChanged(FString::Printf(TEXT("OnRefreshAllAchievementsProgressComplete PlayerId: %s, bSuccessful: %s"), *PlayerId.ToString(), bSuccessful?TEXT("true"):TEXT("false")));
+}
+void UPicoGameInstance::RefreshAllAchievementsDefinition()
+{
+    auto UserId = IdentityInterface->GetUniquePlayerId(0);
+    if (!UserId.IsValid())
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("RefreshAllAchievementsDefinition Please login first!")));
+        return;
+    }
+    AchievementInterface->QueryAchievementDescriptions(
+        *UserId,
+        FOnQueryAchievementsCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnRefreshAllAchievementsDefinitionComplete));
+}
+void UPicoGameInstance::OnRefreshAllAchievementsDefinitionComplete(const FUniqueNetId& PlayerId, bool bSuccessful)
+{
+    OnGameSessionStateChanged(FString::Printf(TEXT("OnRefreshAllAchievementsDefinitionComplete PlayerId: %s, bSuccessful: %s"), *PlayerId.ToString(), bSuccessful?TEXT("true"):TEXT("false")));
+}
+void UPicoGameInstance::GetCachedAchievement(const FString& AchievementName)
+{
+    auto UserId = IdentityInterface->GetUniquePlayerId(0);
+    if (!UserId.IsValid())
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievement Please login first!")));
+        return;
+    }
+    FOnlineAchievement Achievement;
+    const EOnlineCachedResult::Type Type = AchievementInterface->GetCachedAchievement(*UserId, AchievementName, Achievement);
+    // const UEnum* const PrintEnum = StaticEnum<EOnlineCachedResult::Type>();
+    // OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievement Type: %s, Achievement.Id: %s, Achievement.Progress: %f")
+    //     , *PrintEnum->GetDisplayNameTextByValue(static_cast<uint8>(Type)).ToString(), *Achievement.Id, Achievement.Progress));
+    OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievement Type: %s, Achievement.Id: %s, Achievement.Progress: %f")
+        , Type == 0?TEXT("Success"):TEXT("NotFound"), *Achievement.Id, Achievement.Progress));
+}
+void UPicoGameInstance::GetCachedAchievements()
+{
+    auto UserId = IdentityInterface->GetUniquePlayerId(0);
+    if (!UserId.IsValid())
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievements Please login first!")));
+        return;
+    }
+    TArray<FOnlineAchievement> Achievements;
+    const EOnlineCachedResult::Type Type = AchievementInterface->GetCachedAchievements(*UserId, Achievements);
+    // const UEnum* const PrintEnum = StaticEnum<EOnlineCachedResult::Type>();
+    // OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievements Type: %s, TArray Num: %d"), *PrintEnum->GetDisplayNameTextByValue(static_cast<uint8>(Type)).ToString(), Achievements.Num()));
+    OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievements Type: %s, TArray Num: %d"), Type == 0?TEXT("Success"):TEXT("NotFound"), Achievements.Num()));
+    for (int i = 0; i < Achievements.Num(); i++)
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievements i: %d, Achievement.DebugString: %s")
+        , i, *Achievements[i].ToDebugString()));
+    }
+}
+void UPicoGameInstance::GetCachedAchievementDescription(const FString& AchievementName)
+{
+    FOnlineAchievementDescPico AchievementDesc;
+    AchievementDesc.Title = FText::FromString(TEXT("USEPICODESC"));
+    const EOnlineCachedResult::Type Type = AchievementInterface->GetCachedAchievementDescription(AchievementName, AchievementDesc);
+    OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievementDescription Type: %s, AchievementDesc DebugString: %s"), Type == 0?TEXT("Success"):TEXT("NotFound")
+        , *AchievementDesc.ToDebugString()));
 }
 
 

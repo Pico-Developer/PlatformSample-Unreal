@@ -23,6 +23,12 @@
 #include "PPF_RtcAudioFrameOptions.h"
 #include "PPF_RtcVideoFrameOptions.h"
 
+#ifdef __ANDROID__
+
+#include <jni.h>
+PPF_PUBLIC_FUNCTION(bool) ppf_Rtc_SetHardWareEncodeContext(jobject j_egl_context);
+PPF_PUBLIC_FUNCTION(void) ppf_Rtc_ClearHardWareEncodeContext();
+#endif
 /// @file PPF_Functions_Rtc.h
 /// @ingroup RTC
 
@@ -32,6 +38,7 @@
 ///
 /// Should call this function before using RTC related functions.
 PPF_PUBLIC_FUNCTION(ppfRtcEngineInitResult) ppf_Rtc_InitRtcEngine();
+PPF_PUBLIC_FUNCTION(void) ppf_Rtc_UnInitRtcEngine();
 
 /// @brief Create or join a RTC room.
 ///

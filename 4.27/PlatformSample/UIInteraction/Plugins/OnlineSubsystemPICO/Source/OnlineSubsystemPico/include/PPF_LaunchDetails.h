@@ -41,6 +41,10 @@ ppf_LaunchDetails_GetExtra(const ppfLaunchDetailsHandle obj);
 PPF_PUBLIC_FUNCTION(ppfID)
 ppf_LaunchDetails_GetRoomID(const ppfLaunchDetailsHandle obj);
 
+/// @brief If provided, the intended challenge the user would like to be in
+PPF_PUBLIC_FUNCTION(ppfID)
+ppf_LaunchDetails_GetChallengeID(const ppfLaunchDetailsHandle obj);
+
 /// @brief A unique identifer to keep track of a user going through the deeplinking
 /// flow
 PPF_PUBLIC_FUNCTION(const char *)
@@ -54,5 +58,8 @@ ppf_LaunchDetails_GetUsers(const ppfLaunchDetailsHandle obj);
 
 PPF_PUBLIC_FUNCTION(ppfLaunchType)
 ppf_LaunchDetails_GetLaunchType(const ppfLaunchDetailsHandle obj);
+
+PPF_PUBLIC_FUNCTION(const char*)
+ppf_LaunchDetails_GetClientAction(const ppfLaunchDetailsHandle obj);
 
 #endif // MATRIX_PPF_LAUNCHDETAILS_H

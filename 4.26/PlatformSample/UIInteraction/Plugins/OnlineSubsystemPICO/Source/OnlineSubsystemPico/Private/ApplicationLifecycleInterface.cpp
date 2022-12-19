@@ -42,6 +42,11 @@ bool FApplicationLifecycleInterface::ReadLaunchDetails()
     FString IDstr = FString::Printf(TEXT("%llu"), ID);
     LaunchDetails.RoomID = IDstr;
     LaunchDetails.TrackingID = UTF8_TO_TCHAR(ppf_LaunchDetails_GetTrackingID(LaunchDetailsHandle));
+#if PLATFORM_ANDROID
+    ppfID ChallengeID = ppf_LaunchDetails_GetChallengeID(LaunchDetailsHandle);
+    FString ChallengeIDStr = FString::Printf(TEXT("%llu"), ChallengeID);
+    LaunchDetails.ChallengeID = ChallengeIDStr;
+#endif
     ELaunchType LaunchType = ELaunchType::Unknown;
     ppfLaunchType pLaunchType = ppf_LaunchDetails_GetLaunchType(LaunchDetailsHandle);
     if (pLaunchType == ppfLaunchType_Normal)

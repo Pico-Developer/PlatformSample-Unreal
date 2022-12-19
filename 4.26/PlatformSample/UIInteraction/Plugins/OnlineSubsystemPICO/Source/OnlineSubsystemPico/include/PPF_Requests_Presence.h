@@ -62,6 +62,7 @@ PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Presence_GetSentInvites();
 /// If no error occurred, the message will contain a payload of type ::ppfSendInvitesResultHandle.
 /// Extract the payload from the message handle with ::ppf_Message_GetSendInvitesResult().
 PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Presence_SendInvites(const char **userIDs, unsigned int userIDLength);
+PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Presence_SendCustomInvites(const char*msg,const char **userIDs, unsigned int userIDLength);
 
 /// @brief Set group presence for running app
 ///
@@ -146,11 +147,6 @@ PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Presence_GetNextDestinationArrayPage(const c
 PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Presence_ShareMedia(ppfShareMediaOptionsHandle shareMediaOptions);
 
 // 调起邀请好友面板
-PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Presence_LaunchInvitePanel();
-
-PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Presence_ShareMedia(ppfShareMediaOptionsHandle shareMediaOptions);
-
-// Launch 
 PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Presence_LaunchInvitePanel();
 
 

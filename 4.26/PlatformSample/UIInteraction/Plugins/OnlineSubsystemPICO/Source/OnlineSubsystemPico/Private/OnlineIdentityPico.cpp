@@ -408,6 +408,8 @@ void FOnlineIdentityPico::OnLoginComplete(ppfMessageHandle Message, bool bIsErro
     {
         auto Error = ppf_Message_GetError(Message);
         ErrorStr = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorStr = ErrorStr + FString(". Error Code: ") + ErrorCode;
     }
     else
     {

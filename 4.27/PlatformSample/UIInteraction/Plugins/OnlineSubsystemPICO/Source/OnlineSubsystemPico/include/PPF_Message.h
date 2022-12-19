@@ -84,6 +84,7 @@
 #include "PPF_ProductArray.h"
 #include "PPF_Purchase.h"
 #include "PPF_PermissionResult.h"
+#include "PPF_ApplicationVersion.h"
 
 // dlc start
 #include "PPF_AssetDetails.h"
@@ -114,6 +115,8 @@ PPF_PUBLIC_FUNCTION(ppfUserArrayHandle)                          ppf_Message_Get
 PPF_PUBLIC_FUNCTION(ppfLaunchFriendRequestFlowResultHandle)      ppf_Message_GetLaunchFriendRequestFlowResult(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfUserAndRoomArrayHandle) ppf_Message_GetUserAndRoomArray(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfPermissionResultHandle) ppf_Message_GetPermissionResult(const ppfMessageHandle obj);
+PPF_PUBLIC_FUNCTION(ppfApplicationVersionHandle) ppf_Message_GetApplicationVersion(const ppfMessageHandle obj);
+
 
 
 
@@ -185,7 +188,6 @@ PPF_PUBLIC_FUNCTION(ppfChallengeEntryArrayHandle)                ppf_Message_Get
 PPF_PUBLIC_FUNCTION(ppfPurchaseArrayHandle) ppf_Message_GetPurchaseArray(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfProductArrayHandle) ppf_Message_GetProductArray(const ppfMessageHandle obj);
 PPF_PUBLIC_FUNCTION(ppfPurchaseHandle) ppf_Message_GetPurchase(const ppfMessageHandle obj);
-
 
 //Sport
 PPF_PUBLIC_FUNCTION(ppfSportUserInfoHandle) ppf_Message_GetSportUserInfo(const ppfMessageHandle obj);

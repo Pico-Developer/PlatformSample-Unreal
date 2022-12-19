@@ -24,5 +24,8 @@ PPF_PUBLIC_FUNCTION(ppfRequest) ppf_IAP_GetViewerPurchases();
 
 PPF_PUBLIC_FUNCTION(ppfRequest) ppf_IAP_LaunchCheckoutFlow(const char* sku,const char *price,const char *currency);
 
+
+PPF_PUBLIC_FUNCTION(ppfRequest) ppf_IAP_LaunchCheckoutFlowV2(const char* sku,const char* price,const char* currency, const char* outerId);
+
 #endif
 

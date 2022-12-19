@@ -45,6 +45,8 @@ protected:
     IOnlineIdentityPtr IdentityInterface;
     TSharedPtr<FRTCPicoUserInterface> RtcInterface;
     IOnlineLeaderboardsPtr LeaderboardInterface;
+    IOnlineAchievementsPtr AchievementInterface;
+    TSharedPtr<FPicoUserInterface> PicoUserInterface;
 
     virtual void Init() override;
 protected:
@@ -92,9 +94,10 @@ public:
 
    
 
-
-
-
+    FGetAccessTokenResult GetAccessTokenDelegate;
+    
+    UFUNCTION()
+    void OnGetAccessTokenComplete(bool bIsError, const FString& ErrorMessage, const FString& AccessToken);
 
 
 
@@ -323,22 +326,48 @@ public:
 
     // leaderboard
     UFUNCTION(BlueprintCallable, Category = PicoGame)
-    void ReadLeaderboardData(TArray<FString> Players, const FString& LeaderboardName, int PageIndex, int PageSize);
+    void ReadLeaderboards(TArray<FString> Players, const FString& LeaderboardName);
+    
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void ReadLeaderboardsWithPicoObject(TArray<FString> Players, const FString& LeaderboardName, int PageIndex, int PageSize);
+    
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void ReadLeaderboardsForFriendsWithPicoObject(const FString& LeaderboardName, int PageIndex, int PageSize);
     
     void OnLeaderboardReadComplete(bool bInIsError);
 
-    void PrintLeaderboardData(FOnlineLeaderboardRead* ReadPtr, const FString LeaderboardName);
+    void OnLeaderboardReadWithPicoObjectComplete(bool bWasSuccessful);
 
-    UFUNCTION(BlueprintCallable, Category = PicoGame)
-    void ReadLeaderboardsForFriends(const FString& LeaderboardName, int PageIndex, int PageSize);
+    void PrintLeaderboardData(FOnlineLeaderboardRead* ReadPtr, const FString LeaderboardName);
     
     UFUNCTION(BlueprintCallable, Category = PicoGame)
-    void WriteLeaderboardData(const FString& LeaderboardName, int32 ValueToWrite, int UpdateMethod, FString RatedStat);
+    void WriteLeaderboards(const FString& LeaderboardName, const FString& ValueToWrite, int UpdateMethod, FString RatedStat);
 
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void WriteLeaderboardsWithPicoObject(const FString& LeaderboardName, const FString& ValueToWrite, int UpdateMethod, FString RatedStat);
+    
     void LogSessionData(FName SessionName);
 
-    void LogSessionData(FOnlineSession& Session);
+    void LogSessionData(FOnlineSession& Session, bool ForceToNamedOnlineSession = true);
 
+    // achievements
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void WriteAchievements(const FString& AchievementName, const FString& Value);
+
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void RefreshAllAchievementsProgress();
+
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void RefreshAllAchievementsDefinition();
+
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void GetCachedAchievement(const FString& AchievementName);
+
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void GetCachedAchievements();
+
+    UFUNCTION(BlueprintCallable, Category = PicoGame)
+    void GetCachedAchievementDescription(const FString& AchievementName);
 
 private:
     FOnCreateSessionCompleteDelegate OnCreateSessionCompleteDelegate;
@@ -352,6 +381,7 @@ private:
     FOnSingleSessionResultCompleteDelegate OnFindSessionByIdCompleteAndJoinDelegate;
     FOnFindFriendSessionCompleteDelegate OnFindFriendSessionCompleteDelegate;
     FOnSessionUserInviteAcceptedDelegate OnSessionUserInviteAcceptedDelegate;
+    FOnJoinSessionCompleteDelegate OnJoinSessionCompleteDelegate;
     
     TMap<FString, FOnlineSessionSearchResult> FriendsSessions;
     TMap<FString, TSharedRef<const FUniqueNetId>> FriendsToInvite;
@@ -362,9 +392,15 @@ private:
     Pico_OnlineLeaderboardRead* PicoLeaderboardReadPtr;
     FOnlineLeaderboardRead* LeaderboardReadPtr;
     FOnLeaderboardReadCompleteDelegate OnLeaderboardReadCompleteDelegate;
+    FOnLeaderboardReadCompleteDelegate OnLeaderboardReadWithPicoObjectCompleteDelegate;
 
-    // todo
-    //FOnJoinSessionCompleteDelegate OnJoinSessionCompleteDelegate;
+    // achievements
+    void OnAchievementsWriteComplete(const FUniqueNetId& PlayerId, bool bSuccessful);
+
+    void OnRefreshAllAchievementsProgressComplete(const FUniqueNetId& PlayerId, bool bSuccessful);
+
+    void OnRefreshAllAchievementsDefinitionComplete(const FUniqueNetId& PlayerId, bool bSuccessful);
+
 private:
     
     void TestDumpNamedSession(const FNamedOnlineSession* NamedSession);

@@ -82,7 +82,7 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = Feature, Meta = (EditCondition = "bEnableFoveation", DisplayName = "Foveation Level"))
 		TEnumAsByte<EFoveationLevel::Type> FoveationLevel;
 
-	UPROPERTY(Config, EditAnywhere, Category = Feature, Meta = (DisplayName = "Enable Eye Tracking", ToolTip = "Enable Eye Tracking"))
+	//UPROPERTY(Config, EditAnywhere, Category = Feature, Meta = (DisplayName = "Enable Eye Tracking", ToolTip = "Enable Eye Tracking"))
 		bool bEnableEyeTracking;
 
 	//UPROPERTY(Config, EditAnywhere, Category = Feature, Meta = (DisplayName = "Face Tracking Mode", ToolTip = "Face Tracking Mode"))

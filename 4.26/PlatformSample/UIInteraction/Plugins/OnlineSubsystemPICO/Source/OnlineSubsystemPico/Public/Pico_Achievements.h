@@ -350,7 +350,7 @@ private:
     long long Count = 0;
     bool IsUnlocked = false;
     FString Name = FString();
-    uint64_t ID = 0;
+    ppfID ID = 0;
     unsigned long long UnlockTime = 0;
     TArray<uint8> ExtraData;
 public:
@@ -400,7 +400,7 @@ private:
     FString Title = FString();
     bool IsArchived = false;
     bool IsSecret = false;
-    uint64_t ID = 0;
+    ppfID ID = 0;
     FString UnlockedDescription = FString();
     EAchievementWritePolicy WritePolicy = EAchievementWritePolicy::Unknown;
     FString LockedImageURL = FString();

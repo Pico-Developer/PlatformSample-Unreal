@@ -35,7 +35,9 @@ bool FPicoLeaderboardsInterface::Get(const FString& LeaderboardName, FGet InGetD
 			if (bIsError)
 			{
 				auto Error = ppf_Message_GetError(Message);
-				FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
 				UE_LOG(PicoLeaderboards, Log, TEXT("Get return failed:%s"), *ErrorMessage);
 				this->GetDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
 				InGetDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -65,7 +67,9 @@ bool FPicoLeaderboardsInterface::GetEntries(const FString& LeaderboardName, int 
 			if (bIsError)
 			{
 				auto Error = ppf_Message_GetError(Message);
-				FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
 				UE_LOG(PicoLeaderboards, Log, TEXT("GetEntries return failed:%s"), *ErrorMessage);
 				this->GetEntriesDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
 				InGetEntriesDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -95,7 +99,9 @@ bool FPicoLeaderboardsInterface::GetEntriesAfterRank(const FString& LeaderboardN
 			if (bIsError)
 			{
 				auto Error = ppf_Message_GetError(Message);
-				FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
 				UE_LOG(PicoLeaderboards, Log, TEXT("GetEntriesAfterRank return failed:%s"), *ErrorMessage);
 				this->GetEntriesAfterRankDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
 				InGetEntriesAfterRankDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -137,7 +143,9 @@ bool FPicoLeaderboardsInterface::GetEntriesByIds(const FString& LeaderboardName,
 			if (bIsError)
 			{
 				auto Error = ppf_Message_GetError(Message);
-				FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
 				UE_LOG(PicoLeaderboards, Log, TEXT("GetEntriesByIds return failed:%s"), *ErrorMessage);
 				this->GetEntriesByIdsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
 				InGetEntriesByIdsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -174,7 +182,9 @@ bool FPicoLeaderboardsInterface::WriteEntry(const FString& LeaderboardName, cons
 			if (bIsError)
 			{
 				auto Error = ppf_Message_GetError(Message);
-				FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
 				UE_LOG(PicoLeaderboards, Log, TEXT("WriteEntry return failed:%s"), *ErrorMessage);
 				this->WriteEntryDelegate.ExecuteIfBound(true, ErrorMessage, false);
 				InWriteEntryDelegate.ExecuteIfBound(true, ErrorMessage, false);
@@ -212,7 +222,9 @@ bool FPicoLeaderboardsInterface::WriteEntryWithSupplementaryMetric(const FString
 			if (bIsError)
 			{
 				auto Error = ppf_Message_GetError(Message);
-				FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
 				UE_LOG(PicoLeaderboards, Log, TEXT("WriteEntryWithSupplementaryMetric return failed:%s"), *ErrorMessage);
 				this->WriteEntryWithSupplementaryMetricDelegate.ExecuteIfBound(true, ErrorMessage, false);
 				InWriteEntryWithSupplementaryMetricDelegate.ExecuteIfBound(true, ErrorMessage, false);
@@ -374,7 +386,7 @@ void UPico_LeaderboardEntry::InitParams(ppfLeaderboardEntryHandle ppfLeaderboard
 	if (SupplementaryMetricHandle != nullptr)
 	{
 		SupplementaryMetricOptional.ID = FString::Printf(TEXT("%llu"), ppf_SupplementaryMetric_GetID(SupplementaryMetricHandle));
-		SupplementaryMetricOptional.Metric = FString::Printf(TEXT("%llu"), ppf_SupplementaryMetric_GetMetric(SupplementaryMetricHandle));
+		SupplementaryMetricOptional.Metric = FString::Printf(TEXT("%lld"), ppf_SupplementaryMetric_GetMetric(SupplementaryMetricHandle));
 	}
 }
 

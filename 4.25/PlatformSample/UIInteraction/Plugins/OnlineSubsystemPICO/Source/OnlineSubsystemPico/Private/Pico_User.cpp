@@ -406,6 +406,8 @@ bool FPicoUserInterface::GetLoginUser(FGetLoginUser InGetLoginUserDelegate)
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("GetLoginUser return failed:%s"), *ErrorMessage);
                 this->GetLoginUserDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetLoginUserDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -433,6 +435,8 @@ bool FPicoUserInterface::GetUserInfo(const FString& UserId, FGetUserInfo InGetUs
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("GetUserInfo return failed:%s"), *ErrorMessage);
                 this->GetUserInfoDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetUserInfoDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -460,6 +464,8 @@ bool FPicoUserInterface::GetLoggedInUserAndRoom(FGetLoggedInUserFriendsAndRooms 
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("GetLoggedInUserAndRoom return failed:%s"), *ErrorMessage);
                 this->GetLoggedInUserFriendsAndRoomsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetLoggedInuserFriendsAndRoomsCallback.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -487,6 +493,8 @@ bool FPicoUserInterface::GetNextUserAndRoomArrayPage(UPico_UserAndRoomArray* InU
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("GetNextUserAndRoomArrayPage return failed:%s"), *ErrorMessage);
                 this->GetNextUserAndRoomArrayPageDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetNextUserAndRoomArrayPageCallback.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -514,6 +522,8 @@ bool FPicoUserInterface::GetUserFriends(FGetLoggedInUserFriends InGetLoggedInUse
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("GetUserFriends return failed:%s"), *ErrorMessage);
                 this->GetLoggedInUserFriendsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 InGetLoggedInUserFriendsCallback.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -541,6 +551,8 @@ bool FPicoUserInterface::GetNextUserPage(UPico_UserArray* InUserArray, FGetNextU
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("GetNextUserPage return failed:%s"), *ErrorMessage);
                 this->GetNextUserFriendsPageDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 OnGetNextUserPageCallback.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -569,6 +581,8 @@ bool FPicoUserInterface::LaunchFriendRequestFlow(const FString UserId, FLaunchFr
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("LaunchFriendRequestFlow return failed:%s"), *ErrorMessage);
                 this->LaunchFriendRequestDelegate.ExecuteIfBound(true, ErrorMessage, false, false);
                 OnLaunchFriendRequestResultCallback.ExecuteIfBound(true, ErrorMessage, false, false);
@@ -598,6 +612,8 @@ bool FPicoUserInterface::GetAccessToken(FGetAccessTokenResult OnGetAccessTokenRe
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("GetAccessToken return failed:%s"), *ErrorMessage);
                 this->GetAccesstokenDelegate.ExecuteIfBound(true, ErrorMessage, FString());
                 OnGetAccessTokenResultCallback.ExecuteIfBound(true, ErrorMessage, FString());
@@ -624,6 +640,8 @@ bool FPicoUserInterface::GetAuthorizePermissions(FGetPermissionResult OnGetPermi
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("GetAuthorizePermissions return failed:%s"), *ErrorMessage);
                 this->GetAuthorizePermissionsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 OnGetPermissionResultCallback.ExecuteIfBound(true, ErrorMessage, nullptr);
@@ -661,6 +679,8 @@ bool FPicoUserInterface::RequestUserPermissions(TArray<FString> Permissions, FGe
             {
                 auto Error = ppf_Message_GetError(Message);
                 FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                 UE_LOG(PicoUser, Log, TEXT("RequestUserPermissions return failed:%s"), *ErrorMessage);
                 this->RequestUserPermissionsDelegate.ExecuteIfBound(true, ErrorMessage, nullptr);
                 OnGetPermissionResultCallback.ExecuteIfBound(true, ErrorMessage, nullptr);

@@ -14,7 +14,8 @@ void UPico_DataStore::InitParams(ppfDataStore* InppfDataStoreHandle)
     UE_LOG(DataStore, Log, TEXT("DataStore init GetNumKeys:%i"), NumKey);
     for (int i = 0; i < NumKey; i++)
     {
-        FString Key = ppf_DataStore_GetKey(InppfDataStoreHandle, i);
+        FString Key = UTF8_TO_TCHAR(ppf_DataStore_GetKey(InppfDataStoreHandle, i));
+        UE_LOG(DataStore, Log, TEXT("UPico_DataStore::InitParams Key:%s"), *Key);
         KeyArray.Add(Key);
         FString Value = ppf_DataStore_GetValue(InppfDataStoreHandle, TCHAR_TO_UTF8(*Key));
         DataStoreMap.Add(Key, Value);

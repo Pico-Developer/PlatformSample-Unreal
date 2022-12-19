@@ -68,7 +68,9 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FChallengeLeave, bool, bIsError, const FStr
 
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FChallengeJoin, bool, bIsError, const FString&, ErrorMessage, UPico_Challenge*,
                                      Challenge);
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FChallengeLaunchInvitableUserFlow, bool, bIsError, int, ErrorCode, const FString&, ErrorMessage);
 
+DECLARE_MULTICAST_DELEGATE_FourParams(FChallengeInviteAcceptedOrLaunchAppNotify, bool, /*bIsError*/ int, /*ErrorCode*/ const FString&, /*ErrorMessage*/ const FString& /*ChallengeID*/);
 /** @addtogroup Function Function
  *  This is the Function group
  *  @{
@@ -97,7 +99,13 @@ public:
 	FChallengeJoin JoinDelegate;
 	FChallengeLeave LeaveDelegate;
 	FChallengeInvite InviteDelegate;
+	FChallengeLaunchInvitableUserFlow LaunchInvitableUserFlowDelegate;
 
+	FChallengeInviteAcceptedOrLaunchAppNotify ChallengeInviteAcceptedOrLaunchAppNotify;
+	
+	FDelegateHandle ChallengeInviteAcceptedOrLaunchAppHandle;
+	void OnChallengeInviteAcceptedOrLaunchAppNotification(ppfMessageHandle Message, bool bIsError);
+	
     /// <summary>Gets a specified challenge by ID.</summary>
     /// <param name="ChallengeID">Challenge ID.</param>
     /// <param name="InGetDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
@@ -232,6 +240,17 @@ public:
     /// </ul>
     /// </returns> 
 	bool Invite(const FString& ChallengeID, const TArray<FString>& UserIDs, FChallengeInvite Delegate);
+
+	/// <summary>Launch the invitable user flow to invite to join a challenge.</summary>
+	/// <param name="ChallengeID">Challenge ID.</param>
+	/// <param name="Delegate>Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
+	/// <returns>Bool: 
+	/// <ul>
+	/// <li>`true`: success</li>
+	/// <li>`false`: failure</li>
+	/// </ul>
+	/// </returns> 
+	bool LaunchInvitableUserFlow(const FString& ChallengeID, FChallengeLaunchInvitableUserFlow Delegate);
 
 };
 
@@ -412,6 +431,19 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void Invite(UObject* WorldContextObject, const FString& ChallengeID, const TArray<FString>& UserIDs, 
 	                          FChallengeInvite Delegate);
+
+	/// <summary>Launch the invitable user flow to invite to join a challenge.</summary>
+	/// <param name="WorldContextObject">Used to get the information about the current world.</param>
+	/// <param name="ChallengeID">Challenge ID.</param>
+	/// <param name="Delegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
+	/// <returns>Bool: 
+	/// <ul>
+	/// <li>`true`: success</li>
+	/// <li>`false`: failure</li>
+	/// </ul>
+	/// </returns> 
+	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
+	static void LaunchInvitableUserFlow(UObject* WorldContextObject, const FString& ChallengeID, FChallengeLaunchInvitableUserFlow Delegate);
 };
 
 /** @} */ // end of BP_Challenges
@@ -430,7 +462,7 @@ private:
 	ppfChallengeCreationType CreationType;
 	unsigned long long EndDate = 0;
 	unsigned long long StartDate = 0;
-	uint64_t ID = 0;
+	ppfID ID = 0;
 	FString Title = FString();
 	ppfChallengeVisibility Visibility;
 	UPROPERTY()
@@ -487,7 +519,7 @@ public:
 private:
 	FString DisplayScore = FString();
 	TArray<uint8> ExtraData;
-	uint64_t ID = 0;
+	ppfID ID = 0;
 	int Rank;
 	long Score;
 	unsigned long long Timestamp;

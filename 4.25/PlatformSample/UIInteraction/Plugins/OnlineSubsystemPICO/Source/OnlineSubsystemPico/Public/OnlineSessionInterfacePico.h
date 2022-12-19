@@ -38,10 +38,11 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnRoomKickUserComplete, const FString& /*R
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnRoomUpdateOwnerComplete, bool /*bWasSuccessful*/);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnRoomUpdateDataStoreComplete, const FString& /*RoomID*/, bool /*bWasSuccessful*/);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnRoomUpdateMembershipLockStatusComplete, const FString& /*RoomID*/, bool /*bWasSuccessful*/);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnRoomUpdateComplete, const FString& /*RoomID*/, bool /*bWasSuccessful*/);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnRoomInviteAcceptedComplete, const FString& /*RoomID*/, bool /*bWasSuccessful*/);
 DECLARE_MULTICAST_DELEGATE_FourParams(FOnPicoSessionUserInviteAcceptedComplete, const bool /*bWasSuccessful*/, const int32 /*ControllerId*/, const FString& /*UserId*/, const FPicoOnlineSessionSearchResult& /*InviteResult*/);
 
+DECLARE_MULTICAST_DELEGATE_FourParams(FOnRoomUpdateComplete, const FString& /*RoomID*/, bool /*bWasSuccessful*/, int, /*ErrorCode,*/ const FString& /*ErrorMessage*/);
+DECLARE_MULTICAST_DELEGATE_FourParams(FOnMatchmakingFoundComplete, const FString& /*RoomID*/, bool /*bWasSuccessful*/, int, /*ErrorCode,*/ const FString& /*ErrorMessage*/);
 
 
 /** @addtogroup Function Function
@@ -404,7 +405,9 @@ public:
 	/// </returns>
 	bool IsInMatchmakingProgress();
 
+	FOnMatchmakingFoundComplete MatchmakingFoundCallback;
 	FOnRoomUpdateComplete RoomUpdateCallback;
+	
 	FOnRoomInviteAcceptedComplete RoomInviteAcceptedCallback; // todo 可删
 	FOnPicoSessionUserInviteAcceptedComplete PicoSessionUserInviteAcceptedCallback; // todo 用这个还是用 RoomInviteAcceptedCallback
 
@@ -414,9 +417,10 @@ public:
 	FOnMatchmakingCancel2Complete MatchmakingCancel2Callback;
 	FOnRoomLeaveComplete RoomLeaveCallback;
 	FOnRoomJoin2Complete RoomJoin2Callback;
+	FOnRoomUpdateOwnerComplete RoomUpdateOwnerCallback;
+	// Not Used
 	FOnRoomSetDescriptionComplete RoomSetDescriptionCallback;
 	FOnRoomKickUserComplete RoomKickUserCallback;
-	FOnRoomUpdateOwnerComplete RoomUpdateOwnerCallback;
 	FOnRoomUpdateDataStoreComplete RoomUpdateDataStoreCallback;
 	FOnRoomUpdateMembershipLockStatusComplete RoomUpdateMembershipLockStatusCallback;
 

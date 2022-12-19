@@ -343,7 +343,7 @@ public:
     void InitParams(ppfLeaderboardEntryHandle ppfLeaderboardEntryHandle);
 
 private:
-    uint64_t ID = 0;
+    ppfID ID = 0;
     FString DisplayScore = FString();
     int Rank = 0;
     long Score = 0;
@@ -385,7 +385,7 @@ public:
 
 private:
     FString ApiName = FString();
-    uint64_t ID = 0;
+    ppfID ID = 0;
     FPicoDestination DestinationOptional;
 public:
 

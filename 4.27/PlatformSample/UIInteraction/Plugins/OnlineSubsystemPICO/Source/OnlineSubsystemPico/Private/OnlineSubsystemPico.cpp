@@ -19,8 +19,13 @@
 #include "Pico_Achievements.h"
 #include "Pico_Leaderboards.h"
 #include "Pico_Challenges.h"
+#include "Pico_Room.h"
+
 
 #include "Json.h"
+#include "OnlineAchievementsInterfacePico.h"
+#include "Pico_Matchmaking.h"
+#include "Pico_Notification.h"
 #include "Serialization/JsonWriter.h"
 #include "Serialization/JsonSerializerMacros.h"
 #include "Serialization/JsonSerializer.h"
@@ -120,7 +125,7 @@ IOnlineEventsPtr FOnlineSubsystemPico::GetEventsInterface() const
 
 IOnlineAchievementsPtr FOnlineSubsystemPico::GetAchievementsInterface() const
 {
-    return nullptr;
+    return AchievementInterface;
 }
 
 IOnlineSharingPtr FOnlineSubsystemPico::GetSharingInterface() const
@@ -219,7 +224,18 @@ TSharedPtr<FPicoChallengesInterface> FOnlineSubsystemPico::GetPicoChallengesInte
 {
     return PicoChallengesInterface;
 }
-
+TSharedPtr<FPicoRoomInterface> FOnlineSubsystemPico::GetPicoRoomInterface() const
+{
+    return PicoRoomInterface;
+}
+TSharedPtr<FPicoMatchmakingInterface> FOnlineSubsystemPico::GetPicoMatchmakingInterface() const
+{
+    return PicoMatchmakingInterface;
+}
+TSharedPtr<FPicoNotificationInterface> FOnlineSubsystemPico::GetPicoNotificationInterface() const
+{
+    return PicoNotificationInterface;
+}
 
 bool FOnlineSubsystemPico::Init()
 {
@@ -254,9 +270,13 @@ bool FOnlineSubsystemPico::Init()
         GameSessionInterface->Uninitialize();
         GameSessionInterface->Initialize();
         LeaderboardInterface = MakeShareable(new FOnlineLeaderboardPico(*this));
+        AchievementInterface = MakeShareable(new FOnlineAchievementsPico(*this));
         PicoLeaderboardsInterface = MakeShareable(new FPicoLeaderboardsInterface(*this));
         PicoAchievementsInterface = MakeShareable(new FPicoAchievementsInterface(*this));
         PicoChallengesInterface = MakeShareable(new FPicoChallengesInterface(*this));
+        PicoRoomInterface = MakeShareable(new FPicoRoomInterface(*this));
+        PicoMatchmakingInterface = MakeShareable(new FPicoMatchmakingInterface(*this));
+        PicoNotificationInterface = MakeShareable(new FPicoNotificationInterface(*this));
 
 #if WITH_EDITOR
         StartTicker();
@@ -284,11 +304,15 @@ bool FOnlineSubsystemPico::Shutdown()
     PicoUserInterface.Reset();
     GameSessionInterface.Reset();
     LeaderboardInterface.Reset();
+    AchievementInterface.Reset();
     PicoAssetFileInterface.Reset();
     PicoSportInterface.Reset();
     PicoAchievementsInterface.Reset();
     PicoLeaderboardsInterface.Reset();
     PicoChallengesInterface.Reset();
+    PicoRoomInterface.Reset();
+    PicoMatchmakingInterface.Reset();
+    PicoNotificationInterface.Reset();
 
     if (OnlineAsyncTaskThreadRunnable)
     {

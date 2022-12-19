@@ -6,6 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "OnlineStats.h"
+#include "Interfaces/OnlineAchievementsInterface.h"
 #include "OnlineSubsystemPicoNames.generated.h"
 
 
@@ -144,7 +145,10 @@ struct FLaunchDetails
     FString Extra; /*!< The extra presence info */ 
 
     UPROPERTY(BlueprintReadWrite, Category = "ApplicationLifecycle")
-    FString RoomID; /*!< The room ID */ 
+    FString RoomID; /*!< The room ID */
+
+    UPROPERTY(BlueprintReadWrite, Category = "ApplicationLifecycle")
+    FString ChallengeID; /*!< The challenge ID */ 
 
     UPROPERTY(BlueprintReadWrite, Category = "ApplicationLifecycle")
     FString TrackingID; /*!< The tracking ID */ 
@@ -679,6 +683,151 @@ struct FPicoSupplementaryMetric
 
     UPROPERTY(BlueprintReadWrite, Category = "SupplementaryMetric")
     FString Metric; /*!< The value of the supplementary metric */
+};
+
+/// <summary>The type addons.</summary>
+UENUM(BlueprintType)
+enum class EAddonsType : uint8
+{
+    Invalid, /**< Invalid */
+    Durable, /**< Non-consumable items */
+    Consumable, /**< Consumable items */
+    Subscription, /**< Subscription */
+    Unknown /**< Unknown */
+};
+
+/// <summary>The period type.</summary>
+UENUM(BlueprintType)
+enum class EPeriodType : uint8
+{
+    Invalid, /**< Invalid */
+    None, /**< Moment*/
+    Hour, /**< Hour */
+    Day, /**< Day */
+    Week, /**< Week */
+    Month, /**< Month */
+    Quarter, /**< Quarte */
+    Year, /**< Year */
+    Unknown /**< Unknown */
+};
+
+/// <summary>The discount type.</summary>
+UENUM(BlueprintType)
+enum class EDiscountType : uint8
+{
+    Invalid, /**< Invalid */
+    Null, /**< Null*/
+    FreeTrial, /**< FreeTrial */
+    Discount, /**< Discount */
+    Unknown /**< Unknown */
+};
+
+// -----以下 todo 加注释
+
+UENUM(BlueprintType)
+enum class EUserOrdering : uint8
+{
+    None,
+    PresenceAlphabetical
+};
+
+// todo
+UENUM(BlueprintType)
+enum class ETimeWindow : uint8
+{
+    Unknown,
+    OneHour,
+    OneDay,
+    OneWeek,
+    ThirtyDays,
+    NinetyDays
+};
+
+USTRUCT(BlueprintType)
+struct FPicoRoomOptions
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") FString RoomId;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") int32 MaxUserResults;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") bool bExcludeRecentlyMet;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") EUserOrdering Ordering;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") ETimeWindow TimeWindow; // todo
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") bool bTurnOffUpdates;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") FString DataStoreKey;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") FString DataStoreValue;
+};
+
+
+UENUM(BlueprintType)
+enum class ERoomMembershipLockStatus : uint8
+{
+    Unknown,
+    Lock,
+    Unlock
+};
+
+USTRUCT(BlueprintType)
+struct FPicoMatchmakingOptions
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") int32 RoomMaxUsers;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") ERoomJoinPolicy RoomJoinPolicy;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") bool bEnqueueIsDebug;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") FString DataStoreKey;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") FString DataStoreValue;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") TMap<FString, int> EnqueueDataSettingsInt;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") TMap<FString, float> EnqueueDataSettingsFloat;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") TMap<FString, FString> EnqueueDataSettingsString;
+};
+
+UENUM(BlueprintType)
+enum class EMatchmakingStatApproach : uint8
+{
+    Unknown,
+    Trailing,
+    Swingy
+};
+
+
+/**
+*	FOnlineAchievementDescPico - Interface class for accessing the oculus achievement description information
+*/
+struct FOnlineAchievementDescPico : FOnlineAchievementDesc
+{
+    /** The way this achievement is unlocked */
+    EAchievementType Type;
+
+    /** The value that needs to be reached for "Count" Type achievements to unlock */
+    uint64 Target;
+
+    /** How many fields needs to be set for "Bitfield" Type achievements to unlock */
+    uint32 BitfieldLength;
+
+    EAchievementWritePolicy WritePolicy;
+    bool IsArchived;
+    FString Name;
+    FString LockedImageURL;
+    FString UnlockedImageURL;				
+
+    FString ToDebugString() const
+    {
+        return FString::Printf( TEXT("Name=%s\nTitle=%s\nLockedDesc=%s\nUnlockedDesc=%s\nbIsHidden=%s\nType=%d\nTarget=%llu\nBitfieldLength=%u\nIsArchived: %s\nLockedImageURL: %s\nUnlockedImageURL: %s\nWritePolicy: %d\n"),
+            *Name, *Title.ToString(),
+            *LockedDesc.ToString(),
+            *UnlockedDesc.ToString(),
+            bIsHidden ? TEXT("true") : TEXT("false"),
+            Type,
+            Target,
+            BitfieldLength,
+            IsArchived ? TEXT("true") : TEXT("false"),
+            *LockedImageURL,
+            *UnlockedImageURL,
+            WritePolicy
+            );
+    }
+
 };
 
 /** @} */ // end of Data

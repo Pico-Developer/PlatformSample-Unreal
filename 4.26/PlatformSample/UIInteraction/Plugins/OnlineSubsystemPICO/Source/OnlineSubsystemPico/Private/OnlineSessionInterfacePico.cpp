@@ -367,7 +367,9 @@ void FOnlineSessionPico::OnCreateRoomComplete(ppfMessageHandle Message, bool bIs
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnCreateRoomComplete ErrorMessage: %s"), *FString(ErrorMessage)));
         RemoveNamedSession(SessionName);
         TriggerOnCreateSessionCompleteDelegates(SessionName, false);
@@ -509,7 +511,9 @@ bool FOnlineSessionPico::UpdateRoomDataStore(FName SessionName, FOnlineSessionSe
                     if (bIsError)
                     {
                         auto Error = ppf_Message_GetError(Message);
-                        auto ErrorMessage = ppf_Error_GetMessage(Error);
+                        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                         SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME UpdateRoomDataStore ErrorMessage: %s"), *FString(ErrorMessage)));
                         TriggerOnUpdateSessionCompleteDelegates(SessionName, false);
                         return;
@@ -584,7 +588,9 @@ bool FOnlineSessionPico::DestroySession(FName SessionName, const FOnDestroySessi
                 if (bIsError)
                 {
                     auto Error = ppf_Message_GetError(Message);
-                    auto ErrorMessage = ppf_Error_GetMessage(Error);
+                    FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                    FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                    ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                     SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME DestroySession error! ErrorMessage: %s"), *FString(ErrorMessage)));
                     CompletionDelegate.ExecuteIfBound(SessionName, false);
                     TriggerOnDestroySessionCompleteDelegates(SessionName, false);
@@ -680,7 +686,9 @@ bool FOnlineSessionPico::StartMatchmaking(const TArray< TSharedRef<const FUnique
                 if (bIsError)
                 {
                     auto Error = ppf_Message_GetError(Message);
-                    auto ErrorMessage = ppf_Error_GetMessage(Error);
+                    FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                    FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                    ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                     SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("PPF_GAME StartMatchmaking OnComplete ErrorMessage: %s"), *FString(ErrorMessage)));
                     SearchSettings->SearchState = EOnlineAsyncTaskState::Failed;
                     if (InProgressMatchmakingSearch.IsValid())
@@ -712,7 +720,9 @@ bool FOnlineSessionPico::CancelMatchmaking(int32 SearchingPlayerNum, FName Sessi
                 if (bIsError)
                 {
                     auto Error = ppf_Message_GetError(Message);
-                    auto ErrorMessage = ppf_Error_GetMessage(Error);
+                    FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                    FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                    ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                     SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("PPF_GAME CancelMatchmaking OnComplete ErrorMessage: %s"), *FString(ErrorMessage)));
                     TriggerOnCancelMatchmakingCompleteDelegates(SessionName, false);
                     return;
@@ -800,7 +810,9 @@ bool FOnlineSessionPico::FindModeratedRoomSessions(const TSharedRef<FOnlineSessi
                 if (bIsError)
                 {
                     auto Error = ppf_Message_GetError(Message);
-                    auto ErrorMessage = ppf_Error_GetMessage(Error);
+                    FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                    FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                    ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                     SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("PPF_GAME FindModeratedRoomSessions OnComplete ErrorMessage: %s"), *FString(ErrorMessage)));
                     SearchSettings->SearchState = EOnlineAsyncTaskState::Failed;
                     TriggerOnFindSessionsCompleteDelegates(false);
@@ -860,7 +872,9 @@ bool FOnlineSessionPico::FindMatchmakingSessions(const FString Pool, const TShar
                 if (bIsError)
                 {
                     auto Error = ppf_Message_GetError(Message);
-                    auto ErrorMessage = ppf_Error_GetMessage(Error);
+                    FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                    FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                    ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                     SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("PPF_GAME FindMatchmakingSessions OnComplete ErrorMessage: %s"), *FString(ErrorMessage)));
                     SearchSettings->SearchState = EOnlineAsyncTaskState::Failed;
                     TriggerOnFindSessionsCompleteDelegates(false);
@@ -937,7 +951,9 @@ bool FOnlineSessionPico::FindSessionById(const FUniqueNetId& SearchingUserId, co
                 if (bIsError)
                 {
                     auto Error = ppf_Message_GetError(Message);
-                    auto ErrorMessage = ppf_Error_GetMessage(Error);
+                    FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                    FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                    ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                     SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME FindSessionById ErrorMessage: %s"), *FString(ErrorMessage)));
                     CompletionDelegate.ExecuteIfBound(0, false, SearchResult);
                     return;
@@ -1011,7 +1027,9 @@ bool FOnlineSessionPico::JoinSession(int32 PlayerNum, FName SessionName, const F
                 if (bIsError)
                 {
                     auto Error = ppf_Message_GetError(Message);
-                    auto ErrorMessage = ppf_Error_GetMessage(Error);
+                    FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+                    FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+                    ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
                     SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME JoinSession OnComplete ErrorMessage: %s"), *FString(ErrorMessage)));
                     RemoveNamedSession(SessionName);
                     auto RoomJoinability = ppf_Room_GetJoinability(Room);
@@ -1405,7 +1423,7 @@ TSharedRef<FOnlineSession> FOnlineSessionPico::CreateSessionFromRoom(ppfRoomHand
     auto RoomPolicy = ppf_Room_GetJoinPolicy(Room);
     auto RoomJoinability = ppf_Room_GetJoinability(Room);
     auto RoomType = ppf_Room_GetType(Room);
-    SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("CreateSessionFromRoom RoomId: %llu, RoomMaxUsers: %d, RoomCurrentUsersSize: %lld, RoomPolicy: %s, RoomType: %s, RoomJoinability: %s")
+    SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("CreateSessionFromRoom RoomId: %llu, RoomMaxUsers: %d, RoomCurrentUsersSize: %zu, RoomPolicy: %s, RoomType: %s, RoomJoinability: %s")
         , RoomId, RoomMaxUsers, RoomCurrentUsersSize, *FString(JoinPolicyNames[RoomPolicy]), *FString(RoomTypeNames[RoomType]), *FString(JoinabilityNames[RoomJoinability])));
     for (size_t UserIndex = 0; UserIndex < RoomCurrentUsersSize; ++UserIndex)
     {
@@ -1446,7 +1464,7 @@ void FOnlineSessionPico::LogRoomData(ppfRoomHandle Room) const
     auto RoomPolicy = ppf_Room_GetJoinPolicy(Room);
     auto RoomJoinability = ppf_Room_GetJoinability(Room);
     auto RoomType = ppf_Room_GetType(Room);
-    SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("LogRoomData RoomId: %llu, RoomMaxUsers: %d, RoomCurrentUsersSize: %lld, RoomPolicy: %s, RoomType: %s, RoomJoinability: %s")
+    SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("LogRoomData RoomId: %llu, RoomMaxUsers: %d, RoomCurrentUsersSize: %zu, RoomPolicy: %s, RoomType: %s, RoomJoinability: %s")
         , RoomId, RoomMaxUsers, RoomCurrentUsersSize, *FString(JoinPolicyNames[RoomPolicy]), *FString(RoomTypeNames[RoomType]), *FString(JoinabilityNames[RoomJoinability])));
 }
 
@@ -1650,9 +1668,10 @@ void FOnlineSessionPico::OnGetAccessTokenComplete(ppfMessageHandle Message, bool
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
-        FString ErrorMessageStr = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
-        SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnGetAccessTokenComplete ErrorMessage: %s"), *ErrorMessageStr));
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnGetAccessTokenComplete ErrorMessage: %s"), *ErrorMessage));
         //Initialize();
         return;
     }
@@ -1670,7 +1689,9 @@ void FOnlineSessionPico::OnGameInitializeComplete(ppfMessageHandle Message, bool
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnGameInitializeComplete ErrorMessage: %s"), *FString(ErrorMessage)));
         //Uninitialize();
         //Initialize();
@@ -1773,15 +1794,17 @@ void FOnlineSessionPico::OnRoomNotificationUpdate(ppfMessageHandle Message, bool
     if (!IsInitSuccess())
     {
         SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnRoomNotificationUpdate %s"), *InitStateErrorMessage));
-        RoomUpdateCallback.Broadcast(FString("IsInitSuccess is false"), false);
+        RoomUpdateCallback.Broadcast(FString(), false, -1, FString("IsInitSuccess is false"));
         return;
     }
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        int ErrorCode = ppf_Error_GetCode(Error);
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + FString::FromInt(ErrorCode);
         SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("PPF_GAME OnRoomNotificationUpdate Error on getting a room notification update")));
-        RoomUpdateCallback.Broadcast(FString(ErrorMessage), false);
+        RoomUpdateCallback.Broadcast(FString(), false, ErrorCode, FString(ErrorMessage));
         return;
     }
     auto Room = ppf_Message_GetRoom(Message);
@@ -1790,13 +1813,13 @@ void FOnlineSessionPico::OnRoomNotificationUpdate(ppfMessageHandle Message, bool
     if (Update)
     {
         SaveLog(ELogVerbosity::Type::Log, FString::Printf(TEXT("OnRoomNotificationUpdate Update room success")));
-        RoomUpdateCallback.Broadcast(FString::Printf(TEXT("%llu"), RoomId), true);
+        RoomUpdateCallback.Broadcast(FString::Printf(TEXT("%llu"), RoomId), true, 0, FString());
     }
     else
     {
         SaveLog(ELogVerbosity::Type::Log, FString::Printf(TEXT("OnRoomNotificationUpdate Update false")));
         SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("OnRoomNotificationUpdate Session was gone before the notif update came back")));
-        RoomUpdateCallback.Broadcast(FString("cannot find session"), false);
+        RoomUpdateCallback.Broadcast(FString(), false, -1, FString("cannot find session"));
     }
 }
 void FOnlineSessionPico::OnRoomInviteAccepted(ppfMessageHandle Message, bool bIsError)
@@ -1807,11 +1830,13 @@ void FOnlineSessionPico::OnRoomInviteAccepted(ppfMessageHandle Message, bool bIs
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        FString ErrorMessageStr = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
-        SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnRoomInviteAccepted ErrorMessage: %s"), *ErrorMessageStr));
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
+        SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnRoomInviteAccepted ErrorMessage: %s"), *ErrorMessage));
         if (RoomInviteAcceptedCallback.IsBound())
         {
-            RoomInviteAcceptedCallback.Broadcast(ErrorMessageStr, false);
+            RoomInviteAcceptedCallback.Broadcast(ErrorMessage, false);
         }
         TriggerOnSessionUserInviteAcceptedDelegates(false, 0, PlayerId, SearchResult);
         return;
@@ -1888,35 +1913,45 @@ void FOnlineSessionPico::OnMatchmakingNotificationMatchFound(ppfMessageHandle Me
     if (!IsInitSuccess())
     {
         SaveLog(ELogVerbosity::Type::Error, FString::Printf(TEXT("PPF_GAME OnMatchmakingNotificationMatchFound %s"), *InitStateErrorMessage));
+        MatchmakingFoundCallback.Broadcast(FString(), false, -1, FString("IsInitSuccess is false"));
         return;
     }
-    if (!InProgressMatchmakingSearch.IsValid())
-    {
-        SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("PPF_GAME OnMatchmakingNotificationMatchFound No matchmaking searches in progress")));
-        return;
-    }
+    // if (!InProgressMatchmakingSearch.IsValid())
+    // {
+    //     SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("PPF_GAME OnMatchmakingNotificationMatchFound No matchmaking searches in progress")));
+    //     MatchmakingFoundCallback.Broadcast(FString(), false, -1, FString("InProgressMatchmakingSearch is invalid"));
+    //     return;
+    // }
 
     if (bIsError)
     {
+        auto Error = ppf_Message_GetError(Message);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        int ErrorCode = ppf_Error_GetCode(Error);
+        
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnMatchmakingNotificationMatchFound error")));
         InProgressMatchmakingSearch->SearchState = EOnlineAsyncTaskState::Failed;
         InProgressMatchmakingSearch = nullptr;
         TriggerOnMatchmakingCompleteDelegates(InProgressMatchmakingSearchName, false);
+        MatchmakingFoundCallback.Broadcast(FString(), false, ErrorCode, ErrorMessage);
         return;
     }
-    else
-    {
-        SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnMatchmakingNotificationMatchFound no error")));
-    }
-
+    SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnMatchmakingNotificationMatchFound no error")));
     auto Room = ppf_Message_GetRoom(Message);
-    FOnlineSessionSearchResult SearchResult;
-    auto Session = CreateSessionFromRoom(Room);
-    SearchResult.Session = Session.Get();
-    InProgressMatchmakingSearch->SearchResults.Add(SearchResult);
-    InProgressMatchmakingSearch->SearchState = EOnlineAsyncTaskState::Done;
-    InProgressMatchmakingSearch = nullptr;
+    ppfID RoomID = ppf_Room_GetID(Room);
+    FString RoomStrID = FString::Printf(TEXT("%llu"), RoomID);
+    if (InProgressMatchmakingSearch.IsValid())
+    {
+        FOnlineSessionSearchResult SearchResult;
+        auto Session = CreateSessionFromRoom(Room);
+        SearchResult.Session = Session.Get();
+        InProgressMatchmakingSearch->SearchResults.Add(SearchResult);
+        InProgressMatchmakingSearch->SearchState = EOnlineAsyncTaskState::Done;
+        InProgressMatchmakingSearch = nullptr;
+    }
+    
     TriggerOnMatchmakingCompleteDelegates(InProgressMatchmakingSearchName, true);
+    MatchmakingFoundCallback.Broadcast(RoomStrID, true, 0, FString());
 }
 
 
@@ -1926,7 +1961,9 @@ void FOnlineSessionPico::OnNetNotificationConnection(ppfMessageHandle Message, b
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnNetNotificationConnection error ErrorMessage: %s"), *FString(ErrorMessage)));
         GameConnectionCallback.Broadcast(-1, false);
         return;
@@ -2001,7 +2038,9 @@ void FOnlineSessionPico::OnNetNotificationRequestFailed(ppfMessageHandle Message
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnNetNotificationRequestFailed error ErrorMessage: %s"), *FString(ErrorMessage)));
         GameRequestFailedCallback.Broadcast(-1, false);
         return;
@@ -2018,7 +2057,9 @@ void FOnlineSessionPico::OnNetNotificationGameStateReset(ppfMessageHandle Messag
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnNetNotificationGameStateReset error ErrorMessage: %s"), *FString(ErrorMessage)));
         GameStateResetCallback.Broadcast(false);
         return;
@@ -2039,7 +2080,9 @@ void FOnlineSessionPico::OnMatchmakingNotificationCancel2(ppfMessageHandle Messa
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnMatchmakingNotificationCancel2 error ErrorMessage: %s"), *FString(ErrorMessage)));
         MatchmakingCancel2Callback.Broadcast(false);
         return;
@@ -2059,7 +2102,9 @@ void FOnlineSessionPico::OnRoomNotificationLeave(ppfMessageHandle Message, bool 
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnRoomNotificationLeave error ErrorMessage: %s"), *FString(ErrorMessage)));
         RoomLeaveCallback.Broadcast(FString(ErrorMessage), false);
         return;
@@ -2076,7 +2121,9 @@ void FOnlineSessionPico::OnRoomNotificationJoin2(ppfMessageHandle Message, bool 
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnRoomNotificationJoin2 error. ErrorMessage: %s"), *FString(ErrorMessage)));
         RoomJoin2Callback.Broadcast(FString(ErrorMessage), false);
         return;
@@ -2100,7 +2147,9 @@ void FOnlineSessionPico::OnRoomNotificationSetDescription(ppfMessageHandle Messa
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnRoomNotificationSetDescription error. ErrorMessage: %s"), *FString(ErrorMessage)));
         RoomSetDescriptionCallback.Broadcast(FString(ErrorMessage), false);
         return;
@@ -2124,7 +2173,9 @@ void FOnlineSessionPico::OnRoomNotificationKickUser(ppfMessageHandle Message, bo
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnRoomNotificationKickUser error. ErrorMessage: %s"), *FString(ErrorMessage)));
         RoomKickUserCallback.Broadcast(FString(ErrorMessage), false);
         return;
@@ -2142,10 +2193,11 @@ void FOnlineSessionPico::OnRoomNotificationUpdateOwner(ppfMessageHandle Message,
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnRoomNotificationUpdateOwner error. ErrorMessage: %s"), *FString(ErrorMessage)));
         RoomUpdateOwnerCallback.Broadcast(false);
-        return;
     }
     else
     {
@@ -2159,7 +2211,9 @@ void FOnlineSessionPico::OnRoomNotificationUpdateDataStore(ppfMessageHandle Mess
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnRoomNotificationUpdateDataStore error. ErrorMessage: %s"), *FString(ErrorMessage)));
         RoomUpdateDataStoreCallback.Broadcast(FString(ErrorMessage), false);
         return;
@@ -2183,7 +2237,9 @@ void FOnlineSessionPico::OnRoomNotificationUpdateMembershipLockStatus(ppfMessage
     if (bIsError)
     {
         auto Error = ppf_Message_GetError(Message);
-        auto ErrorMessage = ppf_Error_GetMessage(Error);
+        FString ErrorMessage = UTF8_TO_TCHAR(ppf_Error_GetMessage(Error));
+        FString ErrorCode = FString::FromInt(ppf_Error_GetCode(Error));
+        ErrorMessage = ErrorMessage + FString(". Error Code: ") + ErrorCode;
         SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("OnRoomNotificationUpdateMembershipLockStatus error. ErrorMessage: %s"), *FString(ErrorMessage)));
         RoomUpdateMembershipLockStatusCallback.Broadcast(FString(ErrorMessage), false);
         return;

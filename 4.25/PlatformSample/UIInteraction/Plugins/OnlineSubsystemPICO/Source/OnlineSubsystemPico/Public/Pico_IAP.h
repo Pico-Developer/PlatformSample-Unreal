@@ -22,6 +22,7 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetNextProductArrayPageDelegate, bool, bIs
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FConsumePurchaseDelegate, bool, bIsError, const FString&, ErrorMessage);
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetNextPurchaseArrayPageDelegate, bool, bIsError, const FString&, ErrorMessage, UPico_PurchaseArray*, PurchaseArray);
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FLaunchCheckoutFlowDelegate, bool, bIsError, const FString&, ErrorMessage, UPico_Purchase*, Purchase);
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FLaunchCheckoutFlow_V2Delegate, bool, bIsError, const FString&, ErrorMessage, UPico_Purchase*, Purchase);
 
 /** @addtogroup Function Function
  *  This is the Function group
@@ -50,6 +51,7 @@ public:
 	FGetViewerPurchasesDelegate GetViewerPurchasesDelegate;
 	FGetNextPurchaseArrayPageDelegate GetNextPurchaseArrayPageDelegate;
 	FLaunchCheckoutFlowDelegate LaunchCheckoutFlowDelegate;
+    FLaunchCheckoutFlow_V2Delegate LaunchCheckoutFlow_V2Delegate;
 
     /// <summary>Records the order fulfillment result for a consumable.
     /// @note Users are unable to repurchase the same consumable until the previous order is fulfilled.
@@ -128,6 +130,25 @@ public:
     /// </ul>
     /// </returns>
 	bool LaunchCheckoutFlow(const FString& SKU, const FString& Price, const FString& Currency, FLaunchCheckoutFlowDelegate InLaunchCheckoutFlowDelegate);
+
+    /// <summary>
+    /// Launches the checkout flow to pay for a subscription product.
+    /// @note PICO tries to handle and fix as many errors as possible. Home returns the
+    /// appropriate error message and how to resolve it if possible. Returns a
+    /// purchase on success, empty purchase on cancel, and an error on error.
+    /// </summary>
+    /// <param name ="SKU">The SKU of the product the user wants to purchase.</param> 
+    /// <param name ="Price">The price for the product.</param> 
+    /// <param name ="Currency">The currency of the payment.</param> 
+    /// <param name ="OuterId">The OuterId of the subscription product.</param> 
+    /// <param name ="InLaunchCheckoutFlow_V2Delegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
+    /// <returns>Bool: 
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>
+    bool LaunchCheckoutFlowV2(const FString& SKU, const FString& Price, const FString& Currency, const FString& OuterId, FLaunchCheckoutFlow_V2Delegate InLaunchCheckoutFlow_V2Delegate);
 
 };
 
@@ -241,6 +262,27 @@ public:
     /// </returns>
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|IAP")
 	static bool LaunchCheckoutFlow(UObject* WorldContextObject, const FString& SKU, const FString& Price, const FString& Currency, FLaunchCheckoutFlowDelegate InLaunchCheckoutFlowDelegate);
+
+    /// <summary>
+    /// Launches the checkout flow to pay for a subscription product.
+    /// @note PICO tries to handle and fix as many errors as possible. Home returns the
+    /// appropriate error message and how to resolve it if possible. Returns a
+    /// purchase on success, empty purchase on cancel, and an error on error.
+    /// </summary>
+    /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
+    /// <param name ="SKU">The SKU of the product the user wants to purchase.</param> 
+    /// <param name ="Price">The price for the product.</param> 
+    /// <param name ="Currency">The currency of the payment.</param> 
+    /// <param name ="OuterId">The OuterId of the subscription product.</param> 
+    /// <param name ="InLaunchCheckoutFlow_V2Delegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
+    /// <returns>Bool: 
+    /// <ul>
+    /// <li>`true`: success</li>
+    /// <li>`false`: failure</li>
+    /// </ul>
+    /// </returns>
+    UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|IAP")
+    static bool LaunchCheckoutFlowV2(UObject* WorldContextObject, const FString& SKU, const FString& Price, const FString& Currency, const FString& OuterId, FLaunchCheckoutFlow_V2Delegate InLaunchCheckoutFlow_V2Delegate);
 };
 
 /** @} */
@@ -256,11 +298,20 @@ class ONLINESUBSYSTEMPICO_API UPico_Product : public UObject
 
 private:
 	FString Description = FString();
-	FString FormattedPrice = FString();
+    FString DetailDescription = FString();
 	FString Price = FString();
 	FString Currency = FString();
 	FString Name = FString();
 	FString SKU = FString();
+    FString Icon = FString();
+    EAddonsType AddonsType = EAddonsType::Unknown;
+    EPeriodType PeriodType = EPeriodType::Unknown;
+    EPeriodType TrialPeriodUnit = EPeriodType::Unknown;
+    int32 TrialPeriodValue = -1;
+    FString OuterId = FString();
+    FString OriginalPrice = FString();
+    bool bIsContinuous = false;
+
 public:
 	void InitParams(ppfProduct* InppfProductHandle);
 
@@ -268,10 +319,13 @@ public:
 	FString GetDescription();
 
 	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
-	FString GetFormattedPrice();
+	FString GetDetailDescription();
 
 	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
 	FString GetPrice();
+
+    UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+    FString GetFormattedPrice();
 
 	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
 	FString GetCurrency();
@@ -281,6 +335,31 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
 	FString GetSKU();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+	FString GetIcon();
+
+    UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+    EAddonsType GetAddonsType();
+
+    UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+    EPeriodType GetPeriodType();
+
+    UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+    EPeriodType GetTrialPeriodUnit();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+	int32 GetTrialPeriodValue();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+	FString GetOuterId();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+	FString GetOriginalPrice();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Product")
+	bool GetIsContinuous();
+
 };
 
 /**
@@ -328,6 +407,13 @@ private:
 	int64 GrantTime = 0;
 	FString ID = FString();
 	FString SKU = FString();
+    FString Icon = FString();
+    EAddonsType AddonsType = EAddonsType::Unknown;
+    FString OuterId = FString();
+    EPeriodType CurrentPeriodType = EPeriodType::Unknown;
+    EPeriodType NextPeriodType = EPeriodType::Unknown;
+    int64 NextPayTime = 0;
+    EDiscountType DiscountType = EDiscountType::Unknown;
 public:
 	void InitParams(ppfPurchase* InppfPurchaseHandle);
 
@@ -342,6 +428,27 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Purchase")
 	FString GetSKU();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Purchase")
+	FString GetIcon();
+
+    UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Purchase")
+    EAddonsType GetAddonsType();
+
+    UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Purchase")
+    EPeriodType GetCurrentPeriodType();
+
+    UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Purchase")
+    EPeriodType GetNextPeriodType();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Purchase")
+	FString GetOuterId();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Purchase")
+	int64 GetNextPayTime();
+
+	UFUNCTION(BlueprintPure, Category = "Pico Platform|IAP|Purchase")
+	EDiscountType GetDiscountType();
 };
 
 /**

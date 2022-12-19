@@ -482,23 +482,23 @@ public:
 	* @param Origin     The starting point of an eye-tracking ray.
 	* @param Direction  A unit vector in the direction of an eye-tracking ray.
 	*/
-	 UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
+	 //UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
 		 static bool PXR_GetEyeTrackingGazeRay(FVector& Origin, FVector& Direction);
 
 	/**
 	* Get EyeTracking data.
 	* @return  EyeTracking data.
 	*/
-	 UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
+	 //UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
 		 static FPICOXREyeTrackingData PXR_GetEyeTrackingData();
 
-	 UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
+	 //UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
 		 static bool PXR_GetEyeTrackingPos(FVector &EyeTrackingPos);
 
 	 //UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
 		 static bool PXR_GetFaceTrackingData(int64 InTimeStamp, int64& OutTimeStamp, TArray<float>& BlendShapeWeight, TArray<float>& VideoInputValid, float &LaughingProb, TArray<float>& EmotionProb, TArray<float>& Reserved);
 
-	 UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
+	 //UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")
 		 static bool PXR_EnableEyeTracking(bool enable);
 
 	 //UFUNCTION(BlueprintCallable, Category = "PXR|PXRHMD")

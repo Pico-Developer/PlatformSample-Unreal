@@ -64,4 +64,8 @@ PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Application_LaunchOtherAppByPresence(const c
 /// Extract the payload from the message handle with ::ppf_Message_GetString().
 PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Application_LaunchOtherAppByMessage(ppfApplicationByMessageOptionsHandle options);
 
+PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Application_GetVersion();
+
+PPF_PUBLIC_FUNCTION(ppfRequest) ppf_Application_LaunchStore();
+
 #endif //MATRIX_PPF_REQUESTS_APPLICATION_H

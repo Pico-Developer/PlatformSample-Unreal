@@ -2,7 +2,7 @@
 
 #include "PXR_HandComponent.h"
 #include <GameFramework/PlayerController.h>
-#include "PXR_Settings.h"
+#include "PXR_HMDRuntimeSettings.h"
 #include "PXR_EventManager.h"
 #include "PXR_InputFunctionLibrary.h"
 #include "PXR_InputState.h"
@@ -13,9 +13,6 @@
 #include "Camera/PlayerCameraManager.h"
 #include "PXR_Input.h"
 #include "PXR_Log.h"
-#if PLATFORM_ANDROID
-#include "PxrInput.h"
-#endif
 
 UPICOXRHandComponent::UPICOXRHandComponent(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer),

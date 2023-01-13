@@ -8,6 +8,7 @@
 #include "Interfaces/OnlineFriendsInterface.h"
 #include "Interfaces/OnlineIdentityInterface.h"
 #include "Interfaces/OnlineLeaderboardInterface.h"
+#include "Interfaces/OnlineAchievementsInterface.h"
 
 #if ENGINE_MAJOR_VERSION > 4
 #include "Online/CoreOnline.h"
@@ -18,7 +19,6 @@
 #include "RTCPicoUserInterface.h"
 #include "OnlineSessionInterfacePico.h"
 #include "OnlineSubsystemTypes.h"
-#include "Pico_Leaderboard.h"
 #include "Delegates/DelegateCombinations.h"
 #include "Pico_User.h"
 #include "PicoGameInstance.generated.h"
@@ -27,6 +27,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameSessionStateChanged, const FS
 /**
  * 
  */
+class FOnlineAchievementsWritePico;
+typedef TSharedRef<FOnlineAchievementsWritePico, ESPMode::ThreadSafe> FOnlineAchievementsWritePicoRef;
+typedef TSharedPtr<FOnlineAchievementsWritePico, ESPMode::ThreadSafe> FOnlineAchievementsWritePicoPtr;
 class FOnlineLeaderboardReadPico;
 class FOnlineSubsystemPico;
 
@@ -395,10 +398,9 @@ private:
     FOnLeaderboardReadCompleteDelegate OnLeaderboardReadWithPicoObjectCompleteDelegate;
 
     // achievements
+    TArray<FOnlineAchievement> Achievements;
     void OnAchievementsWriteComplete(const FUniqueNetId& PlayerId, bool bSuccessful);
-
     void OnRefreshAllAchievementsProgressComplete(const FUniqueNetId& PlayerId, bool bSuccessful);
-
     void OnRefreshAllAchievementsDefinitionComplete(const FUniqueNetId& PlayerId, bool bSuccessful);
 
 private:

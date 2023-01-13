@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 #pragma once
@@ -241,7 +251,9 @@ public:
     /// </returns> 
 	bool Invite(const FString& ChallengeID, const TArray<FString>& UserIDs, FChallengeInvite Delegate);
 
-	/// <summary>Launch the invitable user flow to invite to join a challenge.</summary>
+    /// <summary>Launches the invitation flow to let the current user invite friends to a specified challenge. 
+    /// This launches the system default invite UI where the user can select friends to invite and then send invitations to them. 
+    /// Therefore, this is a shortcut if you do not want to build the invite UI by yourself.</summary>
 	/// <param name="ChallengeID">Challenge ID.</param>
 	/// <param name="Delegate>Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
 	/// <returns>Bool: 
@@ -281,12 +293,6 @@ public:
     /// <param name="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="ChallengeID">Challenge ID.</param>
     /// <param name="InGetDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void Get(UObject* WorldContextObject, const FString& ChallengeID, FChallengeGet InGetDelegate);
 
@@ -313,12 +319,6 @@ public:
     /// and top 10 will be displayed on the second page)
     /// </param>
     /// <param name="InGetEntriesDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void GetEntries(UObject* WorldContextObject, const FString& ChallengeID, int PageIdx, int PageSize,
 	                       ELeaderboardFilterType Filter, ELeaderboardStartAt StartAt,
@@ -332,12 +332,6 @@ public:
     /// <param name="PageSize">The number of entries to return on each page.</param>
     /// <param name="AfterRank">Defines after which rank to return entries.</param>
     /// <param name="InGetEntriesAfterRankDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void GetEntriesAfterRank(UObject* WorldContextObject, const FString& ChallengeID, int PageIdx, int PageSize,
 	                                const FString& AfterRank,
@@ -362,12 +356,6 @@ public:
     /// </param>
     /// <param name="UserIDs">User ID(s).</param>
     /// <param name="InGetEntriesByIdsDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void GetEntriesByIds(UObject* WorldContextObject, const FString& ChallengeID, int PageIdx, int PageSize,
 	                            ELeaderboardStartAt StartAt, const TArray<FString>& UserIDs,
@@ -381,12 +369,6 @@ public:
     /// For example, if you want to get the first page of entries, pass `0`; if you want to get the second page of entries, pass `1`.</param>
     /// <param name="PageSize">The number of challenges to return on each page.</param>
     /// <param name="InGetListDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void GetList(UObject* WorldContextObject, FPico_ChallengeOptions ChallengeOptions, int PageIdx, int PageSize,
 	                    FChallengeGetList InGetListDelegate);
@@ -395,12 +377,6 @@ public:
     /// <param name="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="ChallengeID">Challenge ID.</param>
     /// <param name="InJoinDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void Join(UObject* WorldContextObject, const FString& ChallengeID, FChallengeJoin InJoinDelegate);
 
@@ -408,12 +384,6 @@ public:
     /// <param name="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="ChallengeID">Challenge ID.</param>
     /// <param name="InLeaveDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void Leave(UObject* WorldContextObject, const FString& ChallengeID, FChallengeLeave InLeaveDelegate);
 
@@ -422,26 +392,14 @@ public:
     /// <param name="ChallengeID">Challenge ID.</param>
     /// <param name="UserIDs">User ID(s).</param>
     /// <param name="Delegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void Invite(UObject* WorldContextObject, const FString& ChallengeID, const TArray<FString>& UserIDs, 
 	                          FChallengeInvite Delegate);
 
-	/// <summary>Launch the invitable user flow to invite to join a challenge.</summary>
+	/// <summary>Launches the invitation flow to let the current user invite friends to a specified challenge.</summary>
 	/// <param name="WorldContextObject">Used to get the information about the current world.</param>
 	/// <param name="ChallengeID">Challenge ID.</param>
 	/// <param name="Delegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-	/// <returns>Bool: 
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Challenges")
 	static void LaunchInvitableUserFlow(UObject* WorldContextObject, const FString& ChallengeID, FChallengeLaunchInvitableUserFlow Delegate);
 };

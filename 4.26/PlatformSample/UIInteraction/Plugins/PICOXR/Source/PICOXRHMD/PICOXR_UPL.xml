@@ -37,7 +37,7 @@
     <addAttribute tag="activity"  name="android:hardwareAccelerated" value="false" />
     <addElements tag="application">
       <meta-data android:name="pvr.app.type" android:value="vr" />
-	  <meta-data android:name="pvr.sdk.version" android:value="UE4_2.1.2.3" />
+	  <meta-data android:name="pvr.sdk.version" android:value="UE4_2.1.3.5" />
       <meta-data android:name="pxr.sdk.2dloading.flag" android:value="system" />
     </addElements>
 
@@ -74,22 +74,22 @@
 	<!-- optional files or directories to copy to Intermediate/Android/APK -->
 	<resourceCopies>
     <isArch arch="armeabi-v7a">
-      <copyFile src="$S(PluginDir)/../../Libs/armeabi-v7a/libpxr_api.so"
+      <copyFile src="$S(PluginDir)/../ThirdParty/PXRPlugin/PXRPlugin/Lib/armeabi-v7a/libpxr_api.so"
          dst="$S(BuildDir)/libs/armeabi-v7a/libpxr_api.so" />
 	</isArch>
    
     <isArch arch="arm64-v8a">
-      <copyFile src="$S(PluginDir)/../../Libs/arm64-v8a/libpxr_api.so"
+      <copyFile src="$S(PluginDir)/../ThirdParty/PXRPlugin/PXRPlugin/Lib/arm64-v8a/libpxr_api.so"
          dst="$S(BuildDir)/libs/arm64-v8a/libpxr_api.so" />
 	</isArch>
         
-    <copyFile src="$S(PluginDir)/../../Libs/libpxr_api.jar"
+    <copyFile src="$S(PluginDir)/../ThirdParty/PXRPlugin/PXRPlugin/ExtLibs/libpxr_api.jar"
          dst="$S(BuildDir)/libs/libpxr_plugin.jar" />
     
-    <copyFile src="$S(PluginDir)/../../Libs/SystemAPI.jar"
+    <copyFile src="$S(PluginDir)/../ThirdParty/PXRPlugin/PXRPlugin/ExtLibs/SystemAPI.jar"
            dst="$S(BuildDir)/libs/SystemAPI.jar" />
     
-    <copyFile src="$S(PluginDir)/../../Libs/pvrjar.jar"
+    <copyFile src="$S(PluginDir)/../ThirdParty/PXRPlugin/PXRPlugin/ExtLibs/pvrjar.jar"
            dst="$S(BuildDir)/libs/pvrjar.jar" />
     
 	</resourceCopies>
@@ -253,6 +253,11 @@
                 }
                 catch (PackageManager.NameNotFoundException e){}
                 return code;
+            }
+
+            public int GetHmdBatteryLevel()
+            {
+                return SysActivity.getHmdBatteryLevel(this);
             }
         </insert>
         <insert>
@@ -972,6 +977,65 @@
             {
                 ToBServiceHelper.getInstance().pbsGetControllerPairTime(GetControllerPairTimeCallback, ext);
             }
+			
+			int SetSystemLanguage(String language, int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsSetSystemLanguage(language, ext);
+			}
+			
+			String GetSystemLanguage(int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsGetSystemLanguage(ext);
+			}
+			
+			int ConfigWifi(String ssid, String pwd, int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsConfigWifi(ssid, pwd, ext);
+			}
+			
+			String[] GetConfiguredWifi(int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsGetConfiguredWifi(ext);
+			}
+			
+			public native void JavaToCSetSystemCountryCodeCallback(int Result);
+            IIntCallback SetSystemCountryCodeCallback = new IIntCallback.Stub()
+            {
+                @Override
+                public void callback(int result) throws RemoteException
+				{
+                    JavaToCSetSystemCountryCodeCallback(result);
+                }
+            };
+			int SetSystemCountryCode(String countryCode, int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsSetSystemCountryCode(countryCode, SetSystemCountryCodeCallback, ext);
+			}
+			
+			String GetSystemCountryCode(int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsGetSystemCountryCode(ext);
+			}
+			
+			int SetSkipInitSettingPage(int flag, int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsSetSkipInitSettingPage(flag, ext);
+			}
+			
+			int GetSkipInitSettingPage(int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsGetSkipInitSettingPage(ext);
+			}
+			
+			int IsInitSettingComplete(int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsIsInitSettingComplete(ext);
+			}
+			
+			int StartActivity(String packageName, String className, String action, String extra, String[] categories, int[] flags, int ext)
+			{
+			    return ToBServiceHelper.getInstance().pbsStartActivity(packageName, className, action, extra, categories, flags, ext);
+			}
         </insert>
 	</gameActivityClassAdditions>
 

@@ -5,10 +5,7 @@
 #include "PXR_HMDFunctionLibrary.h"
 #include "Containers/Ticker.h"
 #include "EyeTracker/Public/IEyeTracker.h"
-
-#if PLATFORM_ANDROID
-#include <PxrTypes.h>
-#endif
+#include "PXR_PluginWrapper.h"
 
 class FDebugDisplayInfo;
 class UCanvas;
@@ -60,6 +57,7 @@ public:
 	bool GetFaceTrackingData(int64 inTimeStamp, int64& outTimeStamp, TArray<float>& blendShapeWeight, TArray<float>& videoInputValid, float &laughingProb, TArray<float>& emotionProb, TArray<float>& reserved);
 	bool EnableEyeTracking(bool enable);
 	bool EnableFaceTracking(EPICOXRFaceTrackingMode mode);
+	PxrTrackingModeFlags GetCurrentTrackingMode() { return CurrentTrackingMode; }
 
 private:
 	TWeakObjectPtr<APlayerController> ActivePlayerController;
@@ -67,8 +65,6 @@ private:
 	bool bEyeTrackingRun;
 	bool bFaceTrackingRun;
 	static TSharedPtr<FPICOXREyeTracker> EyeTrackerPtr;
-	uint32 CurrentTrackingMode = 0x00000002;//PXR_TRACKING_MODE_POSITION_BIT PxrTypes.h
-#if PLATFORM_ANDROID
+	PxrTrackingModeFlags CurrentTrackingMode;
 	PxrFTInfo faceTrackingData;
-#endif
 };

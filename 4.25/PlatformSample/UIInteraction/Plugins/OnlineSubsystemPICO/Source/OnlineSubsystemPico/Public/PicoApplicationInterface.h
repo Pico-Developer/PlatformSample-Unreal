@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -58,7 +68,7 @@ public:
     void OnQueryLaunchOtherAppComplete(ppfMessageHandle Message, bool bIsError, const FOnLaunchOtherAppComplete& Delegate);
 
     /// <summary>
-    /// Get the version information of the current app in the PICO Store.
+    /// Gets the current app's latest version in the PICO Store.
     /// </summary>
     /// <returns>Bool: 
     /// <ul>
@@ -108,7 +118,7 @@ public:
     void OnQueryLaunchOtherAppByAppIdComplete(ppfMessageHandle Message, bool bIsError, const FOnLaunchOtherAppByAppIdComplete& Delegate);
 
     /// <summary>
-    /// Launch the PICO Store and jump to the details page of the current app
+    /// Launches the PICO Store and jump to the details page of the current app.
     /// </summary>
     /// <returns>Bool: 
     /// <ul>

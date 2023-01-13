@@ -6,12 +6,7 @@
 #include "PXR_HMDRenderBridge.h"
 #include "XRSwapChain.h"
 #include "GameFramework/PlayerController.h"
-
-#if PLATFORM_ANDROID
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJNI.h"
-#include "PxrApi.h"
-#endif
+#include "PXR_PluginWrapper.h"
 
 class FDelayDeleteLayerManager;
 class FPXRGameFrame;
@@ -19,10 +14,11 @@ class FPXRGameFrame;
 class FPxrLayer : public TSharedFromThis<FPxrLayer, ESPMode::ThreadSafe>
 {
 public:
-	FPxrLayer(uint32 InPxrLayerId,FDelayDeleteLayerManager* InDelayDeletion);
+	FPxrLayer(uint32 ID, uint32 InPxrLayerId, FDelayDeleteLayerManager* InDelayDeletion);
 	~FPxrLayer();
 
 protected:
+	uint32 ID;
 	uint32 PxrLayerId;
 private:
 	FDelayDeleteLayerManager* DelayDeletion;
@@ -50,22 +46,25 @@ public:
 	const FXRSwapChainPtr& GetLeftSwapChain() const { return LeftSwapChain; }
 	const FXRSwapChainPtr& GetFoveationSwapChain() const { return FoveationSwapChain; }
 	void IncrementSwapChainIndex_RHIThread(FPICOXRRenderBridge* RenderBridge);
-	void SubmitLayer_RHIThread(FPXRGameFrame* Frame);
+	const void SubmitLayer_RHIThread(const FGameSettings* Settings, const FPXRGameFrame* Frame);
 	int32 GetShapeType();
-	void SetProjectionLayerParams(uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, FString RHIString);
+	void SetEyeLayerDesc(uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, FString RHIString);
     void PXRLayersCopy_RenderThread(FPICOXRRenderBridge* RenderBridge, FRHICommandListImmediate& RHICmdList);
 	void MarkTextureForUpdate(bool bUpdate = true) { bTextureNeedUpdate = bUpdate; }
-	bool InitPXRLayer_RenderThread(FPICOXRRenderBridge* CustomPresent, FDelayDeleteLayerManager* DelayDeletion, FRHICommandListImmediate& RHICmdList, const FPICOXRStereoLayer* InLayer = nullptr);
+	bool InitPXRLayer_RenderThread(const FGameSettings* Settings, FPICOXRRenderBridge* CustomPresent, FDelayDeleteLayerManager* DelayDeletion, FRHICommandListImmediate& RHICmdList, const FPICOXRStereoLayer* InLayer = nullptr);
 	bool IfCanReuseLayers(const FPICOXRStereoLayer* InLayer) const;
+	void ReleaseResources_RHIThread();
 	bool IsVisible() { return (LayerDesc.Flags & IStereoLayers::LAYER_FLAG_HIDDEN) == 0; }
 
 	bool bSplashLayer;
 	bool bSplashBlackProjectionLayer;
 	bool bMRCLayer;
+	bool bNeedsTexSrgbCreate;
+	void SetTrackingMode(PxrTrackingModeFlags mode) { TrackingMode = mode; }
 
 protected:
 	FVector GetLayerLocation() const { return LayerDesc.Transform.GetLocation(); };
-	FQuat GetLayerOrientation() const { return LayerDesc.Transform.GetRotation(); };
+	FQuat GetLayerOrientation() const { return LayerDesc.Transform.Rotator().Quaternion(); };
 	FVector GetLayerScale() const { return LayerDesc.Transform.GetScale3D(); };
 	FPICOXRHMD* HMDDevice;
 	uint32 ID;	
@@ -78,12 +77,9 @@ protected:
     bool bTextureNeedUpdate;
 	UProceduralMeshComponent* UnderlayMeshComponent;
 	AActor* UnderlayActor;
-
 	FPxrLayerPtr PxrLayer;
-#if PLATFORM_ANDROID
 	PxrLayerParam PxrLayerCreateParam;
-#endif
-
+	PxrTrackingModeFlags TrackingMode;
 };
 
 typedef TSharedPtr<FPICOXRStereoLayer, ESPMode::ThreadSafe> FPICOLayerPtr;

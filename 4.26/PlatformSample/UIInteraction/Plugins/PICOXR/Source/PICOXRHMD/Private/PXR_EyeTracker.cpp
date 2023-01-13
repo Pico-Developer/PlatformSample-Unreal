@@ -2,20 +2,16 @@
 
 #include "PXR_EyeTracker.h"
 #include "DrawDebugHelpers.h"
-#include "PXR_Settings.h"
+#include "PXR_HMDRuntimeSettings.h"
 #include "Engine/Engine.h"
 #include "GameFramework/HUD.h"
 #include "GameFramework/PlayerController.h"
-
-#if PLATFORM_ANDROID
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJNI.h"
-#include "PxrApi.h"
-#endif
+#include "PXR_HMDModule.h"
 
 FPICOXREyeTracker::FPICOXREyeTracker()
     :bEyeTrackingRun(false)
     ,bFaceTrackingRun(false)
+    ,CurrentTrackingMode(PXR_TRACKING_MODE_POSITION_BIT)
 {
     FMemory::Memzero(TrackerData);
 #if PLATFORM_ANDROID
@@ -103,7 +99,7 @@ bool FPICOXREyeTracker::GetEyeTrackingDataFromDevice(FPICOXREyeTrackingData& Tra
     {
 #if  PLATFORM_ANDROID
         PxrEyeTrackingData eyeTrackingData;
-        Pxr_GetEyeTrackingData(&eyeTrackingData);
+        FPICOXRHMDModule::GetPluginWrapper().GetEyeTrackingData(&eyeTrackingData);
 
         TrackingData.LeftEyePoseStatus = eyeTrackingData.leftEyePoseStatus;
         TrackingData.RightEyePoseStatus = eyeTrackingData.rightEyePoseStatus;
@@ -254,7 +250,7 @@ bool FPICOXREyeTracker::GetFaceTrackingData(int64 inTimeStamp, int64& outTimeSta
         emotionProb.SetNum(10);
 		reserved.SetNum(128);
 #if PLATFORM_ANDROID
-		Pxr_GetFaceTrackingData(pxrTs, pxrFlags, &faceTrackingData);
+        FPICOXRHMDModule::GetPluginWrapper().GetFaceTrackingData(pxrTs, pxrFlags, &faceTrackingData);
         outTimeStamp = faceTrackingData.timestamp;
 		laughingProb = faceTrackingData.laughingProb;
 		FMemory::Memcpy(blendShapeWeight.GetData(), faceTrackingData.blendShapeWeight, sizeof(float) * BSN);
@@ -273,7 +269,7 @@ bool FPICOXREyeTracker::EnableEyeTracking(bool enable)
     if (Settings)
     {
 #if PLATFORM_ANDROID  
-        uint32 TargetTrackingMode = CurrentTrackingMode;
+        PxrTrackingModeFlags TargetTrackingMode = CurrentTrackingMode;
         if (enable)
         {
             TargetTrackingMode |= PXR_TRACKING_MODE_EYE_BIT;
@@ -283,15 +279,15 @@ bool FPICOXREyeTracker::EnableEyeTracking(bool enable)
             TargetTrackingMode &= ~PXR_TRACKING_MODE_EYE_BIT;
         }
         int CurrentVersion = 0;
-        Pxr_GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
+        FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
         if (CurrentVersion >= 0x2000304)
         {
     		PxrTrackingModeFlags SupportTrackingMode;
-    		Pxr_GetTrackingMode(&SupportTrackingMode);
+            FPICOXRHMDModule::GetPluginWrapper().GetTrackingMode(&SupportTrackingMode);
     		if (PXR_TRACKING_MODE_EYE_BIT & SupportTrackingMode)//Detect support EyeTracking
     		{
     			// Open EyeTracking
-    			if (Pxr_SetTrackingMode(TargetTrackingMode) == 0)
+    			if (FPICOXRHMDModule::GetPluginWrapper().SetTrackingMode(TargetTrackingMode) == 0)
     			{
     				bEyeTrackingRun = enable;
                     CurrentTrackingMode = TargetTrackingMode;
@@ -304,7 +300,7 @@ bool FPICOXREyeTracker::EnableEyeTracking(bool enable)
         }
         else
         {
-    		if (Pxr_SetTrackingMode(TargetTrackingMode) == 0)
+    		if (FPICOXRHMDModule::GetPluginWrapper().SetTrackingMode(TargetTrackingMode) == 0)
     		{
     			bEyeTrackingRun = enable;
                 CurrentTrackingMode = TargetTrackingMode;
@@ -328,7 +324,7 @@ bool FPICOXREyeTracker::EnableFaceTracking(EPICOXRFaceTrackingMode mode)
 	if (Settings)
 	{
 #if PLATFORM_ANDROID
-		uint32 TargetTrackingMode = CurrentTrackingMode;
+        PxrTrackingModeFlags TargetTrackingMode = CurrentTrackingMode;
         switch (mode)
         {
         case EPICOXRFaceTrackingMode::Disable:
@@ -351,10 +347,10 @@ bool FPICOXREyeTracker::EnableFaceTracking(EPICOXRFaceTrackingMode mode)
             break;
         }
 		int CurrentVersion = 0;
-		Pxr_GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
+        FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
         if (CurrentVersion >= 0x2000305)
         {
-            if (Pxr_SetTrackingMode(TargetTrackingMode) == 0)
+            if (FPICOXRHMDModule::GetPluginWrapper().SetTrackingMode(TargetTrackingMode) == 0)
 			{
 				if (mode==EPICOXRFaceTrackingMode::Disable)
 				{

@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -35,10 +45,13 @@ public class OnlineSubsystemPico : ModuleRules
             PublicDelayLoadDLLs.Add("libstdc++-6.dll");
             PublicDelayLoadDLLs.Add("WSOCK32.dll");
             // Ensure that the DLL is staged along with the executable
-            RuntimeDependencies.Add("$(PluginDir)/OnlineSubsystemPico/Binaries/Win64/libplatformsdk.dll");
-            RuntimeDependencies.Add("$(PluginDir)/OnlineSubsystemPico/Binaries/Win64/libgcc_s_seh-1.dll");
-            RuntimeDependencies.Add("$(PluginDir)/OnlineSubsystemPico/Binaries/Win64/libwinpthread-1.dll");
-            RuntimeDependencies.Add("$(PluginDir)/OnlineSubsystemPico/Binaries/Win64/libstdc++-6.dll");
+
+            string DllDirectory = Path.Combine(PluginDirectory, "Source/OnlineSubsystemPico/lib/Windows/");
+
+            RuntimeDependencies.Add("$(BinaryOutputDir)/libplatformsdk.dll", Path.Combine(DllDirectory, "libplatformsdk.dll"));
+            RuntimeDependencies.Add("$(BinaryOutputDir)/libgcc_s_seh-1.dll", Path.Combine(DllDirectory, "libgcc_s_seh-1.dll"));
+            RuntimeDependencies.Add("$(BinaryOutputDir)/libwinpthread-1.dll", Path.Combine(DllDirectory, "libwinpthread-1.dll"));
+            RuntimeDependencies.Add("$(BinaryOutputDir)/libstdc++-6.dll", Path.Combine(DllDirectory, "libstdc++-6.dll"));
         }
 
         PublicIncludePaths.AddRange(
@@ -46,6 +59,7 @@ public class OnlineSubsystemPico : ModuleRules
 				// ... add public include paths required here ...
 			}
             );
+
 
         PublicIncludePathModuleNames.Add("Launch");
         if (Target.Type == TargetRules.TargetType.Editor)
@@ -65,6 +79,7 @@ public class OnlineSubsystemPico : ModuleRules
                 }
             );
         }
+
         PublicDependencyModuleNames.AddRange(
             new string[]
             {

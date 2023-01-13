@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -14,7 +24,6 @@
 #include "PicoPresenceInterface.h"
 #include "PicoApplicationInterface.h"
 #include "ApplicationLifecycleInterface.h"
-#include "Pico_Leaderboard.h"
 #include "Pico_AssetFile.h"
 #include "Pico_User.h"
 #include "OnlineSubsystemPicoManager.generated.h"
@@ -104,8 +113,6 @@ DECLARE_DYNAMIC_DELEGATE_TwoParams(FPicoManagerOnEndSessionCompleteDelegate, FNa
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FPicoManagerOnDestroySessionCompleteDelegate, FName, SessionName, bool, bWasSuccessful);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FPicoManagerOnCancelMatchmakingCompleteDelegate, FName, SessionName, bool, bWasSuccessful);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FPicoManagerOnMatchmakingCompleteDelegate, FName, SessionName, bool, bWasSuccessful);
-// DECLARE_DELEGATE_ThreeParams(FOnStartMatchmakingComplete, FName /*SessionName*/, const struct FOnlineError& /*ErrorDetails*/, const struct FSessionMatchmakingResults& /*Results*/);
-// DECLARE_MULTICAST_DELEGATE_TwoParams(FOnMatchmakingComplete, FName, bool);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FPicoManagerOnFindSessionCompleteDelegate, bool, bWasSuccessful);
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FPicoManagerOnSingleSessionResultCompleteDelegate, int32, LocalUserNum, bool, bWasSuccessful, const FPicoOnlineSessionSearchResult&, SearchResult);
 DECLARE_DYNAMIC_DELEGATE_TwoParams(FPicoManagerOnJoinSessionCompleteDelegate, FName, SessionName, EOnJoinSessionCompleteResultPicoType, Type);
@@ -124,8 +131,6 @@ DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_TwoParams(FOnRoomUpdateMembershipLockS
 DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_TwoParams(FOnRoomInviteAcceptedNotifyDelegate, UOnlineSubsystemPicoManager, OnRoomInviteAcceptedNotifyDelegate, const FString&, RoomID, bool, bWasSuccessful);
 DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_FourParams(FOnRoomUpdateNotifyDelegate, UOnlineSubsystemPicoManager, OnRoomUpdateNotifyDelegate, const FString&, RoomID, bool, bWasSuccessful, int, ErrorCode, const FString&, ErrorMessage);
 DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_FourParams(FOnMatchmakingFoundNotifyDelegate, UOnlineSubsystemPicoManager, OnMatchmakingFoundNotifyDelegate, const FString&, RoomID, bool, bWasSuccessful, int, ErrorCode, const FString&, ErrorMessage);
-
-//DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_FourParams(FOnPicoSessionUserInviteAcceptedDelegate, UOnlineSubsystemPicoManager, FOnPicoSessionUserInviteAcceptedDelegate, const bool, bWasSuccessful, const int32, ControllerId, const FString&, UserId, const FPicoOnlineSessionSearchResult&, InviteResult);
 
 // Leaderboard
 DECLARE_DYNAMIC_DELEGATE_OneParam(FPicoManagerOnReadLeaderboardsCompleteDelegate, bool, bWasSuccessful);
@@ -381,9 +386,6 @@ public:
 	FOnRoomUpdateNotifyDelegate OnRoomUpdateNotifyDelegate;
 	UPROPERTY(BlueprintAssignable, Category = "Game")
 	FOnMatchmakingFoundNotifyDelegate OnMatchmakingFoundNotifyDelegate;
-	
-    // UPROPERTY(BlueprintAssignable, Category = "Game")
-	// FOnPicoSessionUserInviteAcceptedDelegate OnPicoSessionUserInviteAcceptedDelegate;
     
     void OnGameConnectionNotification(int Result, bool bWasSuccessful);
     void OnGameRequestFailedNotification(int Result, bool bWasSuccessful);
@@ -414,10 +416,6 @@ public:
     static FPicoManagerOnFindSessionCompleteDelegate OnFindSessionCompleteDelegate;
     static FPicoManagerOnSingleSessionResultCompleteDelegate OnSingleSessionResultCompleteDelegate;
     static FPicoManagerOnJoinSessionCompleteDelegate OnJoinSessionCompleteDelegate;
-    // todo 480
-    // DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnFindFriendSessionComplete, int32, bool, const TArray<FOnlineSessionSearchResult>&);
-    // DECLARE_MULTICAST_DELEGATE_FourParams(FOnSessionUserInviteAccepted, const bool, const int32, FUniqueNetIdPtr, const FOnlineSessionSearchResult&);
-    // DECLARE_MULTICAST_DELEGATE_FourParams(FOnSessionInviteReceived, const FUniqueNetId& /*UserId*/, const FUniqueNetId& /*FromId*/, const FString& /*AppId*/, const FOnlineSessionSearchResult& /*InviteResult*/);
 
     // Leaderboard
 	static FPicoManagerOnReadLeaderboardsCompleteDelegate OnReadLeaderboardsCompleteDelegate;

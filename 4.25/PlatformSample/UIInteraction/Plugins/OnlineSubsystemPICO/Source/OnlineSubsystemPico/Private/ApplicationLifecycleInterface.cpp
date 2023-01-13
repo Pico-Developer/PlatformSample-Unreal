@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -28,13 +38,8 @@ bool FApplicationLifecycleInterface::ReadLaunchDetails()
     FLaunchDetails NewLaunchDetails;
     LaunchDetails = NewLaunchDetails;
     auto LaunchDetailsHandle = ppf_ApplicationLifecycle_GetLaunchDetails();
-    auto UserArrayHandle = ppf_LaunchDetails_GetUsers(LaunchDetailsHandle);
-    UPico_UserArray* UserArray = NewObject<UPico_UserArray>();
-    UserArray->InitParams(UserArrayHandle);
-    LaunchDetails.UserArray = UserArray;
     LaunchDetails.DeeplinkMessage = UTF8_TO_TCHAR(ppf_LaunchDetails_GetDeeplinkMessage(LaunchDetailsHandle));
     LaunchDetails.DestinationApiName = UTF8_TO_TCHAR(ppf_LaunchDetails_GetDestinationApiName(LaunchDetailsHandle));
-    LaunchDetails.LaunchSource = UTF8_TO_TCHAR(ppf_LaunchDetails_GetLaunchSource(LaunchDetailsHandle));
     LaunchDetails.LobbySessionID = UTF8_TO_TCHAR(ppf_LaunchDetails_GetLobbySessionID(LaunchDetailsHandle));
     LaunchDetails.MatchSessionID = UTF8_TO_TCHAR(ppf_LaunchDetails_GetMatchSessionID(LaunchDetailsHandle));
     LaunchDetails.Extra = UTF8_TO_TCHAR(ppf_LaunchDetails_GetExtra(LaunchDetailsHandle));
@@ -53,13 +58,13 @@ bool FApplicationLifecycleInterface::ReadLaunchDetails()
     {
         LaunchType = ELaunchType::Normal;
     }
-    else if (pLaunchType == ppfLaunchType_Invite)
+    else if (pLaunchType == ppfLaunchType_RoomInvite)
     {
-        LaunchType = ELaunchType::Invite;
+        LaunchType = ELaunchType::RoomInvite;
     }
-    else if (pLaunchType == ppfLaunchType_Coordinated)
+    else if (pLaunchType == ppfLaunchType_ChallengeInvite)
     {
-        LaunchType = ELaunchType::Coordinated;
+        LaunchType = ELaunchType::ChallengeInvite;
     }
     else if (pLaunchType == ppfLaunchType_Deeplink)
     {

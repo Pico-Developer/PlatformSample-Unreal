@@ -1,9 +1,8 @@
 //Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc. All rights reserved.
 #include "PXR_SystemAPI.h"
-#if PLATFORM_ANDROID
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJNI.h"
-#endif
+#include "PXR_HMDPrivate.h"
+
+DEFINE_LOG_CATEGORY_STATIC(PxrSystemAPI, Log, All);
 
 TMap<EDeviceControlEnum,FPICOSetDeviceActionDelegate> UPICOXRSystemAPI::SetDeviceActionDelegates;
 TMap<FAppManagerStruct,FPICOAppManagerDelegate> UPICOXRSystemAPI::AppManagerDelegates;
@@ -27,6 +26,7 @@ FPICOGetSwitchSystemFunctionStatusDelegate UPICOXRSystemAPI::GetSwitchSystemFunc
 FPICOCastInitDelegate UPICOXRSystemAPI::PICOCastInitDelegate;
 FPICOSetControllerPairTimeDelegate UPICOXRSystemAPI::SetControllerPairTimeDelegate;
 FPICOGetControllerPairTimeDelegate UPICOXRSystemAPI::GetControllerPairTimeDelegate;
+FPICOSetSystemCountryCodeDelegate UPICOXRSystemAPI::SetSystemCountryCodeDelegate;
 // Sets default values for this component's properties
 UPICOXRSystemAPI::UPICOXRSystemAPI()
 {
@@ -1243,7 +1243,7 @@ FString UPICOXRSystemAPI::PXR_PICOCastGetUrl(EPICOCastUrlTypeEnum UrlType, int32
 			Env->ReleaseStringUTFChars(JavaString, JavaChars);
 			Env->DeleteLocalRef(JavaString);
 		}
-}
+	}
 #endif
 	return Result;
 }
@@ -1312,6 +1312,191 @@ void UPICOXRSystemAPI::PXR_GetControllerPairTime(FPICOGetControllerPairTimeDeleg
 		FJavaWrapper::CallVoidMethod(Env, FJavaWrapper::GameActivityThis, Method, Ext);
 	}
 #endif
+}
+
+int32 UPICOXRSystemAPI::PXR_SetSystemLanguage(const FString& SystemLanguage, int32 Ext)
+{
+	int32 Result = 0;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		auto jstring_SystemLanguage = FJavaHelper::ToJavaString(Env, SystemLanguage);
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "SetSystemLanguage", "(Ljava/lang/String;I)I", false);
+		Result = FJavaWrapper::CallIntMethod(Env, FJavaWrapper::GameActivityThis, Method, *jstring_SystemLanguage, Ext);
+	}
+#endif
+	return Result;
+}
+
+FString UPICOXRSystemAPI::PXR_GetSystemLanguage(int32 Ext)
+{
+	FString Result;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "GetSystemLanguage", "(I)Ljava/lang/String;", false);
+		jstring JavaString = (jstring)FJavaWrapper::CallObjectMethod(Env, FJavaWrapper::GameActivityThis, Method, Ext);
+		if (JavaString != NULL)
+		{
+			const char* JavaChars = Env->GetStringUTFChars(JavaString, 0);
+			Result = FString(UTF8_TO_TCHAR(JavaChars));
+			Env->ReleaseStringUTFChars(JavaString, JavaChars);
+			Env->DeleteLocalRef(JavaString);
+		}
+	}
+#endif
+	return Result;
+}
+
+int32 UPICOXRSystemAPI::PXR_ConfigWifi(const FString& Ssid, const FString& Pwd, int32 Ext)
+{
+	int32 Result = 0;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		auto jstring_Ssid = FJavaHelper::ToJavaString(Env, Ssid);
+		auto jstring_Pwd = FJavaHelper::ToJavaString(Env, Pwd);
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "ConfigWifi", "(Ljava/lang/String;Ljava/lang/String;I)I", false);
+		Result = FJavaWrapper::CallIntMethod(Env, FJavaWrapper::GameActivityThis, Method, *jstring_Ssid, *jstring_Pwd, Ext);
+	}
+#endif
+	return Result;
+}
+
+TArray<FString> UPICOXRSystemAPI::PXR_GetConfiguredWifi(int32 Ext)
+{
+	TArray<FString> Results;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "GetConfiguredWifi", "(I)[Ljava/lang/String;", false);
+		jobjectArray JavaStringArray = (jobjectArray)FJavaWrapper::CallObjectMethod(Env, FJavaWrapper::GameActivityThis, Method, Ext);
+		jsize NumProducts = Env->GetArrayLength(JavaStringArray);
+		for (int32 Index = 0; Index < NumProducts; ++Index)
+		{
+			jstring Result = (jstring)(Env->GetObjectArrayElement(JavaStringArray, Index));
+			const char* JavaChars = Env->GetStringUTFChars(Result, 0);
+			Results.Add(FString(UTF8_TO_TCHAR(JavaChars)));
+			Env->ReleaseStringUTFChars(Result, JavaChars);
+			Env->DeleteLocalRef(Result);
+		}
+	}
+#endif
+	return Results;
+}
+
+int32 UPICOXRSystemAPI::PXR_SetSystemCountryCode(FPICOSetSystemCountryCodeDelegate InSetSystemCountryCodeDelegate, const FString& CountryCode, int32 Ext)
+{
+	SetSystemCountryCodeDelegate = InSetSystemCountryCodeDelegate;
+	int32 Result = 0;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		auto jstring_CountryCode = FJavaHelper::ToJavaString(Env, CountryCode);
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "SetSystemCountryCode", "(Ljava/lang/String;I)I", false);
+		Result = FJavaWrapper::CallIntMethod(Env, FJavaWrapper::GameActivityThis, Method, *jstring_CountryCode, Ext);
+	}
+#endif
+	return Result;
+}
+
+FString UPICOXRSystemAPI::PXR_GetSystemCountryCode(int32 Ext)
+{
+	FString Result;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "GetSystemCountryCode", "(I)Ljava/lang/String;", false);
+		jstring JavaString = (jstring)FJavaWrapper::CallObjectMethod(Env, FJavaWrapper::GameActivityThis, Method, Ext);
+		if (JavaString != NULL)
+		{
+			const char* JavaChars = Env->GetStringUTFChars(JavaString, 0);
+			Result = FString(UTF8_TO_TCHAR(JavaChars));
+			Env->ReleaseStringUTFChars(JavaString, JavaChars);
+			Env->DeleteLocalRef(JavaString);
+		}
+	}
+#endif
+	return Result;
+}
+
+int32 UPICOXRSystemAPI::PXR_SetSkipInitSettingPage(int32 Flag, int32 Ext)
+{
+	int32 Result = 0;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "SetSkipInitSettingPage", "(II)I", false);
+		Result = FJavaWrapper::CallIntMethod(Env, FJavaWrapper::GameActivityThis, Method, Flag, Ext);
+	}
+#endif
+	return Result;
+}
+
+int32 UPICOXRSystemAPI::PXR_GetSkipInitSettingPage(int32 Ext)
+{
+	int32 Result = 0;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "GetSkipInitSettingPage", "(I)I", false);
+		Result = FJavaWrapper::CallIntMethod(Env, FJavaWrapper::GameActivityThis, Method, Ext);
+	}
+#endif
+	return Result;
+}
+
+int32 UPICOXRSystemAPI::PXR_IsInitSettingComplete(int32 Ext)
+{
+	int32 Result = 0;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "IsInitSettingComplete", "(I)I", false);
+		Result = FJavaWrapper::CallIntMethod(Env, FJavaWrapper::GameActivityThis, Method, Ext);
+	}
+#endif
+	return Result;
+}
+
+int32 UPICOXRSystemAPI::PXR_StartActivity(const FString& PackageName, const FString& ClassName, const FString& Action, const FString& Extra, const TArray<FString>& Categories, const TArray<int32>& Flags, int32 Ext)
+{
+	int32 Result = 0;
+#if PLATFORM_ANDROID
+	if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
+	{
+		static jmethodID Method = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "StartActivity", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;[II)I", false);
+		
+		auto jstring_PackageName = FJavaHelper::ToJavaString(Env, PackageName);
+		auto jstring_ClassName = FJavaHelper::ToJavaString(Env, ClassName);
+		auto jstring_Action = FJavaHelper::ToJavaString(Env, Action);
+		auto jstring_Extra = FJavaHelper::ToJavaString(Env, Extra);
+		auto jstring_Default = FJavaHelper::ToJavaString(Env, TEXT(""));
+		
+		int32 CategorySize = Categories.Num();
+		jobjectArray jarray_Categories = Env->NewObjectArray(CategorySize, Env->FindClass("java/lang/String"), *jstring_Default);
+		for (int32 Index = 0; Index < CategorySize; ++Index)
+		{
+			auto jstring_Category = FJavaHelper::ToJavaString(Env, Categories[Index]);
+			Env->SetObjectArrayElement(jarray_Categories, Index, *jstring_Category);
+		}
+
+		int32 FlagSize = Flags.Num();
+		jintArray jarray_Flags = Env->NewIntArray(FlagSize);
+		jint jint_Flags[FlagSize];
+		for (int32 Index = 0; Index < FlagSize; ++Index)
+		{
+			jint_Flags[Index] = Flags[Index];
+		}
+		Env->SetIntArrayRegion(jarray_Flags, 0, FlagSize, jint_Flags);
+		
+		Result = FJavaWrapper::CallIntMethod(Env, FJavaWrapper::GameActivityThis, Method, *jstring_PackageName, *jstring_ClassName, *jstring_Action, *jstring_Extra, jarray_Categories, jarray_Flags, Ext);
+	
+		Env->DeleteLocalRef(jarray_Categories);
+		Env->DeleteLocalRef(jarray_Flags);
+	}
+#endif
+	return Result;
 }
 
 #if PLATFORM_ANDROID
@@ -1551,6 +1736,11 @@ extern "C" JNIEXPORT void  JNICALL Java_com_epicgames_ue4_GameActivity_JavaToCSe
 extern "C" JNIEXPORT void  JNICALL Java_com_epicgames_ue4_GameActivity_JavaToCGetControllerPairTimeCallback(JNIEnv * env, jclass clazz, int Result)
 {
 	UPICOXRSystemAPI::GetControllerPairTimeDelegate.ExecuteIfBound((EControllerPairTimeEnum)Result);
+}
+
+extern "C" JNIEXPORT void  JNICALL Java_com_epicgames_ue4_GameActivity_JavaToCSetSystemCountryCodeCallback(JNIEnv * env, jclass clazz, int Result)
+{
+	UPICOXRSystemAPI::SetSystemCountryCodeDelegate.ExecuteIfBound(Result);
 }
 
 #endif

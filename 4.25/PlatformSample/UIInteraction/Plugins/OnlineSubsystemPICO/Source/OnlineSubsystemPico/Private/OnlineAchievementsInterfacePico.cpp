@@ -1,4 +1,16 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
+// This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
+// Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
 #include "OnlineAchievementsInterfacePico.h"
 
@@ -8,6 +20,7 @@
 #include "OnlineMessageMultiTaskPico.h"
 #include "OnlineSubsystemPicoPackage.h"
 #include "Templates/SharedPointer.h"
+#include "Misc/FileHelper.h"
 
 class FOnlineMessageMultiTaskPicoWriteAchievements : public FOnlineMessageMultiTaskPico,
                                                      public TSharedFromThis<
@@ -84,6 +97,7 @@ void FOnlineAchievementsPico::WriteAchievements(const FUniqueNetId& PlayerId, FO
 {
 	if (AchievementDescriptions.Num() == 0)
 	{
+		SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements AchievementDescriptions.Num() is 0")));
 		// we don't have achievements
 		WriteObject->WriteState = EOnlineAsyncTaskState::Failed;
 		Delegate.ExecuteIfBound(PlayerId, false);
@@ -93,7 +107,7 @@ void FOnlineAchievementsPico::WriteAchievements(const FUniqueNetId& PlayerId, FO
 	auto LoggedInPlayerId = PicoSubsystem.GetIdentityInterface()->GetUniquePlayerId(0);
 	if (!(LoggedInPlayerId.IsValid() && PlayerId == *LoggedInPlayerId))
 	{
-		UE_LOG_ONLINE_ACHIEVEMENTS(Error, TEXT("Can only write achievements for logged in player id"));
+		SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements Can only write achievements for logged in player id")));
 		WriteObject->WriteState = EOnlineAsyncTaskState::Failed;
 		Delegate.ExecuteIfBound(PlayerId, false);
 		return;
@@ -102,67 +116,126 @@ void FOnlineAchievementsPico::WriteAchievements(const FUniqueNetId& PlayerId, FO
 	// Nothing to write
 	if (WriteObject->Properties.Num() == 0)
 	{
+		SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements WriteObject->Properties.Num() is 0")));
 		WriteObject->WriteState = EOnlineAsyncTaskState::Done;
 		Delegate.ExecuteIfBound(PlayerId, true);
 		return;
 	}
-
 	WriteObject->WriteState = EOnlineAsyncTaskState::InProgress;
 	TSharedRef<FOnlineMessageMultiTaskPicoWriteAchievements> MultiTask =
 		FOnlineMessageMultiTaskPicoWriteAchievements::Create(PicoSubsystem, static_cast<FUniqueNetIdPico>(PlayerId),
-		                                                     WriteObject, Delegate);
-
-	UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("WriteObject->Properties.Num(): %d"), WriteObject->Properties.Num());
-	// treat each achievement as unlocked
-	for (FStatPropertyArray::TConstIterator It(WriteObject->Properties); It; ++It)
+															 WriteObject, Delegate);
+	if (WriteObject->FindStatByName(USE_PICO_ACHIEVEMENT_WRITE) != nullptr)
 	{
-		const FString AchievementId = It.Key().ToString();
-		auto VariantData = It.Value();
-
-		auto AchievementDesc = AchievementDescriptions.Find(AchievementId);
-		if (AchievementDesc == nullptr)
+		FOnlineAchievementsWritePico* PicoWriteObject = static_cast<FOnlineAchievementsWritePico*>(&WriteObject.Get());
+		SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("WriteAchievements PicoWriteObject->PicoProperties.Num(): %d"), PicoWriteObject->Properties.Num()));
+		// treat each achievement as unlocked
+		for (auto It = PicoWriteObject->PicoProperties.CreateConstIterator(); It; ++It)
 		{
-			WriteObject->WriteState = EOnlineAsyncTaskState::Failed;
-			Delegate.ExecuteIfBound(PlayerId, false);
-			return;
+			const FString AchievementId = It.Key();
+			// SaveLog(ELogVerbosity::Type::Display, FString::Printf(TEXT("WriteAchievements PicoWriteObject AchievementId: %s"), *AchievementId));
+			auto VariantData = It.Value();
+			auto AchievementDesc = AchievementDescriptions.Find(AchievementId);
+			if (AchievementDesc == nullptr || !AchievementId.Equals(AchievementDesc->Name))
+			{
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements cannot find AchievementDesc")));
+				PicoWriteObject->WriteState = EOnlineAsyncTaskState::Failed;
+				Delegate.ExecuteIfBound(PlayerId, false);
+				return;
+			}
+			ppfRequest RequestId = 0;
+			switch (AchievementDesc->Type)
+			{
+			case EAchievementType::Simple:
+				{
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements PicoWriteObject ppf_Achievements_Unlock AchievementId: %s"), *AchievementId));
+					RequestId = ppf_Achievements_Unlock(TCHAR_TO_ANSI(*AchievementId), nullptr, 0);
+					break;
+				}
+			case EAchievementType::Count:
+				{
+					long long Count;
+					GetWriteAchievementCountValue(VariantData, Count);
+					RequestId = ppf_Achievements_AddCount(TCHAR_TO_ANSI(*AchievementId), Count, nullptr, 0);
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements PicoWriteObject AchievementId: %s, AddCount: %lld"), *AchievementId, Count));
+					break;
+				}
+			case EAchievementType::Bitfield:
+				{
+					FString Bitfield;
+					GetWriteAchievementBitfieldValue(VariantData, Bitfield, AchievementDesc->BitfieldLength);
+					RequestId = ppf_Achievements_AddFields(
+						TCHAR_TO_ANSI(*AchievementId), TCHAR_TO_ANSI(*Bitfield), nullptr, 0);
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements PicoWriteObject AchievementId: %s, AddFields Bitfield: %s"), *AchievementId, *Bitfield));
+					break;
+				}
+			default:
+				{
+					SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("WriteAchievements PicoWriteObject Unknown achievement type")));
+					break;
+				}
+			}
+
+			if (RequestId != 0)
+			{
+				MultiTask->AddNewRequest(RequestId);
+			}
 		}
-
-		UE_LOG_ONLINE_ACHIEVEMENTS(Verbose, TEXT("WriteObject AchievementId: '%s'"), *AchievementId);
-
-		ppfRequest RequestId = 0;
-
-		switch (AchievementDesc->Type)
+	}
+	else
+	{
+		SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements WriteObject->Properties.Num(): %d"), WriteObject->Properties.Num()));
+		// treat each achievement as unlocked
+		for (FStatPropertyArray::TConstIterator It(WriteObject->Properties); It; ++It)
 		{
-		case EAchievementType::Simple:
+			const FString AchievementId = It.Key().ToString();
+			// SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements WriteObject AchievementId: %s"), *AchievementId));
+			auto VariantData = It.Value();
+			auto AchievementDesc = AchievementDescriptions.Find(AchievementId);
+			if (AchievementDesc == nullptr || !AchievementId.Equals(AchievementDesc->Name))
 			{
-				RequestId = ppf_Achievements_Unlock(TCHAR_TO_ANSI(*AchievementId), nullptr, 0);
-				break;
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements WriteObject cannot find AchievementDesc")));
+				WriteObject->WriteState = EOnlineAsyncTaskState::Failed;
+				Delegate.ExecuteIfBound(PlayerId, false);
+				return;
 			}
-		case EAchievementType::Count:
+			ppfRequest RequestId = 0;
+			switch (AchievementDesc->Type)
 			{
-				uint64 Count;
-				GetWriteAchievementCountValue(VariantData, Count);
-				RequestId = ppf_Achievements_AddCount(TCHAR_TO_ANSI(*AchievementId), Count, nullptr, 0);
-				break;
+			case EAchievementType::Simple:
+				{
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements WriteObject ppf_Achievements_Unlock AchievementId: %s"), *AchievementId));
+					RequestId = ppf_Achievements_Unlock(TCHAR_TO_ANSI(*AchievementId), nullptr, 0);
+					break;
+				}
+			case EAchievementType::Count:
+				{
+					long long Count;
+					GetWriteAchievementCountValue(VariantData, Count);
+					RequestId = ppf_Achievements_AddCount(TCHAR_TO_ANSI(*AchievementId), Count, nullptr, 0);
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements WriteObject AchievementId: %s, AddCount: %lld"), *AchievementId, Count));
+					break;
+				}
+			case EAchievementType::Bitfield:
+				{
+					FString Bitfield;
+					GetWriteAchievementBitfieldValue(VariantData, Bitfield, AchievementDesc->BitfieldLength);
+					RequestId = ppf_Achievements_AddFields(
+						TCHAR_TO_ANSI(*AchievementId), TCHAR_TO_ANSI(*Bitfield), nullptr, 0);
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("WriteAchievements WriteObject AchievementId: %s, AddFields Bitfield: %s"), *AchievementId, *Bitfield));
+					break;
+				}
+			default:
+				{
+					SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("WriteAchievements WriteObject Unknown achievement type")));
+					break;
+				}
 			}
-		case EAchievementType::Bitfield:
-			{
-				FString Bitfield;
-				GetWriteAchievementBitfieldValue(VariantData, Bitfield, AchievementDesc->BitfieldLength);
-				RequestId = ppf_Achievements_AddFields(
-					TCHAR_TO_ANSI(*AchievementId), TCHAR_TO_ANSI(*Bitfield), nullptr, 0);
-				break;
-			}
-		default:
-			{
-				UE_LOG_ONLINE_ACHIEVEMENTS(Warning, TEXT("Unknown achievement type"));
-				break;
-			}
-		}
 
-		if (RequestId != 0)
-		{
-			MultiTask->AddNewRequest(RequestId);
+			if (RequestId != 0)
+			{
+				MultiTask->AddNewRequest(RequestId);
+			}
 		}
 	}
 };
@@ -174,45 +247,63 @@ void FOnlineAchievementsPico::QueryAchievements(const FUniqueNetId& PlayerId,
 	if (!(LoggedInPlayerId.IsValid() && PlayerId == *LoggedInPlayerId))
 	{
 		GetAllProgressIndex = 0;
-		UE_LOG_ONLINE_ACHIEVEMENTS(Error, TEXT("Can only query for logged in player id"));
+		SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements Can only query for logged in player id")));
 		Delegate.ExecuteIfBound(PlayerId, false);
 		return;
 	}
 
 	const FUniqueNetIdPico& PicoPlayerId = static_cast<const FUniqueNetIdPico&>(PlayerId);
-    UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("QueryAchievements GetAllProgressIndex: %d, MAX_REQUEST_SIZE: %d, ppf_Achievements_GetAllProgress PicoPlayerId: %s"), GetAllProgressIndex, MAX_REQUEST_SIZE, *PicoPlayerId.ToString());
+	SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements GetAllProgressIndex: %d, MAX_REQUEST_SIZE: %d, ppf_Achievements_GetAllProgress PicoPlayerId: %s"), GetAllProgressIndex, MAX_REQUEST_SIZE, *PicoPlayerId.ToString()));
+
+	if (GetAllProgressIndex == 0)
+	{
+		PlayerAchievements.Remove(PicoPlayerId);
+	}
 	PicoSubsystem.AddAsyncTask(
 		ppf_Achievements_GetAllProgress(GetAllProgressIndex, MAX_REQUEST_SIZE),
 		FPicoMessageOnCompleteDelegate::CreateLambda(
 			[this, PicoPlayerId, Delegate](ppfMessageHandle Message, bool bIsError)
 			{
-				UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("QueryAchievements ppf_Achievements_GetAllProgress OnComplete"));
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements ppf_Achievements_GetAllProgress OnComplete")));
 				if (bIsError)
 				{
 					GetAllProgressIndex = 0;
-					UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("ppf_Achievements_GetAllProgress is error: true"));
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements ppf_Achievements_GetAllProgress is error")));
 					Delegate.ExecuteIfBound(PicoPlayerId, false);
 					return;
 				}
 
 				auto AchievementProgressArray = ppf_Message_GetAchievementProgressArray(Message);
 				const size_t AchievementProgressNum = ppf_AchievementProgressArray_GetSize(AchievementProgressArray);
-				UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("ppf_AchievementProgressArray_GetSize: %zu"), AchievementProgressNum);
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements ppf_AchievementProgressArray_GetSize: %zu"), AchievementProgressNum));
 				// new array
 				TArray<FOnlineAchievement> AchievementsForPlayer;
 
 				// keep track of existing achievements
 				TSet<FString> InProgressAchievements;
-
 				for (size_t AchievementProgressIndex = 0; AchievementProgressIndex < AchievementProgressNum; ++AchievementProgressIndex)
 				{
 					auto AchievementProgress = ppf_AchievementProgressArray_GetElement(AchievementProgressArray, AchievementProgressIndex);
 					FOnlineAchievementPico NewAchievement(AchievementProgress);
 					NewAchievement.Progress = CalculatePlayerAchievementProgress(NewAchievement);
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements NewAchievement.Id: %s, NewAchievement.Progress: %f, Count: %lld"), *NewAchievement.Id, NewAchievement.Progress, NewAchievement.Count));
+
+					FOnlineAchievementDescPico* AchDesc = AchievementDescriptions.Find(NewAchievement.Id);
+					if (AchDesc != nullptr && AchDesc->Name.Equals(NewAchievement.Id))
+					{
+						AchDesc->UnlockTime = FDateTime::FromUnixTimestamp(ppf_AchievementProgress_GetUnlockTime(AchievementProgress));
+
+						int year = AchDesc->UnlockTime.GetYear();
+						int month = AchDesc->UnlockTime.GetMonth();
+						int day = AchDesc->UnlockTime.GetDay();
+						int hour = AchDesc->UnlockTime.GetHour();
+						int minute = AchDesc->UnlockTime.GetMinute();
+						int second = AchDesc->UnlockTime.GetSecond();
+						SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements ppf_AchievementProgress_GetUnlockTime(AchievementProgress): %llu [%d.%d.%d %d:%d:%d]"), ppf_AchievementProgress_GetUnlockTime(AchievementProgress), year, month, day, hour, minute, second));
+					}
 
 					AchievementsForPlayer.Add(NewAchievement);
 					InProgressAchievements.Add(NewAchievement.Id);
-					UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("%zu, Id: %s"), AchievementProgressIndex, *NewAchievement.Id);
 				}
 
 				// if there are any achievements that the player has not made any progress toward,
@@ -220,29 +311,38 @@ void FOnlineAchievementsPico::QueryAchievements(const FUniqueNetId& PlayerId,
 				for (auto const& it : AchievementDescriptions)
 				{
 					auto bFoundAchievement = InProgressAchievements.Find(it.Key);
-					if (bFoundAchievement == nullptr)
+					if (bFoundAchievement == nullptr || !bFoundAchievement->Equals(it.Key))
 					{
 						FOnlineAchievementPico NewAchievement(it.Value);
 						AchievementsForPlayer.Add(NewAchievement);
 					}
 				}
 
-				UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("PlayerAchievements add: PicoPlayerId: %s"), *PicoPlayerId.ToString());
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements PlayerAchievements add: PicoPlayerId: %s"), *PicoPlayerId.ToString()));
 				// should replace any already existing values
-				PlayerAchievements.Add(PicoPlayerId, AchievementsForPlayer);
+				if (PlayerAchievements.Contains(PicoPlayerId))
+				{
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements PlayerAchievements Contains PicoPlayerId")));
+					PlayerAchievements[PicoPlayerId].Append(AchievementsForPlayer);
+				}
+				else
+				{
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements PlayerAchievements not Contains PicoPlayerId")));
+					PlayerAchievements.Add(PicoPlayerId, AchievementsForPlayer);
+				}
 
 				GetAllProgressIndex++;
 				size_t TotalSize = ppf_AchievementProgressArray_GetTotalSize(AchievementProgressArray);
-				UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("TotalSize: %zu"), TotalSize);
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements TotalSize: %zu"), TotalSize));
 				if (GetAllProgressIndex * MAX_REQUEST_SIZE >= TotalSize)
 				{
-					UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("GetAllProgressIndex * MAX_REQUEST_SIZE >= TotalSize"));
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements GetAllProgressIndex * MAX_REQUEST_SIZE >= TotalSize stop query")));
 					GetAllProgressIndex = 0;
 					Delegate.ExecuteIfBound(PicoPlayerId, true);
 				}
 				else
 				{
-					UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("GetAllProgressIndex: %d"), GetAllProgressIndex);
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievements GetAllProgressIndex: %d"), GetAllProgressIndex));
 					QueryAchievements(PicoPlayerId, Delegate);
 				}
 			}));
@@ -252,24 +352,24 @@ void FOnlineAchievementsPico::QueryAchievementDescriptions(const FUniqueNetId& P
                                                            const FOnQueryAchievementsCompleteDelegate& Delegate)
 {
 	const FUniqueNetIdPico& PicoPlayerId = static_cast<const FUniqueNetIdPico&>(PlayerId);
-	UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("QueryAchievementDescriptions ppf_Achievements_GetAllDefinitions GetAllDefinitionIndex: %d, MAX_REQUEST_SIZE: %d,  PicoPlayerId: %s"), GetAllDefinitionIndex, MAX_REQUEST_SIZE, *PicoPlayerId.ToString());
+	SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions ppf_Achievements_GetAllDefinitions GetAllDefinitionIndex: %d, MAX_REQUEST_SIZE: %d,  PicoPlayerId: %s"), GetAllDefinitionIndex, MAX_REQUEST_SIZE, *PicoPlayerId.ToString()));
 	PicoSubsystem.AddAsyncTask(
 		ppf_Achievements_GetAllDefinitions(GetAllDefinitionIndex, MAX_REQUEST_SIZE),
 		FPicoMessageOnCompleteDelegate::CreateLambda(
 			[this, PicoPlayerId, Delegate](ppfMessageHandle Message, bool bIsError)
 			{
-				UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("QueryAchievementDescriptions ppf_Achievements_GetAllDefinitions OnComplete"));
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions ppf_Achievements_GetAllDefinitions OnComplete")));
 				if (bIsError)
 				{
 					GetAllDefinitionIndex = 0;
-					UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("QueryAchievementDescriptions is error"));
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions error")));
 					Delegate.ExecuteIfBound(PicoPlayerId, false);
 					return;
 				}
 
 				const auto AchievementDefinitionArray = ppf_Message_GetAchievementDefinitionArray(Message);
 				const size_t AchievementDefinitionNum = ppf_AchievementDefinitionArray_GetSize(AchievementDefinitionArray);
-				UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("QueryAchievementDescriptions AchievementDefinitionNum: %zu"), AchievementDefinitionNum);
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions AchievementDefinitionNum: %zu"), AchievementDefinitionNum));
 				for (size_t AchievementDefinitionIndex = 0; AchievementDefinitionIndex < AchievementDefinitionNum; ++AchievementDefinitionIndex)
 				{
 					const auto AchievementDefinition = ppf_AchievementDefinitionArray_GetElement(AchievementDefinitionArray, AchievementDefinitionIndex);
@@ -290,24 +390,24 @@ void FOnlineAchievementsPico::QueryAchievementDescriptions(const FUniqueNetId& P
 					NewAchievementDesc.LockedImageURL = UTF8_TO_TCHAR(ppf_AchievementDefinition_GetLockedImageURL(AchievementDefinition));
 					NewAchievementDesc.UnlockedImageURL = UTF8_TO_TCHAR(ppf_AchievementDefinition_GetUnlockedImageURL(AchievementDefinition));
 					
-					UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("QueryAchievementDescriptions AchievementDescriptions add Name: %s, DebugString: %s")
-						, *NewAchievementDesc.Name, *NewAchievementDesc.ToDebugString());
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions AchievementDescriptions add Name: %s, DebugString: %s")
+						, *NewAchievementDesc.Name, *NewAchievementDesc.ToDebugString()));
 					AchievementDescriptions.Add(NewAchievementDesc.Name, NewAchievementDesc);
 				}
-				UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("QueryAchievementDescriptions AchievementDescriptions.Num(): %d"), AchievementDescriptions.Num());
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions AchievementDescriptions.Num(): %d"), AchievementDescriptions.Num()));
 
 				GetAllDefinitionIndex++;
 				size_t TotalSize = ppf_AchievementDefinitionArray_GetTotalSize(AchievementDefinitionArray);
-				UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("TotalSize: %zu"), TotalSize);
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions TotalSize: %zu"), TotalSize));
 				if (GetAllDefinitionIndex * MAX_REQUEST_SIZE >= TotalSize)
 				{
-					UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("GetAllDefinitionIndex * MAX_REQUEST_SIZE >= TotalSize"));
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions GetAllDefinitionIndex * MAX_REQUEST_SIZE >= TotalSize stop query")));
 					GetAllDefinitionIndex = 0;
 					Delegate.ExecuteIfBound(PicoPlayerId, true);
 				}
 				else
 				{
-					UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("GetAllDefinitionIndex: %d"), GetAllDefinitionIndex);
+					SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("QueryAchievementDescriptions GetAllDefinitionIndex: %d"), GetAllDefinitionIndex));
 					QueryAchievementDescriptions(PicoPlayerId, Delegate);
 				}
 			}));
@@ -319,8 +419,7 @@ EOnlineCachedResult::Type FOnlineAchievementsPico::GetCachedAchievement(const FU
 {
 	if (AchievementDescriptions.Num() == 0)
 	{
-		UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("GetCachedAchievement AchievementDescriptions.Num() is 0"));
-		// we don't have achievements
+		SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("GetCachedAchievement AchievementDescriptions.Num() is 0")));
 		return EOnlineCachedResult::NotFound;
 	}
 
@@ -328,7 +427,7 @@ EOnlineCachedResult::Type FOnlineAchievementsPico::GetCachedAchievement(const FU
 	const TArray<FOnlineAchievement>* PlayerAch = PlayerAchievements.Find(PicoPlayerId);
 	if (PlayerAch == nullptr)
 	{
-		UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("GetCachedAchievement achievements haven't been read for a player"));
+		SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("GetCachedAchievement achievements haven't been read for a player")));
 		// achievements haven't been read for a player
 		return EOnlineCachedResult::NotFound;
 	}
@@ -336,16 +435,24 @@ EOnlineCachedResult::Type FOnlineAchievementsPico::GetCachedAchievement(const FU
 	const int32 AchNum = PlayerAch->Num();
 	for (int32 AchIdx = 0; AchIdx < AchNum; ++AchIdx)
 	{
-		UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("GetCachedAchievement (*PlayerAch)[AchIdx].Id: %s, AchievementId: %s"), *((*PlayerAch)[AchIdx].Id), *AchievementId);
-		if ((*PlayerAch)[AchIdx].Id == AchievementId)
+		if ((*PlayerAch)[AchIdx].Id.Equals(AchievementId))
 		{
-			OutAchievement = (*PlayerAch)[AchIdx];
+			// if (OutAchievement.Id.Equals(USE_PICO_ACHIEVEMENT.ToString()))
+			// {
+			// 	FOnlineAchievementPico& temp = static_cast<FOnlineAchievementPico&>(OutAchievement);
+			// 	temp = (*PlayerAch)[AchIdx];
+			// }
+			// else
+			{
+				SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("GetCachedAchievement find set OutAchievement Id: %s, AchievementId: %s, Progress: %f"), *((*PlayerAch)[AchIdx].Id), *AchievementId, (*PlayerAch)[AchIdx].Progress));
+				OutAchievement.Id = (*PlayerAch)[AchIdx].Id;
+				OutAchievement.Progress = (*PlayerAch)[AchIdx].Progress;
+			}
 			return EOnlineCachedResult::Success;
 		}
 	}
-
-	UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("GetCachedAchievement no such achievement"));
-	// no such achievement
+	
+	SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("GetCachedAchievement no such achievement")));
 	return EOnlineCachedResult::NotFound;
 };
 
@@ -365,6 +472,13 @@ EOnlineCachedResult::Type FOnlineAchievementsPico::GetCachedAchievements(
 		// achievements haven't been read for a player
 		return EOnlineCachedResult::NotFound;
 	}
+	// for (int32 AchIdx = 0; AchIdx < PlayerAch->Num(); ++AchIdx)
+	// {
+	// 	FOnlineAchievement Achievement;
+	// 	Achievement.Id = (*PlayerAch)[AchIdx].Id;
+	// 	Achievement.Progress = (*PlayerAch)[AchIdx].Progress;
+	// 	OutAchievements.Add(Achievement);
+	// }
 
 	OutAchievements = *PlayerAch;
 	return EOnlineCachedResult::Success;
@@ -379,14 +493,17 @@ EOnlineCachedResult::Type FOnlineAchievementsPico::GetCachedAchievementDescripti
 		return EOnlineCachedResult::NotFound;
 	}
 
+	// uint32 Hash = TDefaultMapHashableKeyFuncs<FString, FOnlineAchievementDescPico, false>::GetKeyHash(AchievementId);
+	// FOnlineAchievementDescPico* AchDesc = AchievementDescriptions.FindByHash(Hash, AchievementId);
 	FOnlineAchievementDescPico* AchDesc = AchievementDescriptions.Find(AchievementId);
-	if (AchDesc == nullptr)
+	if (AchDesc == nullptr || !AchDesc->Name.Equals(AchievementId))
 	{
 		// no such achievement
 		return EOnlineCachedResult::NotFound;
 	}
-
-	if (OutAchievementDesc.Title.EqualTo(FText::FromName(USE_PICO_DESC)))
+	
+	
+	if (OutAchievementDesc.Title.EqualTo(FText::FromName(USE_PICO_ACHIEVEMENT_DESC)))
 	{
 		FOnlineAchievementDescPico& temp = static_cast<FOnlineAchievementDescPico&>(OutAchievementDesc);
 		temp = *AchDesc;
@@ -397,6 +514,7 @@ EOnlineCachedResult::Type FOnlineAchievementsPico::GetCachedAchievementDescripti
 		OutAchievementDesc.bIsHidden = AchDesc->bIsHidden;
 		OutAchievementDesc.LockedDesc = AchDesc->LockedDesc;
 		OutAchievementDesc.UnlockedDesc = AchDesc->UnlockedDesc;
+		OutAchievementDesc.UnlockTime = AchDesc->UnlockTime;
 	}
 	return EOnlineCachedResult::Success;
 };
@@ -405,12 +523,12 @@ EOnlineCachedResult::Type FOnlineAchievementsPico::GetCachedAchievementDescripti
 bool FOnlineAchievementsPico::ResetAchievements(const FUniqueNetId& PlayerId)
 {
 	// We cannot reset achievements from the client
-	UE_LOG_ONLINE_ACHIEVEMENTS(Error, TEXT("Achievements cannot be reset here"));
+	SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("ResetAchievements Achievements cannot be reset here")));
 	return false;
 };
 #endif // !UE_BUILD_SHIPPING
 
-void FOnlineAchievementsPico::GetWriteAchievementCountValue(FVariantData VariantData, uint64& OutData) const
+void FOnlineAchievementsPico::GetWriteAchievementCountValue(FVariantData VariantData, long long& OutData) const
 {
 	switch (VariantData.GetType())
 	{
@@ -418,21 +536,21 @@ void FOnlineAchievementsPico::GetWriteAchievementCountValue(FVariantData Variant
 		{
 			int32 Value;
 			VariantData.GetValue(Value);
-			OutData = static_cast<uint64>(Value);
+			OutData = static_cast<long long>(Value);
 			break;
 		}
 	case EOnlineKeyValuePairDataType::Int64:
 		{
 			int64 Value;
 			VariantData.GetValue(Value);
-			OutData = static_cast<uint64>(Value);
+			OutData = static_cast<long long>(Value);
 			break;
 		}
 	case EOnlineKeyValuePairDataType::UInt32:
 		{
 			uint32 Value;
 			VariantData.GetValue(Value);
-			OutData = static_cast<uint64>(Value);
+			OutData = static_cast<long long>(Value);
 			break;
 		}
 	case EOnlineKeyValuePairDataType::UInt64:
@@ -442,7 +560,7 @@ void FOnlineAchievementsPico::GetWriteAchievementCountValue(FVariantData Variant
 		}
 	default:
 		{
-			UE_LOG_ONLINE_ACHIEVEMENTS(Warning, TEXT("Could not %s convert to uint64"), VariantData.GetTypeString());
+			SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("GetWriteAchievementCountValue Could not %s convert to uint64"), VariantData.GetTypeString()));
 			OutData = 0;
 			break;
 		}
@@ -460,6 +578,7 @@ void FOnlineAchievementsPico::GetWriteAchievementBitfieldValue(FVariantData Vari
 			VariantData.GetValue(Value);
 			auto UnpaddedBitfield = FString::FromInt(Value);
 			auto PaddingLength = BitfieldLength - UnpaddedBitfield.Len();
+			SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("GetWriteAchievementBitfieldValue UnpaddedBitfield: %s, BitfieldLength: %u, PaddingLength: %d"), *UnpaddedBitfield, BitfieldLength, PaddingLength));
 			OutData = TEXT("");
 			for (uint32 i = 0; i < PaddingLength; ++i)
 			{
@@ -475,7 +594,7 @@ void FOnlineAchievementsPico::GetWriteAchievementBitfieldValue(FVariantData Vari
 		}
 	default:
 		{
-			UE_LOG_ONLINE_ACHIEVEMENTS(Warning, TEXT("Could not %s convert to string"), VariantData.GetTypeString());
+			SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("GetWriteAchievementBitfieldValue Could not %s convert to string"), VariantData.GetTypeString()));
 			break;
 		}
 	}
@@ -485,14 +604,14 @@ double FOnlineAchievementsPico::CalculatePlayerAchievementProgress(const FOnline
 {
 	if (Achievement.bIsUnlocked)
 	{
-		UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("Id: %s is unlocked."), *Achievement.Id);
+		SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("CalculatePlayerAchievementProgress Id: %s is unlocked."), *Achievement.Id));
 		return 100.0;
 	}
 
 	auto Desc = AchievementDescriptions.Find(Achievement.Id);
-	if (Desc == nullptr)
+	if (Desc == nullptr || !Desc->Name.Equals(Achievement.Id))
 	{
-		UE_LOG_ONLINE_ACHIEVEMENTS(Warning, TEXT("Could not calculate progress for Achievement: '%s'"), *Achievement.Id);
+		SaveLog(ELogVerbosity::Type::Warning, FString::Printf(TEXT("CalculatePlayerAchievementProgress Could not calculate progress for Achievement: '%s'"), *Achievement.Id));
 		return 0.0;
 	}
 
@@ -502,6 +621,7 @@ double FOnlineAchievementsPico::CalculatePlayerAchievementProgress(const FOnline
 	case EAchievementType::Count:
 		{
 			Progress = Achievement.Count * 100.0 / Desc->Target;
+			SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("CalculatePlayerAchievementProgress Id: %s, Count: %lld, target: %llu, Progress: %f"), *Achievement.Id, Achievement.Count, Desc->Target, Progress));
 			break;
 		}
 	case EAchievementType::Bitfield:
@@ -514,6 +634,7 @@ double FOnlineAchievementsPico::CalculatePlayerAchievementProgress(const FOnline
 					++BitfieldCount;
 				}
 			}
+			SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("CalculatePlayerAchievementProgress Id: %s, BitfieldCount: %d, target: %llu"), *Achievement.Id, BitfieldCount, Desc->Target));
 			Progress = BitfieldCount * 100.0 / Desc->Target;
 			break;
 		}
@@ -523,7 +644,35 @@ double FOnlineAchievementsPico::CalculatePlayerAchievementProgress(const FOnline
 			break;
 		}
 	}
-	UE_LOG_ONLINE_ACHIEVEMENTS(Display, TEXT("Id: %s, Progress: %f"), *Achievement.Id, (Progress <= 100.0) ? Progress : 100.0);
+	SaveLog(ELogVerbosity::Type::Verbose, FString::Printf(TEXT("CalculatePlayerAchievementProgress Id: %s, Progress: %f"), *Achievement.Id, (Progress <= 100.0) ? Progress : 100.0));
 	// Cap the progress to 100
 	return (Progress <= 100.0) ? Progress : 100.0;
+}
+
+void FOnlineAchievementsPico::SaveLog(const ELogVerbosity::Type Verbosity, const FString & Log) const
+{
+	switch (Verbosity)
+	{
+	case ELogVerbosity::Type::Error:
+		UE_LOG_ONLINE_ACHIEVEMENTS(Error, TEXT("PPF_GAME %s"), *Log);
+		break;
+	case ELogVerbosity::Type::Warning:
+		UE_LOG_ONLINE_ACHIEVEMENTS(Warning, TEXT("PPF_GAME %s"), *Log);
+		break;
+	default:
+		UE_LOG_ONLINE_ACHIEVEMENTS(Log, TEXT("PPF_GAME %s"), *Log);
+		break;
+	}
+
+	FDateTime Time = FDateTime::Now();
+	int year = Time.GetYear();
+	int month = Time.GetMonth();
+	int day = Time.GetDay();
+	int hour = Time.GetHour();
+	int minute = Time.GetMinute();
+	int second = Time.GetSecond();
+    
+	// FString WriteLog = FString::Printf(TEXT("[%d.%d.%d %d:%d:%d]%s\n"), year, month, day, hour, minute, second, *Log);
+	// FString TextPath = FPaths::ProjectPersistentDownloadDir() + TEXT("Log-OnlineAchievementInterfacePico.txt");
+	// FFileHelper::SaveStringToFile(*WriteLog, *TextPath, FFileHelper::EEncodingOptions::AutoDetect, &IFileManager::Get(), FILEWRITE_Append);
 }

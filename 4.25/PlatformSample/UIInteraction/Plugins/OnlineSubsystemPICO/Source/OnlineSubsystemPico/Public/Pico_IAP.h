@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -56,7 +66,7 @@ public:
     /// <summary>Records the order fulfillment result for a consumable.
     /// @note Users are unable to repurchase the same consumable until the previous order is fulfilled.
     /// </summary>
-    /// <param name ="SKU">The SKU of the product.</param> 
+    /// <param name ="SKU">The unique identifier of the consumable.</param> 
     /// <param name ="InConsumePurchaseDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
@@ -66,9 +76,9 @@ public:
     /// </returns>
 	bool ConsumePurchase(const FString& SKU, FConsumePurchaseDelegate InConsumePurchaseDelegate);
 
-    /// <summary>Gets a list of purchasable products in the current app.</summary>
-    /// <param name ="ProductSKUs">The SKUs of products. If this parameter is empty, all purchasable products will be returned.
-    /// If SKUs are specified, products with corresponding SKUs will be returned.</param>
+    /// <summary>Gets a list of purchasable add-ons in the current app.</summary>
+    /// <param name ="ProductSKUs">The unique identifiers of add-ons. If this parameter is empty, all purchasable add-ons will be returned.
+    /// If SKUs are specified, add-ons with corresponding SKUs will be returned.</param>
     /// <param name ="Count">The number of 'ProductSKUs' arrays to return.</param> 
     /// <param name ="InGetProductsBySKUDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
@@ -79,7 +89,7 @@ public:
     /// </returns>
 	bool GetProductsBySKU(TArray<FString> ProductSKUs, int32 Count, FGetProductsBySKUDelegate InGetProductsBySKUDelegate);
 
-    /// <summary>Gets the next page of purchasable products.</summary>
+    /// <summary>Gets the next page of purchasable add-ons.</summary>
     /// <param name ="InProductArray">The current object of product array.</param> 
     /// <param name ="InGetNextProductArrayPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
@@ -90,8 +100,8 @@ public:
     /// </returns>
 	bool GetNextProductsArrayPage(UPico_ProductArray* InProductArray, FGetNextProductArrayPageDelegate InGetNextProductArrayPageDelegate);
 
-    /// <summary>Gets a list of purchased products for a user.
-    /// @note This list includes consumables that have not been fulfilled and products that are permanently available after one purchase.
+    /// <summary>Gets a list of purchased add-ons for a user.
+    /// @note This list includes durables and unfulfilled consumables.
     /// </summary>
     /// <param name ="InGetViewerPurchasesDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
@@ -102,7 +112,7 @@ public:
     /// </returns>
 	bool GetViewerPurchases(FGetViewerPurchasesDelegate InGetViewerPurchasesDelegate);
 
-    /// <summary>Gets the next page of purchased products.</summary>
+    /// <summary>Gets the next page of purchased add-ons.</summary>
     /// <param name ="InPurchaseArray">The current object of purchase array.</param> 
     /// <param name ="InGetNextPurchaseArrayPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
@@ -114,13 +124,10 @@ public:
 	bool GetNextPurchaseArrayPage(UPico_PurchaseArray* InPurchaseArray, FGetNextPurchaseArrayPageDelegate InGetNextPurchaseArrayPageDelegate);
 
     /// <summary>
-    /// Launches the checkout flow to pay for a product.
-    /// @note PICO tries to handle and fix as many errors as possible. Home returns the
-    /// appropriate error message and how to resolve it if possible. Returns a
-    /// purchase on success, empty purchase on cancel, and an error on error.
+    /// Launches the checkout flow to purchase a durable or consumable.
     /// </summary>
-    /// <param name ="SKU">The SKU of the product the user wants to purchase.</param> 
-    /// <param name ="Price">The price for the product.</param> 
+    /// <param name ="SKU">The unique identifier of the add-on the user wants to purchase.</param> 
+    /// <param name ="Price">The price for the add-on.</param> 
     /// <param name ="Currency">The currency of the payment.</param> 
     /// <param name ="InLaunchCheckoutFlowDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
@@ -132,15 +139,12 @@ public:
 	bool LaunchCheckoutFlow(const FString& SKU, const FString& Price, const FString& Currency, FLaunchCheckoutFlowDelegate InLaunchCheckoutFlowDelegate);
 
     /// <summary>
-    /// Launches the checkout flow to pay for a subscription product.
-    /// @note PICO tries to handle and fix as many errors as possible. Home returns the
-    /// appropriate error message and how to resolve it if possible. Returns a
-    /// purchase on success, empty purchase on cancel, and an error on error.
+    /// Launches the checkout flow to purchase a subscription add-on.
     /// </summary>
-    /// <param name ="SKU">The SKU of the product the user wants to purchase.</param> 
-    /// <param name ="Price">The price for the product.</param> 
+    /// <param name ="SKU">The unique identifier of the subscription add-on the user wants to purchase.</param> 
+    /// <param name ="Price">The price for the subscription add-on.</param> 
     /// <param name ="Currency">The currency of the payment.</param> 
-    /// <param name ="OuterId">The OuterId of the subscription product.</param> 
+    /// <param name ="OuterId">The unique identifier of the subscription period in the subscription add-on.</param> 
     /// <param name ="InLaunchCheckoutFlow_V2Delegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
@@ -178,7 +182,7 @@ public:
 	/// @note Users are unable to repurchase the same consumable until the previous order is fulfilled.
     /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
-    /// <param name ="SKU">The SKU of the product.</param> 
+    /// <param name ="SKU">The unique identifier of the add-on.</param> 
     /// <param name ="InConsumePurchaseDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>
@@ -189,9 +193,9 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|IAP")
 	static bool ConsumePurchase(UObject* WorldContextObject,const FString& SKU, FConsumePurchaseDelegate InConsumePurchaseDelegate);
 
-    /// <summary>Gets a list of purchasable products in the current app.</summary>
+    /// <summary>Gets a list of purchasable add-ons in the current app.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
-    /// <param name ="ProductSKUs">The SKUs of products.</param> 
+    /// <param name ="ProductSKUs">The unique identifiers of add-ons.</param> 
     /// <param name ="Count">The number of ProductSKUs arrays to return.</param> 
     /// <param name ="InGetProductsBySKUDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
@@ -203,7 +207,7 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|IAP")
 	static bool GetProductsBySKU(UObject* WorldContextObject, TArray<FString> ProductSKUs, int32 Count, FGetProductsBySKUDelegate InGetProductsBySKUDelegate);
 
-    /// <summary>Gets the next page of purchasable products.</summary>
+    /// <summary>Gets the next page of purchasable add-ons.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
     /// <param name ="InProductArray">The current object of product array.</param> 
     /// <param name ="InGetNextProductArrayPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
@@ -216,8 +220,8 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|IAP")
 	static bool GetNextProductsArrayPage(UObject* WorldContextObject, UPico_ProductArray* InProductArray, FGetNextProductArrayPageDelegate InGetNextProductArrayPageDelegate);
 
-    /// <summary>Gets a list of purchased products for a user in the current app.
-	/// @note This list includes consumables that have not been fulfilled and products that are permanently available after one purchase.
+    /// <summary>Gets a list of purchased add-ons for a user in the current app.
+	/// @note This list includes unfulfilled consumables and durables.
 	/// </summary>
 	/// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
     /// <param name ="InGetViewerPurchasesDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
@@ -230,7 +234,7 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|IAP")
 	static bool GetViewerPurchases(UObject* WorldContextObject, FGetViewerPurchasesDelegate InGetViewerPurchasesDelegate);
 
-    /// <summary>Gets the next page of purchased products.</summary>
+    /// <summary>Gets the next page of purchased add-ons.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
     /// <param name ="InPurchaseArray">The current object of purchase array.</param> 
     /// <param name ="InGetNextPurchaseArrayPageDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
@@ -244,14 +248,11 @@ public:
 	static bool GetNextPurchaseArrayPage(UObject* WorldContextObject, UPico_PurchaseArray* InPurchaseArray, FGetNextPurchaseArrayPageDelegate InGetNextPurchaseArrayPageDelegate);
 
     /// <summary>
-    /// Launches the checkout flow to purchase a product.
-    /// @note PICO tries to handle and fix as many errors as possible. Home returns the
-    /// appropriate error message and how to resolve it if possible. Returns a
-    /// purchase on success, empty purchase on cancel, and an error on error.
+    /// Launches the checkout flow to purchase a consumable or durable.
     /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
-    /// <param name ="SKU">The SKU of the product to purchase.</param> 
-    /// <param name ="Price">The price for the product.</param> 
+    /// <param name ="SKU">The unique identifier of the add-on to purchase.</param> 
+    /// <param name ="Price">The price for the add-on.</param> 
     /// <param name ="Currency">The currency of the payment.</param> 
     /// <param name ="InLaunchCheckoutFlowDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
@@ -264,16 +265,13 @@ public:
 	static bool LaunchCheckoutFlow(UObject* WorldContextObject, const FString& SKU, const FString& Price, const FString& Currency, FLaunchCheckoutFlowDelegate InLaunchCheckoutFlowDelegate);
 
     /// <summary>
-    /// Launches the checkout flow to pay for a subscription product.
-    /// @note PICO tries to handle and fix as many errors as possible. Home returns the
-    /// appropriate error message and how to resolve it if possible. Returns a
-    /// purchase on success, empty purchase on cancel, and an error on error.
+    /// Launches the checkout flow to purchase a subscription add-on.
     /// </summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
-    /// <param name ="SKU">The SKU of the product the user wants to purchase.</param> 
-    /// <param name ="Price">The price for the product.</param> 
+    /// <param name ="SKU">The unique identifier of the subscription add-on the user wants to purchase.</param> 
+    /// <param name ="Price">The price for the subscription add-on.</param> 
     /// <param name ="Currency">The currency of the payment.</param> 
-    /// <param name ="OuterId">The OuterId of the subscription product.</param> 
+    /// <param name ="OuterId">The unique identifier of the subscription period in the subscription add-on.</param> 
     /// <param name ="InLaunchCheckoutFlow_V2Delegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
     /// <returns>Bool: 
     /// <ul>

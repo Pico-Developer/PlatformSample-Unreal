@@ -19,13 +19,14 @@ public:
 	FVector AngularAcceleration;
 	FVector Velocity;
 	FEngineShowFlags ShowFlags;
-	bool    bHasWaited;
 	union
 	{
 		struct
 		{
 			uint64			bSplashIsShown : 1;
+			uint64			bSeeThroughIsShown : 1;
 			uint64			bLateUpdateOK : 1;
+			uint64			bHasWaited : 1;
 		};
 		uint64 Raw;
 	} Flags;

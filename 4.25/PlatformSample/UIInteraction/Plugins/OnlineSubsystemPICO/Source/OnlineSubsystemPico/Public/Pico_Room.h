@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -107,9 +117,9 @@ public:
 	FRoomUpdateOwner UpdateOwnerDelegate;
 	FRoomUpdatePrivateRoomJoinPolicy UpdatePrivateRoomJoinPolicyDelegate;
 
-	/// <summary>Launch the invitable user flow to invite to the logged in user's current
-	/// room. This is intended to be a nice shortcut for developers not wanting to build 
-	/// out their own Invite UI although it has the same rules as if you build it yourself.</summary>
+    /// <summary>Launches the invitation flow to let the current user invite friends to a specified room. 
+	/// This launches the system default invite UI where the user can select friends to invite and then send invitations to them. 
+	/// Therefore, this is a shortcut if you do not want to build the invite UI by yourself.</summary>
 	/// <param name="RoomID">The ID of the room.</param>
 	/// <returns>Bool:
 	/// <ul>
@@ -373,12 +383,6 @@ public:
 	/// <param name ="WorldContextObject">Used to get the information about the current world.</param>
 	/// <param name="RoomID">The ID of the room.</param>
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void LaunchInvitableUserFlow(UObject* WorldContextObject, const FString& RoomID, FRoomLaunchInvitableUserFlow OnLaunchInvitableUserFlowCallback);
 
@@ -389,14 +393,8 @@ public:
 	/// <param name="roomId">The ID of the room that you currently own (call `Room.OwnerOptional` to check).</param>
 	/// <param name="data">The key/value pairs to add or update. Null value will clear a given key.</param>
 	/// <param name="OnUpdateDataStoreCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
-	static void UpdateDataStore(UObject* WorldContextObject, const FString& RoomID, const TMap<FString, FString>& Data, FRoomUpdateDataStore OnUpdateDataStoreCallback); // todo 和OBP不一样
+	static void UpdateDataStore(UObject* WorldContextObject, const FString& RoomID, const TMap<FString, FString>& Data, FRoomUpdateDataStore OnUpdateDataStoreCallback);
 
 	/// <summary>Creates a new private room and joins it.
 	/// @note This type of room can be obtained by querying the room where
@@ -413,7 +411,6 @@ public:
 	/// <param name="MaxUsers">The maximum number of members allowed in the room, including the room creator.</param>
 	/// <param name="RoomOptions">Room configuration for this request.</param>
 	/// <param name="OnCreateAndJoinPrivate2Callback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>void</returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void CreateAndJoinPrivate2(UObject* WorldContextObject, ERoomJoinPolicy JoinPolicy, int32 MaxUsers, FPicoRoomOptions RoomOptions, FRoomCreateAndJoinPrivate2 OnCreateAndJoinPrivate2Callback);
 
@@ -421,24 +418,12 @@ public:
 	/// <param name ="WorldContextObject">Used to get the information about the current world.</param>
 	/// <param name="RoomID">The ID of the room to get information for.</param>
 	/// <param name="OnGetCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void Get(UObject* WorldContextObject, const FString& RoomID, FRoomGet OnGetCallback);
 
 	/// <summary>Gets the data of the room you are currently in.</summary>
 	/// <param name ="WorldContextObject">Used to get the information about the current world.</param>
 	/// <param name="OnGetCurrentCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void GetCurrent(UObject* WorldContextObject, FRoomGetCurrent OnGetCurrentCallback);
 
@@ -448,12 +433,6 @@ public:
 	/// <param name ="WorldContextObject">Used to get the information about the current world.</param>
 	/// <param name="UserId">The ID of the user.</param>
 	/// <param name="OnGetCurrentForUserCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void GetCurrentForUser(UObject* WorldContextObject, const FString& UserId, FRoomGetCurrentForUser OnGetCurrentForUserCallback);
 
@@ -464,12 +443,6 @@ public:
 	/// <param name="RoomOptions">Additional configuration for this request.
 	/// If you pass `null`, the response will return code `0`.</param>
 	/// <param name="OnGetInvitableUsers2Callback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void GetInvitableUsers2(UObject* WorldContextObject, FPicoRoomOptions RoomOptions, FRoomGetInvitableUsers2 OnGetInvitableUsers2Callback);
 
@@ -478,12 +451,6 @@ public:
 	/// <param name="PageIndex">Start page index.</param>
 	/// <param name="PageSize">Page entry number in response (should range from `5` to `20`).</param>
 	/// <param name="OnGetModeratedRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void GetModeratedRooms(UObject* WorldContextObject, int PageIndex, int PageSize, FRoomGetModeratedRooms OnGetModeratedRoomsCallback);
 
@@ -494,12 +461,6 @@ public:
 	/// <param name="RoomID">The ID of the room.</param>
 	/// <param name="Token">The user's invitation token, which is returned by `RoomService.GetInvitableUsers2()`.</param>
 	/// <param name="OnInviteUserCallback">Will be executed when the request has been completed. Delegate will contain the requested info.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void InviteUser(UObject* WorldContextObject, const FString& RoomID, const FString& Token, FRoomInviteUser OnInviteUserCallback);
 
@@ -509,12 +470,6 @@ public:
 	/// <param name="RoomID">The ID of the room to join.</param>
 	/// <param name="RoomOptions">(Optional) Additional room configuration for this request.</param>
 	/// <param name="OnJoin2Callback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void Join2(UObject* WorldContextObject, const FString& RoomID, FPicoRoomOptions RoomOptions, FRoomJoin2 OnJoin2Callback);
 
@@ -524,12 +479,6 @@ public:
 	/// <param name="UserID">The ID of the user to be kicked (cannot be yourself).</param>
 	/// <param name="KickDurationSeconds">The Length of the ban (in seconds).</param>
 	/// <param name="OnKickUserCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void KickUser(UObject* WorldContextObject, const FString& RoomID, const FString& UserID, int32 KickDurationSeconds, FRoomKickUser OnKickUserCallback);
 
@@ -538,12 +487,6 @@ public:
 	/// <param name="WorldContextObject">Used to get the information about the current world.</param>
 	/// <param name="RoomID">The ID of the room.</param>
 	/// <param name="OnLeaveCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void Leave(UObject* WorldContextObject, const FString& RoomID, FRoomLeave OnLeaveCallback);
 
@@ -552,12 +495,6 @@ public:
 	/// <param name="RoomID">The ID of the room to set description for.</param>
 	/// <param name="Description">The new description of the room.</param>
 	/// <param name="OnSetDescriptionCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void SetDescription(UObject* WorldContextObject, const FString& RoomID, const FString& Description, FRoomSetDescription OnSetDescriptionCallback);
 
@@ -571,12 +508,6 @@ public:
 	/// * `2`: unlock
 	/// </param>
 	/// <param name="OnUpdateMembershipLockStatusCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns> 
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room") 
 	static void UpdateMembershipLockStatus(UObject* WorldContextObject, const FString& RoomID, ERoomMembershipLockStatus MembershipLockStatus, FRoomUpdateMembershipLockStatus OnUpdateMembershipLockStatusCallback);
 
@@ -585,12 +516,6 @@ public:
 	/// <param name="RoomID">The ID of the room to change ownership for.</param>
 	/// <param name="UserID">The ID of the new user to own the room. The new user must be in the same room.</param>
 	/// <param name="OnUpdateOwnerCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void UpdateOwner(UObject* WorldContextObject, const FString& RoomID, const FString& UserID, FRoomUpdateOwner OnUpdateOwnerCallback);
 
@@ -606,12 +531,6 @@ public:
 	/// * `5`: unknown
 	/// </param>
 	/// <param name="OnUpdatePrivateRoomJoinPolicyCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Room")
 	static void UpdatePrivateRoomJoinPolicy(UObject* WorldContextObject, const FString& RoomID, ERoomJoinPolicy JoinPolicy, FRoomUpdatePrivateRoomJoinPolicy OnUpdatePrivateRoomJoinPolicyCallback);
 };

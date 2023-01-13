@@ -1,6 +1,7 @@
 //Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc. All rights reserved.
 
 #include "PXR_Input.h"
+#include "PXR_HMDPrivate.h"
 #include "PXR_InputState.h"
 #include "PXR_HMD.h"
 #include "CoreMinimal.h"
@@ -11,14 +12,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "PXR_InputFunctionLibrary.h"
 #include "Features/IModularFeatures.h"
-
-#if PLATFORM_ANDROID
 #include "Misc/CoreDelegates.h"
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJNI.h"
-#include "PxrApi.h"
-#include "PxrInput.h"
-#endif
+
 #define LOCTEXT_NAMESPACE "PICOXRInput"
 
 FVector FPICOXRInput::OriginOffsetL = FVector::ZeroVector;
@@ -41,17 +36,18 @@ FPICOXRInput::FPICOXRInput()
 	,MainControllerHandle(-1)
 	,ControllerType(EPICOInputType::Unknown)
 	,CurrentVersion(0)
+	,CurrentFramePredictedTime(0.0f)
 {
 	PICOXRHMD = GetPICOXRHMD();
 #if PLATFORM_ANDROID
 	Settings = GetMutableDefault<UPICOXRSettings>();
 	UpdateConnectState();
-	Pxr_GetControllerMainInputHandle(&MainControllerHandle);
+	FPICOXRHMDModule::GetPluginWrapper().GetControllerMainInputHandle(&MainControllerHandle);
 	if (Settings)
 	{
-		Pxr_SetControllerEnableKey(Settings->bEnableHomeKey, PxrControllerKeyMap::PXR_CONTROLLER_KEY_HOME);
+		FPICOXRHMDModule::GetPluginWrapper().SetControllerEnableKey(Settings->bEnableHomeKey, PxrControllerKeyMap::PXR_CONTROLLER_KEY_HOME);
 	}
-	Pxr_GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
 #endif
 	RegisterKeys();
 	SetKeyMapping();
@@ -105,13 +101,13 @@ void FPICOXRInput::SetChannelValue(int32 ControllerId, FForceFeedbackChannelType
 		case FForceFeedbackChannelType::LEFT_LARGE:
 		case FForceFeedbackChannelType::LEFT_SMALL:
 		{
-			Pxr_SetControllerVibration(0, Value, 10);
+			FPICOXRHMDModule::GetPluginWrapper().SetControllerVibration(0, Value, 10);
 			break;
 		}
 		case FForceFeedbackChannelType::RIGHT_LARGE:
 		case FForceFeedbackChannelType::RIGHT_SMALL:
 		{
-			Pxr_SetControllerVibration(1, Value, 10);
+			FPICOXRHMDModule::GetPluginWrapper().SetControllerVibration(1, Value, 10);
 			break;
 		}
 		default:
@@ -125,11 +121,11 @@ void FPICOXRInput::SetChannelValues(int32 ControllerId, const FForceFeedbackValu
 #if PLATFORM_ANDROID
 	if (values.LeftLarge > 0)
 	{
-		Pxr_SetControllerVibration(0, values.LeftLarge, 10);
+		FPICOXRHMDModule::GetPluginWrapper().SetControllerVibration(0, values.LeftLarge, 10);
 	}
 	if (values.RightLarge >0)
 	{
-		Pxr_SetControllerVibration(1, values.RightLarge, 10);
+		FPICOXRHMDModule::GetPluginWrapper().SetControllerVibration(1, values.RightLarge, 10);
 	}
 #endif
 }
@@ -436,7 +432,7 @@ EPICOXRActiveInputDevice FPICOXRInput::GetActiveInputDevice()
 	if (CurrentVersion  >= 0x2000307)
 	{
 		PxrActiveInputDeviceType type ;
-		Pxr_GetHandTrackerActiveInputType(&type);
+		FPICOXRHMDModule::GetPluginWrapper().GetHandTrackerActiveInputType(&type);
 		return (EPICOXRActiveInputDevice)type;
 	}
 #endif
@@ -449,7 +445,7 @@ bool FPICOXRInput::IsHandTrackingStateValid() const
 #if PLATFORM_ANDROID&&PLATFORM_64BITS
 	if (CurrentVersion  >= 0x2000306)
 	{
-		Pxr_GetHandTrackerSettingState(&State);
+		FPICOXRHMDModule::GetPluginWrapper().GetHandTrackerSettingState(&State);
 	}
 #endif
 	return State;
@@ -488,15 +484,19 @@ bool FPICOXRInput::GetControllerOrientationAndPosition(const int32 ControllerInd
 	FVector SourcePosition = FVector::ZeroVector;
 	FQuat SourceOrientation = FQuat::Identity;
 	FPXRGameFrame* CurrentFrame = nullptr;
+	FGameSettings* CurrentSettings = nullptr;
 	if (IsInRenderingThread() && PICOXRHMD)
 	{
+		CurrentSettings = PICOXRHMD->GameSettings_RenderThread.Get();
 		CurrentFrame = PICOXRHMD->GameFrame_RenderThread.Get();
 	}
 	else if (IsInGameThread() && PICOXRHMD)
 	{
+		CurrentSettings = PICOXRHMD->GameSettings.Get();
 		CurrentFrame = PICOXRHMD->NextGameFrameToRender_GameThread.Get();
 	}
-	if (CurrentFrame)
+
+	if (CurrentFrame && CurrentSettings)
 	{
 		predictedDisplayTimeMs = CurrentFrame->predictedDisplayTimeMs;
 		SourcePosition = CurrentFrame->Position;
@@ -507,12 +507,12 @@ bool FPICOXRInput::GetControllerOrientationAndPosition(const int32 ControllerInd
 	{
 		return false;
 	}
-#if PLATFORM_ANDROID
+
 	if (ControllerType == G2)
 	{
 		if (LeftConnectState)
 		{
-			GetControllerSensorData(EControllerHand::Left, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
+			GetControllerSensorData(CurrentSettings, EControllerHand::Left, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
 			return true;
 		}
 	}
@@ -520,29 +520,28 @@ bool FPICOXRInput::GetControllerOrientationAndPosition(const int32 ControllerInd
 	{
 		if (LeftConnectState && DeviceHand == EControllerHand::Left)
 		{
-			GetControllerSensorData(DeviceHand, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
+			GetControllerSensorData(CurrentSettings, DeviceHand, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
 			return true;
 		}
 		else if (RightConnectState && DeviceHand == EControllerHand::Right)
 		{
-			GetControllerSensorData(DeviceHand, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
+			GetControllerSensorData(CurrentSettings, DeviceHand, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
 			return true;
 		}
-}
+	}
 	else
 	{
 		if (LeftConnectState && DeviceHand == EControllerHand::Left)
 		{
-			GetControllerSensorData(DeviceHand, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
+			GetControllerSensorData(CurrentSettings, DeviceHand, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
 			return true;
 		}
 		else if (RightConnectState && DeviceHand == EControllerHand::Right)
 		{
-			GetControllerSensorData(DeviceHand, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
+			GetControllerSensorData(CurrentSettings, DeviceHand, WorldToMetersScale, predictedDisplayTimeMs, SourcePosition, SourceOrientation, OutOrientation, OutPosition);
 			return true;
 		}
 	}
-#endif
 	return false;
 }
 
@@ -556,15 +555,20 @@ bool FPICOXRInput::GetPredictedLocationAndRotation(EControllerHand DeviceHand, f
 	FVector SourcePosition = FVector::ZeroVector;
 	FQuat SourceOrientation = FQuat::Identity;
 	FPXRGameFrame* CurrentFrame = nullptr;
+	FGameSettings* CurrentSettings = nullptr;
+
 	if (IsInRenderingThread() && PICOXRHMD)
 	{
+		CurrentSettings = PICOXRHMD->GameSettings_RenderThread.Get();
 		CurrentFrame = PICOXRHMD->GameFrame_RenderThread.Get();
 	}
 	else if (IsInGameThread() && PICOXRHMD)
 	{
+		CurrentSettings = PICOXRHMD->GameSettings.Get();
 		CurrentFrame = PICOXRHMD->NextGameFrameToRender_GameThread.Get();
 	}
-	if (CurrentFrame)
+
+	if (CurrentFrame && CurrentSettings)
 	{
 		SourcePosition = CurrentFrame->Position;
 		SourceOrientation = CurrentFrame->Orientation;
@@ -574,13 +578,14 @@ bool FPICOXRInput::GetPredictedLocationAndRotation(EControllerHand DeviceHand, f
 	{
 		return false;
 	}
+
 	if (LeftConnectState && DeviceHand == EControllerHand::Left)
 	{
-		GetControllerSensorData(DeviceHand, WorldToMetersScale, PredictedTime, SourcePosition, SourceOrientation, PredictedRotation, PredictedLocation);
+		GetControllerSensorData(CurrentSettings, DeviceHand, WorldToMetersScale, PredictedTime, SourcePosition, SourceOrientation, PredictedRotation, PredictedLocation);
 	}
 	else if (RightConnectState && DeviceHand == EControllerHand::Right)
 	{
-		GetControllerSensorData(DeviceHand, WorldToMetersScale, PredictedTime, SourcePosition, SourceOrientation, PredictedRotation, PredictedLocation);
+		GetControllerSensorData(CurrentSettings, DeviceHand, WorldToMetersScale, PredictedTime, SourcePosition, SourceOrientation, PredictedRotation, PredictedLocation);
 	}
 	OutPosition = PredictedLocation;
 	OutOrientation = PredictedRotation;
@@ -603,12 +608,12 @@ void FPICOXRInput::SetHapticFeedbackValues(int32 ControllerId, int32 Hand, const
 	{
 		case 0:
 		{
-			Pxr_SetControllerVibration(0, Values.Amplitude * GetHapticAmplitudeScale(), 2000);
+			FPICOXRHMDModule::GetPluginWrapper().SetControllerVibration(0, Values.Amplitude * GetHapticAmplitudeScale(), 2000);
 			break;
 		}
 		case 1:
 		{
-			Pxr_SetControllerVibration(1, Values.Amplitude * GetHapticAmplitudeScale(), 2000);
+			FPICOXRHMDModule::GetPluginWrapper().SetControllerVibration(1, Values.Amplitude * GetHapticAmplitudeScale(), 2000);
 			break;
 		}
 		default:
@@ -679,7 +684,7 @@ bool FPICOXRInput::UPxr_GetControllerMainInputHandle(int32& Handness)
 bool FPICOXRInput::UPxr_SetControllerMainInputHandle(int32 InHandness)
 {
 #if PLATFORM_ANDROID
-	Pxr_SetControllerMainInputHandle(InHandness);
+	FPICOXRHMDModule::GetPluginWrapper().SetControllerMainInputHandle(InHandness);
 	MainControllerHandle = InHandness;
 	return true;
 #endif
@@ -752,7 +757,7 @@ void FPICOXRInput::ProcessButtonEvent()
 	if (LeftConnectState)
 	{
 		PxrControllerInputState state;
-		Pxr_GetControllerInputState(EPICOXRControllerHandness::LeftController, &state);
+		FPICOXRHMDModule::GetPluginWrapper().GetControllerInputState(EPICOXRControllerHandness::LeftController, &state);
         int LeftControllerEvent[12] = {0};
         LeftControllerEvent[2] = state.homeValue;
         LeftControllerEvent[3] = state.backValue;
@@ -924,7 +929,7 @@ void FPICOXRInput::ProcessButtonEvent()
 	if (RightConnectState)
 	{
 		PxrControllerInputState state;
-		Pxr_GetControllerInputState(EPICOXRControllerHandness::RightController, &state);
+		FPICOXRHMDModule::GetPluginWrapper().GetControllerInputState(EPICOXRControllerHandness::RightController, &state);
         int RightControllerEvent[12] = {0};
         RightControllerEvent[2] = state.homeValue;
         RightControllerEvent[3] = state.backValue;
@@ -1161,55 +1166,51 @@ void FPICOXRInput::UpdateConnectState()
 {
 #if PLATFORM_ANDROID
 	PxrControllerCapability cap;
-	Pxr_GetControllerCapabilities(PXR_CONTROLLER_LEFT, &cap);
+	FPICOXRHMDModule::GetPluginWrapper().GetControllerCapabilities(PXR_CONTROLLER_LEFT, &cap);
 	ControllerType = static_cast<EPICOInputType>(cap.type);
 	if (ControllerType == G2)
 	{
-		LeftConnectState = Pxr_GetControllerConnectStatus(0) == 0 ? false : true;
+		LeftConnectState = FPICOXRHMDModule::GetPluginWrapper().GetControllerConnectStatus(0) == 0 ? false : true;
 		RightConnectState = false;
 	}
 	else
 	{
-		LeftConnectState = Pxr_GetControllerConnectStatus(0) == 0 ? false : true;
-		RightConnectState = Pxr_GetControllerConnectStatus(1) == 0 ? false : true;
+		LeftConnectState = FPICOXRHMDModule::GetPluginWrapper().GetControllerConnectStatus(0) == 0 ? false : true;
+		RightConnectState = FPICOXRHMDModule::GetPluginWrapper().GetControllerConnectStatus(1) == 0 ? false : true;
 	}
 #endif
 	PXR_LOGD(PxrUnreal, "FPICOXRInput::UpdateConnectState ControllerType  %d, LeftConnectState %d, RightConnectState %d", ControllerType, LeftConnectState, RightConnectState);
 }
 
-void FPICOXRInput::GetControllerSensorData(EControllerHand DeviceHand, float WorldToMetersScale, double inPredictedTime, FVector SourcePosition, FQuat SourceOrientation, FRotator& OutOrientation, FVector& OutPosition) const
+void FPICOXRInput::GetControllerSensorData(const FGameSettings* InSettings, EControllerHand DeviceHand, float WorldToMetersScale, double inPredictedTime, FVector SourcePosition, FQuat SourceOrientation, FRotator& OutOrientation, FVector& OutPosition) const
 {
-#if PLATFORM_ANDROID
 	FQuat Orientation;
-	float HeadSensorData[7] = {SourceOrientation.X, SourceOrientation.Y, SourceOrientation.Z, SourceOrientation.W, SourcePosition.X, SourcePosition.Y, SourcePosition.Z};
+	float HeadSensorData[7] = { SourceOrientation.X, SourceOrientation.Y, SourceOrientation.Z, SourceOrientation.W, SourcePosition.X, SourcePosition.Y, SourcePosition.Z };
 
 	PxrControllerTracking tracking;
-    uint32_t hand;
+	uint32_t hand;
 
-    if (DeviceHand == EControllerHand::Left) {
-        hand = EPICOXRControllerHandness::LeftController;
-    } else {
-        hand = EPICOXRControllerHandness::RightController;
-    }
-	Pxr_GetControllerTrackingState(hand, inPredictedTime, HeadSensorData, &tracking);
-	
-	Orientation.X = tracking.localControllerPose.pose.orientation.x;
-	Orientation.Y = tracking.localControllerPose.pose.orientation.y;
-	Orientation.Z = tracking.localControllerPose.pose.orientation.z;
-	Orientation.W = tracking.localControllerPose.pose.orientation.w;
-	OutPosition.X = tracking.localControllerPose.pose.position.x;
-	OutPosition.Y = tracking.localControllerPose.pose.position.y;
-	OutPosition.Z = tracking.localControllerPose.pose.position.z;
+	if (DeviceHand == EControllerHand::Left) 
+	{
+		hand = EPICOXRControllerHandness::LeftController;
+	}
+	else 
+	{
+		hand = EPICOXRControllerHandness::RightController;
+	}
 
-	OutPosition = FVector(-OutPosition.Z * WorldToMetersScale, OutPosition.X * WorldToMetersScale, OutPosition.Y * WorldToMetersScale);
-	Orientation = FQuat(-Orientation.Z, Orientation.X, Orientation.Y, -Orientation.W);
-	OutOrientation = Orientation.Rotator();
+	FPICOXRHMDModule::GetPluginWrapper().GetControllerTrackingState(hand, inPredictedTime, HeadSensorData, &tracking);
+	FPose Pose;
+	PICOXRHMD->ConvertPose_Internal(tracking.localControllerPose.pose, Pose, InSettings, WorldToMetersScale);
+	OutPosition = Pose.Position;
+	OutOrientation = Pose.Orientation.Rotator();
 	if (Settings->bIsController3Dof)//Controller 3Dof
 	{
 		if (!Settings->bIsHMD3Dof)//HMD 6Dof
 		{
 			OutPosition.Z += WorldToMetersScale * SourcePosition.Y;
-		}else //HMD 3Dof
+		}
+		else //HMD 3Dof
 		{
 			if (Settings->bEnableNeckModel)
 			{
@@ -1217,18 +1218,19 @@ void FPICOXRInput::GetControllerSensorData(EControllerHand DeviceHand, float Wor
 				{
 					OutPosition.Z += WorldToMetersScale * SourcePosition.Y;
 				}
-			}	
+			}
 		}
 	}
+
 	if (DeviceHand == EControllerHand::Left)
 	{
-		OutPosition += (Orientation * OriginOffsetL) * WorldToMetersScale;
+		OutPosition += (Pose.Orientation * OriginOffsetL) * WorldToMetersScale;
 	}
 	else if (DeviceHand == EControllerHand::Right)
 	{
-		OutPosition += (Orientation * OriginOffsetR) * WorldToMetersScale;
+		OutPosition += (Pose.Orientation * OriginOffsetR) * WorldToMetersScale;
 	}
-#endif
+
 }
 
 void FPICOXRInput::OnControllerMainChangedDelegate(int32 Handness)
@@ -1236,7 +1238,7 @@ void FPICOXRInput::OnControllerMainChangedDelegate(int32 Handness)
 	PXR_LOGD(PxrUnreal, "FPICOXRInput::OnControllerMainChangedDelegate Handness:%d", Handness);
 	UpdateConnectState();
 #if PLATFORM_ANDROID
-	Pxr_GetControllerMainInputHandle(&MainControllerHandle);
+	FPICOXRHMDModule::GetPluginWrapper().GetControllerMainInputHandle(&MainControllerHandle);
 #endif
 }
 
@@ -1275,19 +1277,36 @@ const FPICOXRInput::FPICOXRHandState& FPICOXRInput::GetRightHandState() const
 
 void FPICOXRInput::UpdateHandState()
 {
-	if (!bHandTrackingAvailable||CurrentVersion <0x2000306||PICOXRHMD==nullptr)
+	check(IsInGameThread())
+	if (!bHandTrackingAvailable||CurrentVersion <0x2000306||PICOXRHMD==nullptr||!PICOXRHMD->NextGameFrameToRender_GameThread.IsValid())
 	{
 		return;
 	}
-
+	const FPXRGameFrame* CurrentFrame=PICOXRHMD->NextGameFrameToRender_GameThread.Get();
+	bool bSeeThroughShown=false;
+	if(CurrentFrame)
+	{
+		CurrentFramePredictedTime=CurrentFrame->predictedDisplayTimeMs;
+		bSeeThroughShown=CurrentFrame->Flags.bSeeThroughIsShown;
+	}
+	
 	const float WorldToMetersScale = PICOXRHMD->GetWorldToMetersScale();
 #if PLATFORM_ANDROID&&PLATFORM_64BITS
 	//Update HandState
 	for (int hand = 0; hand < 2; ++hand)
 	{
 		FPICOXRHandState& HandState = HandStates[hand];
-		if (Pxr_GetHandTrackerAimState(hand,&HandState.AimState)!=0){return;}
-		if (Pxr_GetHandTrackerJointLocations(hand,&HandState.HandJointLocations)!=0){return;}
+		if (bSeeThroughShown)
+		{
+			if (FPICOXRHMDModule::GetPluginWrapper().GetHandTrackerAimStateWithPTFG(hand,CurrentFramePredictedTime,&HandState.AimState)!=0){return;}
+			if (FPICOXRHMDModule::GetPluginWrapper().GetHandTrackerJointLocationsWithPTFG(hand,CurrentFramePredictedTime,&HandState.HandJointLocations)!=0){return;}
+		}
+		else
+		{
+			if (FPICOXRHMDModule::GetPluginWrapper().GetHandTrackerAimStateWithPT(hand,CurrentFramePredictedTime,&HandState.AimState)!=0){return;}
+			if (FPICOXRHMDModule::GetPluginWrapper().GetHandTrackerJointLocationsWithPT(hand,CurrentFramePredictedTime,&HandState.HandJointLocations)!=0){return;}
+		}
+		
 		HandState.ReceivedJointPoses = HandState.HandJointLocations.isActive;
 		if (HandState.ReceivedJointPoses)
 		{
@@ -1336,7 +1355,7 @@ void FPICOXRInput::SetAppHandTrackingEnabled(bool Enabled)
 #if PLATFORM_ANDROID&&PLATFORM_64BITS
 	if (CurrentVersion  >= 0x2000306)
 	{
-		Pxr_SetAppHandTrackingEnabled(Enabled);
+		FPICOXRHMDModule::GetPluginWrapper().SetAppHandTrackingEnabled(Enabled);
 	}
 #endif
 }
@@ -1406,17 +1425,17 @@ void FPICOXRInput::RegisterKeys()
 
 	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_SystemGesture, LOCTEXT("PICOHand_Left_SystemGesture", "PICO Hand (L) System Gesture"), FKeyDetails::GamepadKey | FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
 	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_SystemGesture, LOCTEXT("PICOHand_Right_SystemGesture", "PICO Hand (R) System Gesture"), FKeyDetails::GamepadKey | FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_ThumbClickStrength, LOCTEXT("PICOHand_Left_ThumbClickStrength", "PICO Hand (L) Thumb Click Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_IndexPinchStrength, LOCTEXT("PICOHand_Left_IndexPinchStrength", "PICO Hand (L) Index Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_MiddlePinchStrength, LOCTEXT("PICOHand_Left_MiddlePinchStrength", "PICO Hand (L) Middle Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_RingPinchStrength, LOCTEXT("PICOHand_Left_RingPinchStrength", "PICO Hand (L) Ring Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_PinkyPinchStrength, LOCTEXT("PICOHand_Left_PinkyPinchStrength", "PICO Hand (L) Pinky Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_ThumbClickStrength, LOCTEXT("PICOHand_Left_ThumbClickStrength", "PICO Hand (L) Thumb Click Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_IndexPinchStrength, LOCTEXT("PICOHand_Left_IndexPinchStrength", "PICO Hand (L) Index Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_MiddlePinchStrength, LOCTEXT("PICOHand_Left_MiddlePinchStrength", "PICO Hand (L) Middle Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_RingPinchStrength, LOCTEXT("PICOHand_Left_RingPinchStrength", "PICO Hand (L) Ring Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Left_PinkyPinchStrength, LOCTEXT("PICOHand_Left_PinkyPinchStrength", "PICO Hand (L) Pinky Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
 
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_ThumbClickStrength, LOCTEXT("PICOHand_Right_ThumbClickStrength", "PICO Hand (R) Thumb Click Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_IndexPinchStrength, LOCTEXT("PICOHand_Right_IndexPinchStrength", "PICO Hand (R) Index Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_MiddlePinchStrength, LOCTEXT("PICOHand_Right_MiddlePinchStrength", "PICO Hand (R) Middle Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_RingPinchStrength, LOCTEXT("PICOHand_Right_RingPinchStrength", "PICO Hand (R) Ring Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
-	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_PinkyPinchStrength, LOCTEXT("PICOHand_Right_PinkyPinchStrength", "PICO Hand (R) Pinky Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_ThumbClickStrength, LOCTEXT("PICOHand_Right_ThumbClickStrength", "PICO Hand (R) Thumb Click Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_IndexPinchStrength, LOCTEXT("PICOHand_Right_IndexPinchStrength", "PICO Hand (R) Index Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_MiddlePinchStrength, LOCTEXT("PICOHand_Right_MiddlePinchStrength", "PICO Hand (R) Middle Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_RingPinchStrength, LOCTEXT("PICOHand_Right_RingPinchStrength", "PICO Hand (R) Ring Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
+	EKeys::AddKey(FKeyDetails(FPICOTouchKey::PICOHand_Right_PinkyPinchStrength, LOCTEXT("PICOHand_Right_PinkyPinchStrength", "PICO Hand (R) Pinky Pinch Strength"), FKeyDetails::GamepadKey | FKeyDetails::FloatAxis| FKeyDetails::NotBlueprintBindableKey, "PICOHand"));
 }
 #undef FloatAxis
 #undef LOCTEXT_NAMESPACE

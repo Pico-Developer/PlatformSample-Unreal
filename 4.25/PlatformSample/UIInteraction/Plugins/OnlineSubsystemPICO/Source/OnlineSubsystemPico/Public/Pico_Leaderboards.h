@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 #pragma once
@@ -30,7 +40,7 @@ DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetEntries, bool, bIsError, const FString&
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetEntriesAfterRank, bool, bIsError, const FString&, ErrorMessage, UPico_LeaderboardEntryArray*, LeaderboardEntryList);
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FGetEntriesByIds, bool, bIsError, const FString&, ErrorMessage, UPico_LeaderboardEntryArray*, LeaderboardEntryList);
 DECLARE_DYNAMIC_DELEGATE_ThreeParams(FWriteEntry, bool, bIsError, const FString&, ErrorMessage, bool, WriteResult);
-DECLARE_DYNAMIC_DELEGATE_ThreeParams(FWriteEntryWithSupplementaryMetric, bool, bIsError, const FString&, ErrorMessage, bool, WriteResult); // todo WriteResult
+DECLARE_DYNAMIC_DELEGATE_ThreeParams(FWriteEntryWithSupplementaryMetric, bool, bIsError, const FString&, ErrorMessage, bool, WriteResult);
 
 /** @addtogroup Function Function
  *  This is the Function group
@@ -203,12 +213,6 @@ public:
 	/// <param name="WorldContextObject">Used to get the information about the current world.</param>
 	/// <param name="leaderboardName">Leaderboard name.</param>
 	/// <param name="InGetDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-	/// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Leaderboards")
     static void Get(UObject* WorldContextObject, const FString& LeaderboardName, FGet InGetDelegate);
 
@@ -235,12 +239,6 @@ public:
     /// and top 10 will be displayed on the second page)
     /// </param>
 	/// <param name="InGetEntriesDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-	/// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Leaderboards")
     static void GetEntries(UObject* WorldContextObject, const FString& LeaderboardName, int PageIdx, int PageSize, ELeaderboardFilterType Filter, ELeaderboardStartAt StartAt, FGetEntries InGetEntriesDelegate);
     
@@ -252,12 +250,6 @@ public:
     /// For example, if you want to get the first page of entries, pass `0`; if you want to get the second page of entries, pass `1`.</param>
 	/// <param name="AfterRank">Defines after which rank to return entries.</param>
 	/// <param name="InGetEntriesAfterRankDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-	/// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Leaderboards")
     static void GetEntriesAfterRank(UObject* WorldContextObject, const FString& LeaderboardName, int PageIdx, int PageSize, const FString& AfterRank, FGetEntriesAfterRank InGetEntriesAfterRankDelegate);
 
@@ -280,12 +272,6 @@ public:
     /// </param>
 	/// <param name="userIDs">User ID(s).</param>
 	/// <param name="InGetEntriesByIdsDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-	/// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Leaderboards")
     static void GetEntriesByIds(UObject* WorldContextObject, const FString& LeaderboardName, int PageIdx, int PageSize, ELeaderboardStartAt StartAt, const TArray<FString>& UserIDs, FGetEntriesByIds InGetEntriesByIdsDelegate);
 
@@ -298,12 +284,6 @@ public:
     /// * `true`: make a force update
     /// * `false`: no force update
 	/// <param name="InWriteEntryDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Leaderboards")
     static void WriteEntry(UObject* WorldContextObject, const FString& LeaderboardName, const FString& Score, const FString& ExtraData, bool ForceUpdate, FWriteEntry InWriteEntryDelegate);
 
@@ -317,12 +297,6 @@ public:
     /// * `true`: make a force update
     /// * `false`: no force update
 	/// <param name="InWriteEntryWithSupplementaryMetricDelegate">Will be executed when the request has been completed. Delegate will contain the requested object class.</param> 
-    /// <returns>Bool: 
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns> 
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Leaderboards")
     static void WriteEntryWithSupplementaryMetric(UObject* WorldContextObject, const FString& LeaderboardName, const FString& Score, const FString& SupplementaryMetric, const FString& ExtraData, bool ForceUpdate, FWriteEntryWithSupplementaryMetric InWriteEntryWithSupplementaryMetricDelegate);
     

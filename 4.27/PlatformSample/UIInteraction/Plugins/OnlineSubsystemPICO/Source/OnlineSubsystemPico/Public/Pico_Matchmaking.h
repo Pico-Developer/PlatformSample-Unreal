@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -234,12 +244,6 @@ public:
 	/// <param name="RoomID">The ID of the room.</param>
 	/// <param name="Data">The key-value pairs.</param>
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Matchmaking")
 	static void ReportResultsInsecure(UObject* WorldContextObject, const FString& RoomID, const TMap<FString, int>& Data, FMatchmakingReportResultsInsecure InDelegate);
 
@@ -250,12 +254,6 @@ public:
 	/// <param name="MaxLevel">(beta feature, don't use it)</param>
 	/// <param name="approach">(beta feature, don't use it)</param>
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Matchmaking")
 	// static void GetStats(UObject* WorldContextObject, const FString& Pool, int32 MaxLevel, EMatchmakingStatApproach approach = EMatchmakingStatApproach::Trailing, const FMatchmakingGetStats& InDelegate = FMatchmakingGetStats());
 	static void GetStats(UObject* WorldContextObject, const FString& Pool, int32 MaxLevel, EMatchmakingStatApproach approach, FMatchmakingGetStats InDelegate);
@@ -267,12 +265,6 @@ public:
 	/// <param name="pool">The matchmaking pool name you want to browse.</param>
 	/// <param name="MatchmakingOptions">(Optional) The matchmaking configuration of the browse request.</param>
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Matchmaking")
 	static void Browse2(UObject* WorldContextObject, const FString& Pool, FPicoMatchmakingOptions MatchmakingOptions, FMatchmakingBrowse2 InDelegate);
 
@@ -284,12 +276,6 @@ public:
 	/// @note  Applicable to the following matchmaking modes: Quickmatch, Browse</summary>
 	/// 
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Matchmaking")
 	static void Cancel(UObject* WorldContextObject, FMatchmakingCancel InDelegate);
 
@@ -299,12 +285,6 @@ public:
 	/// <param name="pool">The matchmaking pool to use, which is created on the PICO Developer Platform.</param>
 	/// <param name="MatchmakingOptions">(Optional) Additional matchmaking configuration for this request.</param>
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Matchmaking")
 	static void CreateAndEnqueueRoom2(UObject* WorldContextObject, const FString& Pool, FPicoMatchmakingOptions MatchmakingOptions, FMatchmakingCreateAndEnqueueRoom2 InDelegate);
 
@@ -318,12 +298,6 @@ public:
 	/// <param name="pool">The matchmaking pool to use, which is defined on the PICO Developer Platform.</param>
 	/// <param name="MatchmakingOptions">(Optional) Match configuration for Enqueue.</param>
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Matchmaking")
 	static void Enqueue2(UObject* WorldContextObject, const FString& pool, FPicoMatchmakingOptions MatchmakingOptions, FMatchmakingEnqueue2 InDelegate);
 
@@ -335,12 +309,6 @@ public:
 	/// </summary>
 	/// 
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Matchmaking")
 	static void GetAdminSnapshot(UObject* WorldContextObject, FMatchmakingGetAdminSnapshot InDelegate);
 
@@ -353,12 +321,6 @@ public:
 	///
 	/// <param name="RoomId">The ID of the room you want to match.</param>
 	/// <param name="InGetLoggedInuserFriendsAndRoomsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Matchmaking")
 	static void StartMatch(UObject* WorldContextObject, const FString& RoomId, FMatchmakingStartMatch InDelegate);
 };

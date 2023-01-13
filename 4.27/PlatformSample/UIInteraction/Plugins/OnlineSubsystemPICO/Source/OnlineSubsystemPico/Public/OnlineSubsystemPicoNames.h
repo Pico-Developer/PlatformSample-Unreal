@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -6,7 +16,6 @@
 
 #include "CoreMinimal.h"
 #include "OnlineStats.h"
-#include "Interfaces/OnlineAchievementsInterface.h"
 #include "OnlineSubsystemPicoNames.generated.h"
 
 
@@ -22,7 +31,7 @@ class UPico_UserArray;
   *  @{
   */
 
-
+/* PPF_UserPresenceStatus.h */
 /// <summary>User's current online status.</summary>
 UENUM(BlueprintType)
 enum class EUserPresenceStatus : uint8
@@ -32,6 +41,7 @@ enum class EUserPresenceStatus : uint8
     OffLine /**< Offline */
 };
 
+/* PPF_Gender.h   */
 /// <summary>User's gender.</summary>
 UENUM(BlueprintType)
 enum class EUserGender : uint8
@@ -41,6 +51,7 @@ enum class EUserGender : uint8
     Female /**< Female */
 };
 
+/* PPF_User.h  */
 /// <summary>User's information.</summary>
 USTRUCT(BlueprintType, meta = (DisplayName = "OnlinePicoUserInfo"))
 struct FPicoUserInfo
@@ -98,9 +109,9 @@ enum class ELaunchType : uint8
 {
     Unknown, /**< Unknown */
     Normal, /**< Normal */
-    Invite, /**< Invite */
-    Coordinated, /**< Not used */
-    Deeplink /**< Deeplink */
+    RoomInvite, /**< Room Invite */
+    Deeplink, /**< Deeplink */
+    ChallengeInvite /**< Challenge Invite */
 };
 
 /* ppf_LaunchResult.h */
@@ -133,9 +144,6 @@ struct FLaunchDetails
     FString DestinationApiName; /*!< The destination's API name */ 
 
     UPROPERTY(BlueprintReadWrite, Category = "ApplicationLifecycle")
-    FString LaunchSource; /*!< The launch source */ 
-
-    UPROPERTY(BlueprintReadWrite, Category = "ApplicationLifecycle")
     FString LobbySessionID; /*!< The lobby session ID */ 
 
     UPROPERTY(BlueprintReadWrite, Category = "ApplicationLifecycle")
@@ -155,10 +163,6 @@ struct FLaunchDetails
 
     UPROPERTY(BlueprintReadWrite, Category = "ApplicationLifecycle")
     ELaunchType LaunchType; /*!< The launch type */ 
-
-
-    UPROPERTY(BlueprintReadWrite, Category = "ApplicationLifecycle")
-    UPico_UserArray* UserArray = nullptr; /*!< The user array for launch */ 
 
 };
 
@@ -197,6 +201,7 @@ enum class ERoomJoinabilit : uint8
     JoinabilityPolicyPrevents /**< The user is prevented by the room's join policy */
 };
 
+/* PPF_Destination.h */
 /// <summary>The destination information.</summary>
 USTRUCT(BlueprintType, meta = (DisplayName = "PicoDestination"))
 struct FPicoDestination
@@ -213,6 +218,7 @@ struct FPicoDestination
     FString DisplayName; /*!< The destination's display name */ 
 };
 
+/* PPF_ApplicationInvite.h  */
 /// <summary>The app's invite information.</summary>
 USTRUCT(BlueprintType, meta = (DisplayName = "PicoApplicationInvite"))
 struct FPicoApplicationInvite
@@ -685,45 +691,44 @@ struct FPicoSupplementaryMetric
     FString Metric; /*!< The value of the supplementary metric */
 };
 
-/// <summary>The type addons.</summary>
+/// <summary>Add-on type.</summary>
 UENUM(BlueprintType)
 enum class EAddonsType : uint8
 {
     Invalid, /**< Invalid */
-    Durable, /**< Non-consumable items */
-    Consumable, /**< Consumable items */
-    Subscription, /**< Subscription */
+    Durable, /**< A durable is permanently available after one purchase */
+    Consumable, /**< A consumable will be used up and can be purchased again */
+    Subscription, /**< Subscription add-ons can be subscribed to, renewed, and unsubscribed from */
     Unknown /**< Unknown */
 };
 
-/// <summary>The period type.</summary>
+/// <summary>Subscription period type.</summary>
 UENUM(BlueprintType)
 enum class EPeriodType : uint8
 {
-    Invalid, /**< Invalid */
-    None, /**< Moment*/
-    Hour, /**< Hour */
-    Day, /**< Day */
-    Week, /**< Week */
-    Month, /**< Month */
-    Quarter, /**< Quarte */
-    Year, /**< Year */
+    Invalid, /**< Invalid type*/
+    None, /**< Momentary */
+    Hour, /**< Hourly */
+    Day, /**< Daily */
+    Week, /**< Weekly */
+    Month, /**< Monthly */
+    Quarter, /**< Quarterly */
+    Year, /**< Annually */
     Unknown /**< Unknown */
 };
 
-/// <summary>The discount type.</summary>
+/// <summary>Discount type.</summary>
 UENUM(BlueprintType)
 enum class EDiscountType : uint8
 {
     Invalid, /**< Invalid */
     Null, /**< Null*/
-    FreeTrial, /**< FreeTrial */
-    Discount, /**< Discount */
+    FreeTrial, /**< Free trial */
+    Discount, /**< Discounted */
     Unknown /**< Unknown */
 };
 
-// -----以下 todo 加注释
-
+/// <summary>User ordering.</summary>
 UENUM(BlueprintType)
 enum class EUserOrdering : uint8
 {
@@ -731,7 +736,7 @@ enum class EUserOrdering : uint8
     PresenceAlphabetical
 };
 
-// todo
+/// <summary>Time window used in room options.</summary>
 UENUM(BlueprintType)
 enum class ETimeWindow : uint8
 {
@@ -742,7 +747,7 @@ enum class ETimeWindow : uint8
     ThirtyDays,
     NinetyDays
 };
-
+/// <summary>Room options.</summary>
 USTRUCT(BlueprintType)
 struct FPicoRoomOptions
 {
@@ -752,13 +757,13 @@ struct FPicoRoomOptions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") int32 MaxUserResults;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") bool bExcludeRecentlyMet;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") EUserOrdering Ordering;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") ETimeWindow TimeWindow; // todo
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") ETimeWindow TimeWindow; 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") bool bTurnOffUpdates;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") FString DataStoreKey;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Room|Room Options") FString DataStoreValue;
 };
 
-
+/// <summary>Room membership lock status.</summary>
 UENUM(BlueprintType)
 enum class ERoomMembershipLockStatus : uint8
 {
@@ -766,7 +771,7 @@ enum class ERoomMembershipLockStatus : uint8
     Lock,
     Unlock
 };
-
+/// <summary>Matchmaking options.</summary>
 USTRUCT(BlueprintType)
 struct FPicoMatchmakingOptions
 {
@@ -777,11 +782,12 @@ struct FPicoMatchmakingOptions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") bool bEnqueueIsDebug;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") FString DataStoreKey;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") FString DataStoreValue;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") FString EnqueueQueryKey;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") TMap<FString, int> EnqueueDataSettingsInt;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") TMap<FString, float> EnqueueDataSettingsFloat;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "OnlinePico|Matchmaking|Matchmaking Options") TMap<FString, FString> EnqueueDataSettingsString;
 };
-
+/// <summary>Matchmaking stat approach.</summary>
 UENUM(BlueprintType)
 enum class EMatchmakingStatApproach : uint8
 {
@@ -790,44 +796,71 @@ enum class EMatchmakingStatApproach : uint8
     Swingy
 };
 
-
-/**
-*	FOnlineAchievementDescPico - Interface class for accessing the oculus achievement description information
-*/
-struct FOnlineAchievementDescPico : FOnlineAchievementDesc
+/// <summary>Used to write achievements progress or unlock achievements.</summary>
+class FOnlineAchievementsWritePico : public FOnlineAchievementsWrite
 {
-    /** The way this achievement is unlocked */
-    EAchievementType Type;
-
-    /** The value that needs to be reached for "Count" Type achievements to unlock */
-    uint64 Target;
-
-    /** How many fields needs to be set for "Bitfield" Type achievements to unlock */
-    uint32 BitfieldLength;
-
-    EAchievementWritePolicy WritePolicy;
-    bool IsArchived;
-    FString Name;
-    FString LockedImageURL;
-    FString UnlockedImageURL;				
-
-    FString ToDebugString() const
+public:
+    FOnlineAchievementsWritePico()
     {
-        return FString::Printf( TEXT("Name=%s\nTitle=%s\nLockedDesc=%s\nUnlockedDesc=%s\nbIsHidden=%s\nType=%d\nTarget=%llu\nBitfieldLength=%u\nIsArchived: %s\nLockedImageURL: %s\nUnlockedImageURL: %s\nWritePolicy: %d\n"),
-            *Name, *Title.ToString(),
-            *LockedDesc.ToString(),
-            *UnlockedDesc.ToString(),
-            bIsHidden ? TEXT("true") : TEXT("false"),
-            Type,
-            Target,
-            BitfieldLength,
-            IsArchived ? TEXT("true") : TEXT("false"),
-            *LockedImageURL,
-            *UnlockedImageURL,
-            WritePolicy
-            );
-    }
 
+    }
+    FOnlineKeyValuePairs<FString, FVariantData> PicoProperties;
+    void SetPicoIntStat(const FString& StatName, int32 Value)
+    {
+        FVariantData* Stat = PicoProperties.Find(StatName);;
+        if (Stat != NULL && Stat->GetType() == EOnlineKeyValuePairDataType::Int32)
+        {
+            // Set the value
+            Stat->SetValue(Value);
+        }
+        else
+        {
+            FVariantData NewValue(Value);
+            PicoProperties.Add(StatName, NewValue);
+        }
+    }
 };
+
+typedef TSharedRef<FOnlineAchievementsWritePico, ESPMode::ThreadSafe> FOnlineAchievementsWritePicoRef;
+typedef TSharedPtr<FOnlineAchievementsWritePico, ESPMode::ThreadSafe> FOnlineAchievementsWritePicoPtr;
+
+
+/// <summary>Used to write leaderboards data.</summary>
+class Pico_OnlineLeaderboardWrite : public FOnlineLeaderboardWrite
+{
+private:
+public:
+    TArray<FString> PicoLeaderboardNames;
+    Pico_OnlineLeaderboardWrite(const TArray<FString> InLeaderboardNames)
+    {
+        for (const auto& LeaderboardName : InLeaderboardNames)
+        {
+            PicoLeaderboardNames.Add(LeaderboardName);
+            LeaderboardNames.Add(FName(LeaderboardName));
+        }
+    }
+    Pico_OnlineLeaderboardWrite()
+    {
+		
+    }
+};
+
+/// <summary>Used to read leaderboards data.</summary>
+class Pico_OnlineLeaderboardRead : public FOnlineLeaderboardRead
+{
+public:
+    FString PicoLeaderboardName;
+    int PicoPageIndex;
+    int PicoPageSize;
+    Pico_OnlineLeaderboardRead(const FString& InLeaderboardName, int PageIndex, int PageSize)
+    {
+        PicoLeaderboardName = InLeaderboardName;
+        // LeaderboardName = FName(InLeaderboardName);
+        PicoPageIndex = PageIndex;
+        PicoPageSize = PageSize;
+    }
+};
+
+
 
 /** @} */ // end of Data

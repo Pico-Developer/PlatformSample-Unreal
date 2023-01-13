@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -25,7 +35,7 @@ void UOnlinePicoRoomFunction::LaunchInvitableUserFlow(UObject* WorldContextObjec
 		OnLaunchInvitableUserFlowCallback.ExecuteIfBound(true, -1, FString(TEXT("PicoRoomInterface Not Vailed")));
 	}
 }
-// todo 和OBP不一样
+
 void UOnlinePicoRoomFunction::UpdateDataStore(UObject* WorldContextObject, const FString& RoomID, const TMap<FString, FString>& Data,
                             FRoomUpdateDataStore OnUpdateDataStoreCallback)
 {
@@ -878,32 +888,7 @@ ppfRoomOptions* FPicoRoomInterface::GetppfRoomOptions(FPicoRoomOptions PicoRoomO
 		ppf_RoomOptions_SetOrdering(ppfRoomOptionsHandle, ppfUserOrdering_None);
 		break;
 	}
-
-	// todo
-	// switch (PicoRoomOptions.TimeWindow)
-	// {
-	// case ETimeWindow::Unknown:
-	// 	ppf_RoomOptions_SetRecentlyMetTimeWindow(ppfRoomOptionsHandle, ppfTimeWindow_Unknown);
-	// 	break;
-	// case EOBPTimeWindow::OneHour:
-	// 	ppf_RoomOptions_SetRecentlyMetTimeWindow(ppfRoomOptionsHandle, ppfTimeWindow_OneHour);
-	// 	break;
-	// case EOBPTimeWindow::OneDay:
-	// 	ppf_RoomOptions_SetRecentlyMetTimeWindow(ppfRoomOptionsHandle, ppfTimeWindow_OneDay);
-	// 	break;
-	// case EOBPTimeWindow::OneWeek:
-	// 	ppf_RoomOptions_SetRecentlyMetTimeWindow(ppfRoomOptionsHandle, ppfTimeWindow_OneWeek);
-	// 	break;
-	// case EOBPTimeWindow::ThirtyDays:
-	// 	ppf_RoomOptions_SetRecentlyMetTimeWindow(ppfRoomOptionsHandle, ppfTimeWindow_ThirtyDays);
-	// 	break;
-	// case EOBPTimeWindow::NinetyDays:
-	// 	ppf_RoomOptions_SetRecentlyMetTimeWindow(ppfRoomOptionsHandle, ppfTimeWindow_NinetyDays);
-	// 	break;
-	// default:
-	// 	ppf_RoomOptions_SetRecentlyMetTimeWindow(ppfRoomOptionsHandle, ppfTimeWindow_Unknown);
-	// 	break;
-	// }
+	ppf_RoomOptions_SetRecentlyMetTimeWindow(ppfRoomOptionsHandle, static_cast<int64_t>(PicoRoomOptions.TimeWindow));
 	return ppfRoomOptionsHandle;
 }
 ppfRoomJoinPolicy FPicoRoomInterface::GetppfRoomJoinPolicy(ERoomJoinPolicy JoinPolicy)

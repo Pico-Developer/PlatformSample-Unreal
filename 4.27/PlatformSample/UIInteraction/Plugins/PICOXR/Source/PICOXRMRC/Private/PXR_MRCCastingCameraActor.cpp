@@ -21,7 +21,6 @@
 #if PICO_MRC_SUPPORTED_PLATFORMS
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJNI.h"
-#include "PxrApi.h"
 #endif
 
 APICOXRMRC_CastingCameraActor::APICOXRMRC_CastingCameraActor(const FObjectInitializer& ObjectInitializer)
@@ -218,7 +217,7 @@ void APICOXRMRC_CastingCameraActor::UpdateInGameCamPose()
 			MRState->ZOffset += currentPose.Z;//Eye or Floor Level
 #if PLATFORM_ANDROID
 			float offsetZ = 0;
-			Pxr_GetConfigFloat(PXR_MRC_POSITION_Y_OFFSET, &offsetZ);
+			FPICOXRHMDModule::GetPluginWrapper().GetConfigFloat(PXR_MRC_POSITION_Y_OFFSET, &offsetZ);
 			PXR_LOGI(LogMRC, "Pxr_GetConfigFloat(PXR_MRC_POSITION_Y_OFFSET,&offsetZ):%f", offsetZ);
 			MRState->ZOffset -= offsetZ * 100.0f;//World to local offset z
 #endif

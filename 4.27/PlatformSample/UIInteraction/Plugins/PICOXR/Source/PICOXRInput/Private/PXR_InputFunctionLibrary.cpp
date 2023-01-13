@@ -1,18 +1,13 @@
 //Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc. All rights reserved.
 
 #include "PXR_InputFunctionLibrary.h"
+#include "PXR_HMDPrivate.h"
 #include "PXR_Input.h"
 #include "PXR_Log.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 
-#if PLATFORM_ANDROID
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJNI.h"
-#include "PxrApi.h"
-#include "PxrInput.h"
-#endif
 
 FPICOXRInput* GetPICOXRInput()
 {
@@ -147,7 +142,7 @@ bool UPICOXRInputFunctionLibrary::PXR_GetControllerAngularVelocity(EPICOXRContro
     }
 
     float HeadSensorData[7] = {0};
-    Pxr_GetControllerTrackingState(Hand, 0, HeadSensorData, &Tracking);
+    FPICOXRHMDModule::GetPluginWrapper().GetControllerTrackingState(Hand, 0, HeadSensorData, &Tracking);
 
     float Data[3] = {0.0f};
     Data[0] = Tracking.localControllerPose.angularVelocity.x;
@@ -174,7 +169,7 @@ bool UPICOXRInputFunctionLibrary::PXR_GetControllerAcceleration(EPICOXRControlle
         Hand = EPICOXRControllerHandness::RightController;
     }
 	float HeadSensorData[7] = { 0 };
-	Pxr_GetControllerTrackingState(Hand, 0, HeadSensorData, &Tracking);
+    FPICOXRHMDModule::GetPluginWrapper().GetControllerTrackingState(Hand, 0, HeadSensorData, &Tracking);
 
     float Data[3] = {0.0f};
     Data[0] = Tracking.localControllerPose.angularAcceleration.x;
@@ -202,7 +197,7 @@ bool UPICOXRInputFunctionLibrary::PXR_GetControllerLinearVelocity(EPICOXRControl
         Hand = EPICOXRControllerHandness::RightController;
     }
 	float HeadSensorData[7] = { 0 };
-	Pxr_GetControllerTrackingState(Hand, 0, HeadSensorData, &Tracking);
+    FPICOXRHMDModule::GetPluginWrapper().GetControllerTrackingState(Hand, 0, HeadSensorData, &Tracking);
 
     float Data[3] = {0.0f};
     Data[0] = Tracking.localControllerPose.linearVelocity.x;
@@ -220,7 +215,7 @@ bool UPICOXRInputFunctionLibrary::PXR_GetControllerLinearVelocity(EPICOXRControl
 bool UPICOXRInputFunctionLibrary::PXR_VibrateController(EPICOXRControllerType ControllerType,float Strength, int Time)
 {
 #if PLATFORM_ANDROID
-    if (Pxr_SetControllerVibration((uint32_t)ControllerType, Strength, Time) == 0)
+    if (FPICOXRHMDModule::GetPluginWrapper().SetControllerVibration((uint32_t)ControllerType, Strength, Time) == 0)
     {
         return true;
     }
@@ -233,7 +228,7 @@ void UPICOXRInputFunctionLibrary::PXR_GetControllerDeviceType(EPICOXRControllerD
 	int32 ControllerType = 0;
 #if PLATFORM_ANDROID
 	PxrControllerCapability Cap;
-	Pxr_GetControllerCapabilities(PXR_CONTROLLER_LEFT, &Cap);
+    FPICOXRHMDModule::GetPluginWrapper().GetControllerCapabilities(PXR_CONTROLLER_LEFT, &Cap);
 	ControllerType = Cap.type;
 #endif
 #if PLATFORM_WINDOWS
@@ -312,9 +307,9 @@ int UPICOXRInputFunctionLibrary::PXR_StartControllerVCMotor(FString file, EPICOX
     int state = 0;
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
     if (SdkVersion >= 0x2000308) {
-        state = Pxr_StartControllerVCMotor(TCHAR_TO_UTF8(*file), static_cast<int>(slot));
+        state = FPICOXRHMDModule::GetPluginWrapper().StartControllerVCMotor(TCHAR_TO_UTF8(*file), static_cast<int>(slot));
     }
 #endif
     return state;
@@ -324,9 +319,9 @@ int UPICOXRInputFunctionLibrary::PXR_SetControllerAmp(float mode) {
     int state = 0;
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
     if (SdkVersion >= 0x2000308) {
-        state = Pxr_SetControllerAmp(mode);
+        state = FPICOXRHMDModule::GetPluginWrapper().SetControllerAmp(mode);
     }
 #endif
     return state;
@@ -336,9 +331,9 @@ int UPICOXRInputFunctionLibrary::PXR_StopControllerVCMotor(int SourceId) {
     int state = 0;
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
     if (SdkVersion >= 0x2000308) {
-        state = Pxr_StopControllerVCMotor(SourceId);
+        state = FPICOXRHMDModule::GetPluginWrapper().StopControllerVCMotor(SourceId);
     }
 #endif
     return state;
@@ -348,10 +343,10 @@ int UPICOXRInputFunctionLibrary::PXR_SetControllerVibrationEvent(int deviceID, i
     int state = 0;
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
     if (SdkVersion >= 0x2000305) {
         PXR_LOGD(PxrUnreal, "PXR_SetControllerVibrationEvent :%d", deviceID);
-        state = Pxr_SetControllerVibrationEvent((uint32)deviceID, frequency, strength, time);
+        state = FPICOXRHMDModule::GetPluginWrapper().SetControllerVibrationEvent((uint32)deviceID, frequency, strength, time);
     }
 #endif
     return state;
@@ -369,7 +364,7 @@ int UPICOXRInputFunctionLibrary::PXR_StartVibrateBySharem(USoundWave* InSoundWav
     }
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
 
     if (SdkVersion >= 0x2000308) {
         int32 delaytag;
@@ -416,7 +411,7 @@ int UPICOXRInputFunctionLibrary::PXR_StartVibrateBySharem(USoundWave* InSoundWav
         parameter.bitrate = bitrate;
         parameter.reversal = static_cast<int>(slotConfig);
         parameter.isCache = 0;
-        state = Pxr_StartVibrateBySharemU(data, &parameter, &SourceId);
+        state = FPICOXRHMDModule::GetPluginWrapper().StartVibrateBySharemU(data, &parameter, &SourceId);
     }
 #endif
     return state;
@@ -429,7 +424,7 @@ int UPICOXRInputFunctionLibrary::PXR_SaveVibrateByCache(USoundWave* InSoundWave,
     }
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
 
     if (SdkVersion >= 0x2000308) {
         int32 delaytag;
@@ -486,7 +481,7 @@ int UPICOXRInputFunctionLibrary::PXR_SaveVibrateByCache(USoundWave* InSoundWave,
             isVibrate = 2;
         }
         parameter.isCache = isVibrate;
-        state = Pxr_StartVibrateBySharemU(data, &parameter, &SourceId);
+        state = FPICOXRHMDModule::GetPluginWrapper().StartVibrateBySharemU(data, &parameter, &SourceId);
     }
 #endif
     return state;
@@ -496,9 +491,9 @@ int UPICOXRInputFunctionLibrary::PXR_StartVibrateByCache(int SourceId) {
     int state = 0;
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
     if (SdkVersion >= 0x2000308) {
-        return Pxr_StartVibrateByCache(SourceId);
+        return FPICOXRHMDModule::GetPluginWrapper().StartVibrateByCache(SourceId);
     }
 #endif
     return 0;
@@ -508,9 +503,9 @@ int UPICOXRInputFunctionLibrary::PXR_ClearVibrateByCache(int SourceId) {
     int state = 0;
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
     if (SdkVersion >= 0x2000308) {
-        return Pxr_ClearVibrateByCache(SourceId);
+        return FPICOXRHMDModule::GetPluginWrapper().ClearVibrateByCache(SourceId);
     }
 #endif
     return 0;
@@ -767,7 +762,7 @@ int UPICOXRInputFunctionLibrary::PXR_StartVibrateByPHF(FName DataName,EPICOXRVib
 			if (PHF_ST->PHFDataContent.size != 0)
 			{
 				int SdkVersion = 0;
-				Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+                FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
 				if (SdkVersion >= 0x2000308)
 				{
 					int result = 0;
@@ -776,7 +771,7 @@ int UPICOXRInputFunctionLibrary::PXR_StartVibrateByPHF(FName DataName,EPICOXRVib
 					vibrateInfo.reversal = (uint32)(static_cast<int>(slotConfig));
 					vibrateInfo.amp = ampValue;
 					int ID;
-					result = Pxr_StartVibrateByPHF(TCHAR_TO_UTF8(*(PHF_ST->PHFDataContent.data)), PHF_ST->PHFDataContent.size, &ID, &vibrateInfo);
+					result = FPICOXRHMDModule::GetPluginWrapper().StartVibrateByPHF(TCHAR_TO_UTF8(*(PHF_ST->PHFDataContent.data)), PHF_ST->PHFDataContent.size, &ID, &vibrateInfo);
 					SourceID = ID;
 					return result;
 				}
@@ -791,10 +786,10 @@ int UPICOXRInputFunctionLibrary::PXR_PauseVibrate(int SourceID)
 {
 #if PLATFORM_ANDROID
 	int SdkVersion = 0;
-	Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
 	if (SdkVersion >= 0x2000308)
 	{
-		return Pxr_PauseVibrate(SourceID);
+		return FPICOXRHMDModule::GetPluginWrapper().PauseVibrate(SourceID);
 	}
 #endif
 	return 0;
@@ -804,10 +799,10 @@ int UPICOXRInputFunctionLibrary::PXR_ResumeVibrate(int SourceID)
 {
 #if PLATFORM_ANDROID
 	int SdkVersion = 0;
-	Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
 	if (SdkVersion >= 0x2000308)
 	{
-		return Pxr_ResumeVibrate(SourceID);
+		return FPICOXRHMDModule::GetPluginWrapper().ResumeVibrate(SourceID);
 	}
 #endif
 	return 0;
@@ -818,16 +813,16 @@ void UPICOXRInputFunctionLibrary::PXR_GetVibrateDelayTime(FString &data) {
     data = nullptr;
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
     if (SdkVersion >= 0x2000305) {
-        data = Pxr_GetVibrateDelayTime(&length);
+        data = FPICOXRHMDModule::GetPluginWrapper().GetVibrateDelayTime(&length);
     }
 #endif
 }
 int UPICOXRInputFunctionLibrary::PXR_SetControllerEnableKey(bool isEnable, EPxrControllerKeyMap Key) {
 #if PLATFORM_ANDROID
     PxrControllerKeyMap PxrKey = static_cast<PxrControllerKeyMap>(Key);
-    return Pxr_SetControllerEnableKey(isEnable, PxrKey);
+    return FPICOXRHMDModule::GetPluginWrapper().SetControllerEnableKey(isEnable, PxrKey);
 #endif
     return 0;
 }
@@ -835,15 +830,161 @@ int UPICOXRInputFunctionLibrary::PXR_SetControllerEnableKey(bool isEnable, EPxrC
 int UPICOXRInputFunctionLibrary::PXR_UpdateVibrateParams(int SourceID, EPICOXRVibrateController slot, EPICOXRChannelFlip slotConfig, float AmpValue) {
 #if PLATFORM_ANDROID
     int SdkVersion = 0;
-    Pxr_GetConfigInt(PXR_API_VERSION, &SdkVersion);
+    FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
     if (SdkVersion >= 0x2000308)
     {
         PxrVibrate_info vibrateInfo;
         vibrateInfo.slot = (uint32)(static_cast<int>(slot));
         vibrateInfo.reversal = (uint32)(static_cast<int>(slotConfig));
         vibrateInfo.amp = AmpValue;
-        return Pxr_UpdateVibrateParams(SourceID, &vibrateInfo);
+        return FPICOXRHMDModule::GetPluginWrapper().UpdateVibrateParams(SourceID, &vibrateInfo);
     }
 #endif
     return 0;
+}
+
+int UPICOXRInputFunctionLibrary::PXR_CreateHapticStream(FString PHFVersion, int FrameDurationMs, int Slot, int Reversal, float Amp, float Speed, int& SourceID)
+{
+	int result = 0;
+#if PICO_HMD_SUPPORTED_PLATFORMS
+	int SdkVersion = 0;
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
+	if (SdkVersion >= 0x200030A)
+	{
+		PxrVibrate_info info;
+		info.amp = Amp;
+		info.reversal = Reversal;
+		info.slot = Slot;
+		int32_t id = 0;
+		result = FPICOXRHMDModule::GetPluginWrapper().CreateHapticStream(TCHAR_TO_UTF8(*PHFVersion), FrameDurationMs, &info, Speed, &id);
+        SourceID = id;
+	}
+#endif
+	return result;
+}
+
+int UPICOXRInputFunctionLibrary::PXR_RemovePHFHaptic(int SourceID)
+{
+	int result = 0;
+#if PICO_HMD_SUPPORTED_PLATFORMS
+	int SdkVersion = 0;
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
+	if (SdkVersion >= 0x200030A)
+	{
+		result = FPICOXRHMDModule::GetPluginWrapper().RemovePHFHaptic(SourceID);
+	}
+#endif
+	return result;
+}
+
+int UPICOXRInputFunctionLibrary::PXR_StartPHFHaptic(int SourceID)
+{
+	int result = 0;
+#if PICO_HMD_SUPPORTED_PLATFORMS
+	int SdkVersion = 0;
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
+	if (SdkVersion >= 0x200030A)
+	{
+		result = FPICOXRHMDModule::GetPluginWrapper().StartPHFHaptic(SourceID);
+	}
+#endif
+	return result;
+}
+
+int UPICOXRInputFunctionLibrary::PXR_StopPHFHaptic(int SourceID)
+{
+	int result = 0;
+#if PICO_HMD_SUPPORTED_PLATFORMS
+	int SdkVersion = 0;
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
+	if (SdkVersion >= 0x200030A)
+	{
+		result = FPICOXRHMDModule::GetPluginWrapper().StopPHFHaptic(SourceID);
+	}
+#endif
+	return result;
+}
+
+int UPICOXRInputFunctionLibrary::PXR_WriteHapticStream(int SourceID, const FPHFJsonData& frames, int From, int NumFrames)
+{
+	int result = 0;
+#if PICO_HMD_SUPPORTED_PLATFORMS
+	int SdkVersion = 0;
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
+	if (SdkVersion >= 0x200030A)
+	{
+		PxrPhf_params ppfpara = {};
+
+        int buffernum = FMath::Min(frames.patternData_L.Num(), frames.patternData_R.Num());
+        int rest = buffernum - From;
+        int maxtosent = FMath::Min(rest, 25);
+        int numtosent = NumFrames > maxtosent ? maxtosent : NumFrames;
+        
+        for (int32 L = 0; L < numtosent; L++)
+        {
+			ppfpara.params[L * 2].frameseq = frames.patternData_L[From + L].frameseq;
+			ppfpara.params[L * 2].frequency = frames.patternData_L[From + L].frequency;
+			ppfpara.params[L * 2].gain = frames.patternData_L[From + L].gain;
+			ppfpara.params[L * 2].loop = frames.patternData_L[From + L].loop;
+			ppfpara.params[L * 2].play = frames.patternData_L[From + L].play;
+
+        }
+
+        for (int32 R = 0; R < numtosent; R++)
+		{
+			ppfpara.params[R * 2 + 1].frameseq = frames.patternData_R[From + R].frameseq;
+			ppfpara.params[R * 2 + 1].frequency = frames.patternData_R[From + R].frequency;
+			ppfpara.params[R * 2 + 1].gain = frames.patternData_R[From + R].gain;
+			ppfpara.params[R * 2 + 1].loop = frames.patternData_R[From + R].loop;
+			ppfpara.params[R * 2 + 1].play = frames.patternData_R[From + R].play;
+		}
+
+		result = FPICOXRHMDModule::GetPluginWrapper().WriteHapticStream(SourceID, &ppfpara, numtosent * 2);
+	}
+#endif
+	return result;
+}
+
+int UPICOXRInputFunctionLibrary::PXR_GetCurrentFrameSequence(int SourceID, int& FrameSequence)
+{
+	int result = 0;
+#if PICO_HMD_SUPPORTED_PLATFORMS
+	int SdkVersion = 0;
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
+	if (SdkVersion >= 0x200030A)
+	{
+		uint64_t frame = 0;
+		result = FPICOXRHMDModule::GetPluginWrapper().GetCurrentFrameSequence(SourceID, &frame);
+        FrameSequence = frame;
+	}
+#endif
+	return result;
+}
+
+int UPICOXRInputFunctionLibrary::PXR_SetPHFHapticSpeed(int SourceID, float Speed)
+{
+	int result = 0;
+#if PICO_HMD_SUPPORTED_PLATFORMS
+	int SdkVersion = 0;
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
+	if (SdkVersion >= 0x200030A)
+	{
+		result = FPICOXRHMDModule::GetPluginWrapper().SetPHFHapticSpeed(SourceID, Speed);
+	}
+#endif
+	return result;
+}
+
+int UPICOXRInputFunctionLibrary::PXR_GetPHFHapticSpeed(int SourceID, float& Speed)
+{
+	int result = 0;
+#if PICO_HMD_SUPPORTED_PLATFORMS
+	int SdkVersion = 0;
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_API_VERSION, &SdkVersion);
+	if (SdkVersion >= 0x200030A)
+	{
+		result = FPICOXRHMDModule::GetPluginWrapper().GetPHFHapticSpeed(SourceID, &Speed);
+	}
+#endif
+	return result;
 }

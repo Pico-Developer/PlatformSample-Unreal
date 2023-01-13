@@ -3,6 +3,7 @@
 #include "PXR_HMDRenderBridge.h"
 #include "PXR_HMD.h"
 #include "PXR_Log.h"
+#include "XRThreadUtils.h"
 
 #include "Runtime/RenderCore/Public/Shader.h"
 #include "Runtime/RenderCore/Public/RendererInterface.h"
@@ -44,7 +45,7 @@ bool FPICOXRRenderBridge::Present(int32& InOutSyncInterval)
 	{
 #if PLATFORM_ANDROID
 		int32 fps;
-		Pxr_GetConfigInt(PXR_RENDER_FPS, &fps);
+		FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_RENDER_FPS, &fps);
 		PXR_LOGI(PxrUnreal, " Current FPS : %d ", fps);
 #endif
 		BeginTime = NewTime;
@@ -56,13 +57,13 @@ bool FPICOXRRenderBridge::Present(int32& InOutSyncInterval)
 }
 
 #if ENGINE_MINOR_VERSION > 25
-FXRSwapChainPtr FPICOXRRenderBridge::CreateSwapChain_RenderThread(uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, ETextureCreateFlags Flags, ETextureCreateFlags TargetableTextureFlags, uint32 MSAAValue)
+FXRSwapChainPtr FPICOXRRenderBridge::CreateSwapChain_RenderThread(uint32 ID, uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, ETextureCreateFlags Flags, ETextureCreateFlags TargetableTextureFlags, uint32 MSAAValue)
 #else
-FXRSwapChainPtr FPICOXRRenderBridge::CreateSwapChain_RenderThread(uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, uint32 Flags, uint32 TargetableTextureFlags, uint32 MSAAValue)
+FXRSwapChainPtr FPICOXRRenderBridge::CreateSwapChain_RenderThread(uint32 ID, uint32 LayerID, ERHIResourceType ResourceType, TArray<uint64>& NativeTextures, uint8 Format, uint32 SizeX, uint32 SizeY, uint32 ArraySize, uint32 NumMips, uint32 NumSamples, uint32 Flags, uint32 TargetableTextureFlags, uint32 MSAAValue)
 #endif
 {
 	check(IsInRenderingThread());
-	PXR_LOGI(PxrUnreal, "CreateSwapChain_%s LayerID:%u, Format:%d,SizeX:%d,SizeY:%d,ArraySize:%d,NumMips:%d,NumSamples:%d,Flags:%d,TargetableTextureFlags:%d,MSAAValue:%d", PLATFORM_CHAR(*RHIString), LayerID, Format, SizeX, SizeY, ArraySize, NumMips, NumSamples, Flags, TargetableTextureFlags, MSAAValue);
+	PXR_LOGI(PxrUnreal, "CreateSwapChain_%s ID:%d, LayerID:%u, Format:%d,SizeX:%d,SizeY:%d,ArraySize:%d,NumMips:%d,NumSamples:%d,Flags:%d,TargetableTextureFlags:%d,MSAAValue:%d", PLATFORM_CHAR(*RHIString), ID, LayerID, Format, SizeX, SizeY, ArraySize, NumMips, NumSamples, Flags, TargetableTextureFlags, MSAAValue);
 	FTextureRHIRef RHITexture;
 	TArray<FTextureRHIRef> RHITextureSwapChain;
 	{
@@ -87,7 +88,7 @@ int FPICOXRRenderBridge::GetSystemRecommendedMSAA() const
 {
 	int msaa = 1;
 #if PLATFORM_ANDROID
-	Pxr_GetConfigInt(PXR_MSAA_LEVEL_RECOMMENDED, &msaa);
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PXR_MSAA_LEVEL_RECOMMENDED, &msaa);
 #endif
 	return msaa;
 }
@@ -333,4 +334,22 @@ void FPICOXRRenderBridge::SubmitGPUCommands_RenderThread(FRHICommandListImmediat
 {
 	check(IsInRenderingThread());
 	RHICmdList.SubmitCommandsHint();
+}
+
+void FPICOXRRenderBridge::ReleaseResources_RHIThread()
+{
+	CheckInRHIThread();
+}
+
+void FPICOXRRenderBridge::Shutdown()
+{
+	CheckInGameThread();
+
+	ExecuteOnRenderThread([this]()
+		{
+			ExecuteOnRHIThread([this]()
+				{
+					PICOXRHMD = nullptr;
+				});
+		});
 }

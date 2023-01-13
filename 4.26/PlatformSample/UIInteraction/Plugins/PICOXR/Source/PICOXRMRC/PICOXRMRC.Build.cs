@@ -4,12 +4,8 @@ using System.IO;
 
 public class PICOXRMRC : ModuleRules
 {
-	public PICOXRMRC(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-        string PICOXRLibsDirectory = Path.Combine(ModuleDirectory, @"..\..\Libs");
-        string PICOXRHeaderDirectory = Path.Combine(PICOXRLibsDirectory, @"Include");
-        PICOXRHeaderDirectory = Path.GetFullPath(PICOXRHeaderDirectory);
+    public PICOXRMRC(ReadOnlyTargetRules Target) : base(Target)
+    {
         PrivateIncludePathModuleNames.AddRange(
                 new string[]
                 {
@@ -34,14 +30,14 @@ public class PICOXRMRC : ModuleRules
                     "MediaAssets",
                     "HeadMountedDisplay",
                     "PICOXRHMD",
-                    "PICOXRInput"
+                    "PICOXRInput",
+                    "PXRPlugin",
             });
 
         PrivateIncludePaths.AddRange(
             new string[] {
-					"PICOXRHMD/Private",
+                    "PICOXRHMD/Private",
                     "PICOXRInput/Private",
-                    PICOXRHeaderDirectory
             });
         if (Target.Platform == UnrealTargetPlatform.Android)
         {

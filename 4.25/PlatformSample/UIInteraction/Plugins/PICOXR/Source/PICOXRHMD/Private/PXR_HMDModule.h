@@ -1,13 +1,10 @@
-//Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc. All rights reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #pragma once
+#include "PXR_HMDPrivate.h"
 #include "IHeadMountedDisplay.h"
-#include "IHeadMountedDisplayVulkanExtensions.h"
-#include "IPXR_HMDModule.h"
-#include "Modules/ModuleInterface.h"
-#include "Modules/ModuleManager.h"
-#include "PXR_HMDRenderBridge.h"
-#include "PXR_Log.h"
+#include "PXR_VulkanExtensions.h"
+#include "PXR_PluginWrapper.h"
 
 //-------------------------------------------------------------------------------------------------
 // FPICOXRHMDModule
@@ -32,22 +29,25 @@ public:
 	virtual FString GetModuleKeyName() const override;
 	virtual void GetModuleAliases(TArray<FString>& AliasesOut) const override;
 	virtual bool IsHMDConnected() override;
+	virtual bool PreInit() override;
+	virtual FString GetDeviceSystemName() override;
     virtual TSharedPtr< class IXRTrackingSystem, ESPMode::ThreadSafe > CreateTrackingSystem() override;
     virtual TSharedPtr< IHeadMountedDisplayVulkanExtensions, ESPMode::ThreadSafe > GetVulkanExtensions() override;
 #if ENGINE_MINOR_VERSION>26
 	virtual bool IsStandaloneStereoOnlyDevice() override;
 #endif
-private:
-    TSharedPtr< IHeadMountedDisplayVulkanExtensions, ESPMode::ThreadSafe > VulkanExtensions;
-};
 
-class FVulkanExtensions : public IHeadMountedDisplayVulkanExtensions
-{
+#if PICO_HMD_SUPPORTED_PLATFORMS
 public:
-    FVulkanExtensions() {}
-    virtual ~FVulkanExtensions() {}
+	PICOXRHMD_API static void* GetPVRPluginHandle();
+	PICOXRHMD_API static inline PICOPluginWrapper& GetPluginWrapper() { return PluginWrapper; }
+protected:
+	static PICOPluginWrapper PluginWrapper;
 
-    /** IHeadMountedDisplayVulkanExtensions */
-    virtual bool GetVulkanInstanceExtensionsRequired(TArray<const ANSICHAR*>& Out) override;
-    virtual bool GetVulkanDeviceExtensionsRequired(VkPhysicalDevice_T* pPhysicalDevice, TArray<const ANSICHAR*>& Out) override;
+	bool bPreInit;
+	bool bPreInitCalled;
+	void* PVRPluginHandle;
+	TWeakPtr< IHeadMountedDisplay, ESPMode::ThreadSafe > HeadMountedDisplay;
+	TSharedPtr< IHeadMountedDisplayVulkanExtensions, ESPMode::ThreadSafe > VulkanExtensions;
+#endif
 };

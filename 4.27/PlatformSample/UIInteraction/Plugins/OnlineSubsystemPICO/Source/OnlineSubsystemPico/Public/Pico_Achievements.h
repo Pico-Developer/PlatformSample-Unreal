@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 #pragma once
@@ -200,12 +210,6 @@ public:
     /// </param>
     /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
     /// <param name="InAddCountCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-    /// <returns>Bool:
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoAddCount(UObject* WorldContextObject, const FString& Name, const FString& Count, const FString& ExtraData, FAddCount InAddCountCallback);
 
@@ -219,12 +223,6 @@ public:
     /// </param>
     /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
     /// <param name="InAddFieldsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-    /// <returns>Bool:
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoAddFields(UObject* WorldContextObject, const FString& Name, const FString& Fields, const FString& ExtraData, FAddFields InAddFieldsCallback);
 
@@ -234,12 +232,6 @@ public:
     /// <param name="Name">The API name of the achievement to unlock.</param>
     /// <param name="ExtraData">Custom extension fields that can be used to record key information when unlocking achievements.</param>
     /// <param name="InUnlockCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-    /// <returns>Bool:
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoUnlock(UObject* WorldContextObject, const FString& Name, const FString& ExtraData, FUnlock InUnlockCallback);
 
@@ -250,12 +242,6 @@ public:
     /// <param name="PageIndex">The start index of the pages.</param>
     /// <param name="PageSize">The size of the page.</param>
     /// <param name="InGetAllDefinitionsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-    /// <returns>Bool:
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoGetAllDefinitions(UObject* WorldContextObject, int32 PageIndex, int32 PageSize, FGetAllDefinitions InGetAllDefinitionsCallback);
 
@@ -267,12 +253,6 @@ public:
     /// <param name="PageIndex">The start index of the pages.</param>
     /// <param name="PageSize">The size of the page.</param>
     /// <param name="InGetAllProgressCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-    /// <returns>Bool:
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoGetAllProgress(UObject* WorldContextObject, int32 PageIndex, int32 PageSize, FGetAllProgress InGetAllProgressCallback);
 
@@ -282,12 +262,6 @@ public:
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="NameArray">The API names of the achievements.</param>
     /// <param name="InGetDefinitionsByNameCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-    /// <returns>Bool:
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoGetDefinitionsByName(UObject* WorldContextObject, const TArray<FString>& NameArray, FGetDefinitionsByName InGetDefinitionsByNameCallback);
 
@@ -298,12 +272,6 @@ public:
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name="NameArray">The API names of the achievements.</param>
     /// <param name="InGetProgressByNameCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-    /// <returns>Bool:
-    /// <ul>
-    /// <li>`true`: success</li>
-    /// <li>`false`: failure</li>
-    /// </ul>
-    /// </returns>
     UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Achievements")
     static void PicoGetProgressByName(UObject* WorldContextObject, const TArray<FString>& NameArray, FGetProgressByName InGetProgressByNameCallback);
 

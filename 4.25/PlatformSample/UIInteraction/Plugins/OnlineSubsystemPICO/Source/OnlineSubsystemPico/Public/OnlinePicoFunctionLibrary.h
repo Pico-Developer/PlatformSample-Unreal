@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -537,7 +547,6 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Game")
     static bool EndSession(UObject* WorldContextObject, FName SessionName, FPicoManagerOnEndSessionCompleteDelegate OnEndSessionCompleteDelegate);
 
-	// todo CompletionDelegate
     /// <summary>Destroys the current session.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param> 
     /// <param name ="SessionName">The session name.</param> 
@@ -608,7 +617,6 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Game")
     static bool FindSessions(UObject* WorldContextObject, int32 SearchingPlayerNum, UPARAM(ref)FPicoOnlineSessionSearch& NewSessionSearch, FPicoManagerOnFindSessionCompleteDelegate OnFindSessionCompleteDelegate);
 
-	// todo FriendId /// CompletionDelegate
     /// <summary>Gets session data by session ID.</summary>
     /// <param name ="WorldContextObject">Used to get the information about the current world.</param>
     /// <param name ="SearchingUserId">The ID of the logged-in player. If the played has not logged in, the session data will be unable to get.</param>
@@ -950,7 +958,7 @@ public:
 
 
     /// <summary>
-    /// Get the version information of the current app in the PICO Store.
+    /// Gets the current app's latest version in the PICO Store.
     /// </summary>
     /// <param name="WorldContextObject">Used to get the information about the current world.</param> 
     /// <returns>Bool: 
@@ -998,7 +1006,7 @@ public:
 
 
     /// <summary>
-    /// Launch the PICO Store and jump to the details page of the current app
+    /// Launches the PICO Store and jump to the details page of the current app.
     /// </summary>
     /// <param name="WorldContextObject">Used to get the information about the current world.</param> 
     /// <returns>Bool: 

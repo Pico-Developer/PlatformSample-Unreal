@@ -2,6 +2,7 @@
 
 #pragma once
 #include "CoreMinimal.h"
+#include "RHI.h"
 #include "RHIResources.h"
 #include "Engine/Texture2D.h"
 #include "UObject/SoftObjectPath.h"

@@ -1,15 +1,9 @@
 //Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc. All rights reserved.
 
 #include "PXR_HMDRenderBridge.h"
+#include "PXR_HMDPrivateRHI.h"
 #include "PXR_HMD.h"
 #include "PXR_Log.h"
-
-#if PLATFORM_ANDROID
-#include "VulkanRHIPrivate.h"
-#include "VulkanResources.h"
-#include "VulkanPendingState.h"
-#include "VulkanContext.h"
-#endif
 
 class FPICOXRRenderBridge_Vulkan : public FPICOXRRenderBridge
 {
@@ -102,7 +96,7 @@ public:
 		vulkanBinding.queueFamilyIndex = Queue->GetFamilyIndex();
 		vulkanBinding.queueIndex = 0;
 
-		Pxr_CreateVulkanSystem(&vulkanBinding);
+		FPICOXRHMDModule::GetPluginWrapper().CreateVulkanSystem(&vulkanBinding);
 #endif
 	}
 };

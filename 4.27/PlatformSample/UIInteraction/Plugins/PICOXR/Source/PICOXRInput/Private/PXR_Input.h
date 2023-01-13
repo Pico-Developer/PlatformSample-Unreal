@@ -6,7 +6,7 @@
 #include "IInputDevice.h"
 #include "IHapticDevice.h"
 #include "IPXR_HandTracker.h"
-#include "PXR_Settings.h"
+#include "PXR_HMDRuntimeSettings.h"
 #include "PXR_HMD.h"
 
 #define ButtonEventNum 12
@@ -176,7 +176,7 @@ private:
 	void ProcessButtonEvent();
 	void ProcessButtonAxis();
 	void UpdateConnectState();
-	void GetControllerSensorData(EControllerHand DeviceHand, float WorldToMetersScale, double inPredictedTime, FVector SourcePosition, FQuat SourceOrientation, FRotator& OutOrientation, FVector& OutPosition) const;
+	void GetControllerSensorData(const FGameSettings* InSettings, EControllerHand DeviceHand, float WorldToMetersScale, double inPredictedTime, FVector SourcePosition, FQuat SourceOrientation, FRotator& OutOrientation, FVector& OutPosition) const;
 
 	FPICOXRHMD* PICOXRHMD;
 	TSharedRef<FGenericApplicationMessageHandler> MessageHandler;
@@ -202,4 +202,5 @@ private:
 	EPICOInputType ControllerType;
 	UPICOXRSettings* Settings;
 	int CurrentVersion;
+	float CurrentFramePredictedTime;
 };

@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "IXRTrackingSystem.h"
 #include "PXR_Log.h"
+#include "PXR_HMDRuntimeSettings.h"
+
 
 #define LOCTEXT_NAMESPACE "PICOXRDPInput"
 
@@ -29,8 +31,6 @@ FPICOXRDPInput::FPICOXRDPInput()
 	, ControllerType(EPICOInputType::Unknown)
 {
 	SetKeyMapping();
-	//Clear Sample Inputs
-	FCoreDelegates::OnPreExit.AddStatic(&FPICOXRDPInput::ClearSampleInputs);
 	IModularFeatures::Get().RegisterModularFeature(GetModularFeatureName(), this);
 	if (PICOXRHMD == nullptr)
 	{
@@ -79,29 +79,36 @@ void FPICOXRDPInput::AddSampleInputs()
 
 	// Create new Input Settings
 	UInputSettings* InputSettings = GetMutableDefault<UInputSettings>();
-
-	if (InputSettings->IsValidLowLevel())
+	UPICOXRSettings* Settings = GetMutableDefault<UPICOXRSettings>();
+	if (InputSettings->IsValidLowLevel()
+		&&Settings->IsValidLowLevel()
+		&&Settings->bEnableAutoKeyMapping)
 	{
 		// left
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("XPress")), FPICOTouchKey::PICOTouch_Left_X_Click);
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("YPress")), FPICOTouchKey::PICOTouch_Left_Y_Click);
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("LMenu")), FPICOTouchKey::PICOTouch_Left_Menu_Click);
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("LHome")), FPICOTouchKey::PICOTouch_Left_Home_Click);
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("LTrigger")), FPICOTouchKey::PICOTouch_Left_Trigger_Click);
-		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftTrigger")), FPICOTouchKey::PICOTouch_Left_Trigger_Axis);
-		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftGrip")), FPICOTouchKey::PICOTouch_Left_Grip_Axis);
-		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftJoyStickX")), FPICOTouchKey::PICOTouch_Left_Thumbstick_X);
-		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftJoyStickY")), FPICOTouchKey::PICOTouch_Left_Thumbstick_Y);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonX")), FPICOTouchKey::PICOTouch_Left_X_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonY")), FPICOTouchKey::PICOTouch_Left_Y_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonLeftMenu")), FPICOTouchKey::PICOTouch_Left_Menu_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonLeftHome")), FPICOTouchKey::PICOTouch_Left_Home_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonLeftTrigger")), FPICOTouchKey::PICOTouch_Left_Trigger_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonLeftGrip")), FPICOTouchKey::PICOTouch_Left_Grip_Click);
+
+		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftTriggerAxis")), FPICOTouchKey::PICOTouch_Left_Trigger_Axis);
+		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftGripAxis")), FPICOTouchKey::PICOTouch_Left_Grip_Axis);
+		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftJoyStickXAxis")), FPICOTouchKey::PICOTouch_Left_Thumbstick_X);
+		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftJoyStickYAxis")), FPICOTouchKey::PICOTouch_Left_Thumbstick_Y);
 		// Right
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("APress")), FPICOTouchKey::PICOTouch_Right_A_Click);
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("BPress")), FPICOTouchKey::PICOTouch_Right_B_Click);
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("RSystem")), FPICOTouchKey::PICOTouch_Right_System_Click);
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("RHome")), FPICOTouchKey::PICOTouch_Right_Home_Click);
-		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("RTrigger")), FPICOTouchKey::PICOTouch_Right_Trigger_Click);
-		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightTrigger")), FPICOTouchKey::PICOTouch_Right_Trigger_Axis);
-		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightGrip")), FPICOTouchKey::PICOTouch_Right_Grip_Axis);
-		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightJoyStickX")), FPICOTouchKey::PICOTouch_Right_Thumbstick_X);
-		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightJoyStickY")), FPICOTouchKey::PICOTouch_Right_Thumbstick_Y);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonA")), FPICOTouchKey::PICOTouch_Right_A_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonB")), FPICOTouchKey::PICOTouch_Right_B_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonRightSystem")), FPICOTouchKey::PICOTouch_Right_System_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonRightHome")), FPICOTouchKey::PICOTouch_Right_Home_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonRightTrigger")), FPICOTouchKey::PICOTouch_Right_Trigger_Click);
+		AddNewSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonRightGrip")), FPICOTouchKey::PICOTouch_Right_Grip_Click);
+
+		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightTriggerAxis")), FPICOTouchKey::PICOTouch_Right_Trigger_Axis);
+		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightGripAxis")), FPICOTouchKey::PICOTouch_Right_Grip_Axis);
+		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightJoyStickXAxis")), FPICOTouchKey::PICOTouch_Right_Thumbstick_X);
+		AddNewSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightJoyStickYAxis")), FPICOTouchKey::PICOTouch_Right_Thumbstick_Y);
+		
 		// Update the config file
 		InputSettings->SaveKeyMappings();
 		InputSettings->UpdateDefaultConfigFile();
@@ -118,28 +125,35 @@ void FPICOXRDPInput::ClearSampleInputs()
 
 	// Create new Input Settings
 	UInputSettings* InputSettings = GetMutableDefault<UInputSettings>();
-	if (InputSettings->IsValidLowLevel())
+	UPICOXRSettings* Settings = GetMutableDefault<UPICOXRSettings>();
+	if (InputSettings->IsValidLowLevel()
+		&&Settings->IsValidLowLevel()
+		&&!Settings->bEnableAutoKeyMapping)
 	{
 		// left
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("XPress")), FPICOTouchKey::PICOTouch_Left_X_Click);
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("YPress")), FPICOTouchKey::PICOTouch_Left_Y_Click);
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("LMenu")), FPICOTouchKey::PICOTouch_Left_Menu_Click);
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("LHome")), FPICOTouchKey::PICOTouch_Left_Home_Click);
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("LTrigger")), FPICOTouchKey::PICOTouch_Left_Trigger_Click);
-		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftTrigger")), FPICOTouchKey::PICOTouch_Left_Trigger_Axis);
-		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftGrip")), FPICOTouchKey::PICOTouch_Left_Grip_Axis);
-		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftJoyStickX")), FPICOTouchKey::PICOTouch_Left_Thumbstick_X);
-		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftJoyStickY")), FPICOTouchKey::PICOTouch_Left_Thumbstick_Y);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonX")), FPICOTouchKey::PICOTouch_Left_X_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonY")), FPICOTouchKey::PICOTouch_Left_Y_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonLeftMenu")), FPICOTouchKey::PICOTouch_Left_Menu_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonLeftHome")), FPICOTouchKey::PICOTouch_Left_Home_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonLeftTrigger")), FPICOTouchKey::PICOTouch_Left_Trigger_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonLeftGrip")), FPICOTouchKey::PICOTouch_Left_Grip_Click);
+
+		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftTriggerAxis")), FPICOTouchKey::PICOTouch_Left_Trigger_Axis);
+		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftGripAxis")), FPICOTouchKey::PICOTouch_Left_Grip_Axis);
+		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftJoyStickXAxis")), FPICOTouchKey::PICOTouch_Left_Thumbstick_X);
+		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("LeftJoyStickYAxis")), FPICOTouchKey::PICOTouch_Left_Thumbstick_Y);
 		// Right
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("APress")), FPICOTouchKey::PICOTouch_Right_A_Click);
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("BPress")), FPICOTouchKey::PICOTouch_Right_B_Click);
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("RSystem")), FPICOTouchKey::PICOTouch_Right_System_Click);
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("RHome")), FPICOTouchKey::PICOTouch_Right_Home_Click);
-		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("RTrigger")), FPICOTouchKey::PICOTouch_Right_Trigger_Click);
-		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightTrigger")), FPICOTouchKey::PICOTouch_Right_Trigger_Axis);
-		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightGrip")), FPICOTouchKey::PICOTouch_Right_Grip_Axis);
-		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightJoyStickX")), FPICOTouchKey::PICOTouch_Right_Thumbstick_X);
-		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightJoyStickY")), FPICOTouchKey::PICOTouch_Right_Thumbstick_Y);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonA")), FPICOTouchKey::PICOTouch_Right_A_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonB")), FPICOTouchKey::PICOTouch_Right_B_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonRightSystem")), FPICOTouchKey::PICOTouch_Right_System_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonRightHome")), FPICOTouchKey::PICOTouch_Right_Home_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonRightTrigger")), FPICOTouchKey::PICOTouch_Right_Trigger_Click);
+		RemoveSampleActionMapping(ExistingActionKeys, InputSettings, FName(TEXT("ButtonRightGrip")), FPICOTouchKey::PICOTouch_Right_Grip_Click);
+		
+		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightTriggerAxis")), FPICOTouchKey::PICOTouch_Right_Trigger_Axis);
+		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightGripAxis")), FPICOTouchKey::PICOTouch_Right_Grip_Axis);
+		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightJoyStickXAxis")), FPICOTouchKey::PICOTouch_Right_Thumbstick_X);
+		RemoveSampleAxisMapping(ExistingAxisKeys, InputSettings, FName(TEXT("RightJoyStickYAxis")), FPICOTouchKey::PICOTouch_Right_Thumbstick_Y);
 		// Update the config file
 		InputSettings->SaveKeyMappings();
 		InputSettings->UpdateDefaultConfigFile();

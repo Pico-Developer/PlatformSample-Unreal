@@ -3,7 +3,6 @@
 
 #include "PicoGameInstance.h"
 #include "OnlineSubsystem.h"
-#include "Pico_Leaderboard.h"
 
 
 UPicoGameInstance::UPicoGameInstance()
@@ -1159,6 +1158,7 @@ void UPicoGameInstance::ReadLeaderboards(TArray<FString> Players, const FString&
     for (int i = 0; i < Players.Num(); i++)
     {
         auto UniqueNetIdRef = Online::GetIdentityInterface()->CreateUniquePlayerId(Players[i]).ToSharedRef();
+        OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboards add LeaderboardName: %s"), *LeaderboardName));
         LeaderboardPlayers.Add(UniqueNetIdRef);
     }
     LeaderboardInterface->ClearOnLeaderboardReadCompleteDelegates(this);
@@ -1195,7 +1195,6 @@ void UPicoGameInstance::ReadLeaderboardsWithPicoObject(TArray<FString> Players, 
     const auto PicoRef = new FOnlineLeaderboardReadRef(PicoLeaderboardReadPtr);
     const auto Result = LeaderboardInterface->ReadLeaderboards(LeaderboardPlayers, *PicoRef);
     OnGameSessionStateChanged(FString::Printf(TEXT("ReadLeaderboardDataWithPicoObject Result: %s"), Result ? TEXT("true") : TEXT("false")));
-    //LeaderboardInterface->FlushLeaderboards(TEXT("Test")); // todo
 }
 
 void UPicoGameInstance::ReadLeaderboardsForFriendsWithPicoObject(const FString& LeaderboardName, int PageIndex, int PageSize)
@@ -1341,13 +1340,18 @@ void UPicoGameInstance::WriteAchievements(const FString& AchievementName, const 
     AchievementInterface->GetCachedAchievement(*UserId.Get(), AchievementName, Achievement);
     if (!Achievement.Id.IsEmpty()) {
         OnGameSessionStateChanged(FString::Printf(TEXT("WriteAchievements Trying to update player achievements to server....")));
-        const FOnlineAchievementsWritePtr WriteObject = MakeShareable(new FOnlineAchievementsWrite());
-        WriteObject->SetIntStat(FName(AchievementName), FCString::Atoi(*Value));
+        const FOnlineAchievementsWritePicoPtr WriteObject = MakeShareable(new FOnlineAchievementsWritePico());
+        WriteObject->SetIntStat(FName(TEXT("USE_PICO_ACHIEVEMENT_WRITE")), 1);
+        WriteObject->SetPicoIntStat(*AchievementName, FCString::Atoi(*Value));
         FOnlineAchievementsWriteRef WriteObjectRef = WriteObject.ToSharedRef();
         AchievementInterface->WriteAchievements(
             *UserId.Get(),
             WriteObjectRef,
             FOnAchievementsWrittenDelegate::CreateUObject(this, &UPicoGameInstance::OnAchievementsWriteComplete));
+    }
+    else
+    {
+        OnGameSessionStateChanged(FString::Printf(TEXT("WriteAchievements cannot find the input achievement")));
     }
 }
 void UPicoGameInstance::OnAchievementsWriteComplete(const FUniqueNetId& PlayerId, bool bSuccessful)
@@ -1397,11 +1401,8 @@ void UPicoGameInstance::GetCachedAchievement(const FString& AchievementName)
     }
     FOnlineAchievement Achievement;
     const EOnlineCachedResult::Type Type = AchievementInterface->GetCachedAchievement(*UserId, AchievementName, Achievement);
-    // const UEnum* const PrintEnum = StaticEnum<EOnlineCachedResult::Type>();
-    // OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievement Type: %s, Achievement.Id: %s, Achievement.Progress: %f")
-    //     , *PrintEnum->GetDisplayNameTextByValue(static_cast<uint8>(Type)).ToString(), *Achievement.Id, Achievement.Progress));
-    OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievement Type: %s, Achievement.Id: %s, Achievement.Progress: %f")
-        , Type == 0?TEXT("Success"):TEXT("NotFound"), *Achievement.Id, Achievement.Progress));
+    OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievement Type: %s, Achievement DebugString: %s")
+        , Type == 0?TEXT("Success"):TEXT("NotFound"), *Achievement.ToDebugString()));
 }
 void UPicoGameInstance::GetCachedAchievements()
 {
@@ -1411,24 +1412,32 @@ void UPicoGameInstance::GetCachedAchievements()
         OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievements Please login first!")));
         return;
     }
-    TArray<FOnlineAchievement> Achievements;
     const EOnlineCachedResult::Type Type = AchievementInterface->GetCachedAchievements(*UserId, Achievements);
-    // const UEnum* const PrintEnum = StaticEnum<EOnlineCachedResult::Type>();
-    // OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievements Type: %s, TArray Num: %d"), *PrintEnum->GetDisplayNameTextByValue(static_cast<uint8>(Type)).ToString(), Achievements.Num()));
-    OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievements Type: %s, TArray Num: %d"), Type == 0?TEXT("Success"):TEXT("NotFound"), Achievements.Num()));
+    FString Log = FString::Printf(TEXT("GetCachedAchievements Type: %s, TArray Num: %d\n"), Type == 0?TEXT("Success"):TEXT("NotFound"), Achievements.Num());
     for (int i = 0; i < Achievements.Num(); i++)
     {
-        OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievements i: %d, Achievement.DebugString: %s")
-        , i, *Achievements[i].ToDebugString()));
+        Log += FString::Printf(TEXT("[%d]%s\n"), i, *Achievements[i].ToDebugString());
     }
+    OnGameSessionStateChanged(Log);
 }
 void UPicoGameInstance::GetCachedAchievementDescription(const FString& AchievementName)
 {
-    FOnlineAchievementDescPico AchievementDesc;
-    AchievementDesc.Title = FText::FromString(TEXT("USEPICODESC"));
+    FOnlineAchievementDesc AchievementDesc;
     const EOnlineCachedResult::Type Type = AchievementInterface->GetCachedAchievementDescription(AchievementName, AchievementDesc);
-    OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievementDescription Type: %s, AchievementDesc DebugString: %s"), Type == 0?TEXT("Success"):TEXT("NotFound")
-        , *AchievementDesc.ToDebugString()));
+    FDateTime Time = AchievementDesc.UnlockTime;
+    int year = Time.GetYear();
+    int month = Time.GetMonth();
+    int day = Time.GetDay();
+    int hour = Time.GetHour();
+    int minute = Time.GetMinute();
+    int second = Time.GetSecond();
+    OnGameSessionStateChanged(FString::Printf(TEXT("GetCachedAchievementDescription Type: %s, AchievementDesc DebugString: Title='%s', LockedDesc='%s', UnlockedDesc='%s', bIsHidden=%s, UnlockTime=[%d.%d.%d %d:%d:%d]")
+        , Type == 0?TEXT("Success"):TEXT("NotFound"),
+        *AchievementDesc.Title.ToString(),
+        *AchievementDesc.LockedDesc.ToString(),
+        *AchievementDesc.UnlockedDesc.ToString(),
+        AchievementDesc.bIsHidden ? TEXT("true") : TEXT("false"),
+        year, month, day, hour, minute, second));
 }
 
 

@@ -5,17 +5,10 @@ using System.IO;
 
 public class PICOXRInput : ModuleRules
 {
-	public PICOXRInput(ReadOnlyTargetRules Target) : base(Target)
-	{
-        System.Console.WriteLine(" Build the PICOXRInput Plugin");
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
-        string PICOXRLibsDirectory = Path.Combine(ModuleDirectory, @"..\..\Libs");
-        string PICOXRHeaderDirectory = Path.Combine(PICOXRLibsDirectory, @"Include");
-        PICOXRHeaderDirectory = Path.GetFullPath(PICOXRHeaderDirectory);
-
+    public PICOXRInput(ReadOnlyTargetRules Target) : base(Target)
+    {
         PrivateIncludePathModuleNames.AddRange(
-                new []
+                new[]
                 {
                     "InputDevice",			// For IInputDevice.h
 					"HeadMountedDisplay",	// For IMotionController.h
@@ -23,7 +16,7 @@ public class PICOXRInput : ModuleRules
                 });
 
         PrivateDependencyModuleNames.AddRange(
-            new []
+            new[]
             {
                     "Core",
                     "CoreUObject",
@@ -31,13 +24,13 @@ public class PICOXRInput : ModuleRules
                     "Engine",
                     "InputCore",
                     "HeadMountedDisplay",
-                    "PICOXRHMD"
+                    "PICOXRHMD",
+                    "PXRPlugin",
             });
         PrivateIncludePaths.AddRange(
-                new [] {
-					"PICOXRInput/Private",
+                new[] {
+                    "PICOXRInput/Private",
                     "PICOXRHMD/Private",
-                    PICOXRHeaderDirectory,
                 });
 
     }

@@ -15,7 +15,6 @@
 #if PICO_MRC_SUPPORTED_PLATFORMS
 #include "Android/AndroidApplication.h"
 #include "Android/AndroidJNI.h"
-#include "PxrApi.h"
 #endif
 
 #define LOCTEXT_NAMESPACE "FPICOXRMRCModule"
@@ -102,7 +101,7 @@ bool FPICOXRMRCModule::GetMRCCalibrationData(FPXRTrackedCamera& CameraState)
 	if (RawCameraDateFromXML.refreshed)
 	{
 #if PLATFORM_ANDROID
-		Pxr_GetMrcPose(&MRCPose);
+		FPICOXRHMDModule::GetPluginWrapper().GetMrcPose(&MRCPose);
 		PXR_LOGV(LogMRC, "Pxr_GetMrcPose x:%f y:%f z:%f w:%f px:%f py:%f pz:%f",
 			MRCPose.orientation.x, MRCPose.orientation.y, MRCPose.orientation.z, MRCPose.orientation.w, MRCPose.position.x, MRCPose.position.y, MRCPose.position.z);
 
@@ -284,15 +283,15 @@ bool FPICOXRMRCModule::ReadCameraRawDataFromXML()
 			Newpose.orientation.z = RawCameraDateFromXML.z;
 			Newpose.orientation.w = RawCameraDateFromXML.w;
 			int CurrentVersion = 0;
-			Pxr_GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
+			FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
 			if (CurrentVersion >= 0x2000306)
 			{
 				PXR_LOGI(LogMRC, "CurrentVersion:%d SetIsSupportMovingMrc to true!", CurrentVersion);
-				Pxr_SetIsSupportMovingMrc(true);
+				FPICOXRHMDModule::GetPluginWrapper().SetIsSupportMovingMrc(true);
 	}
-			Pxr_SetMrcPose(&Newpose);
-			Pxr_SetConfigUint64(PxrConfigType::PXR_MRC_TEXTURE_WIDTH, RawCameraDateFromXML.width);
-			Pxr_SetConfigUint64(PxrConfigType::PXR_MRC_TEXTURE_HEIGHT, RawCameraDateFromXML.height);
+			FPICOXRHMDModule::GetPluginWrapper().SetMrcPose(&Newpose);
+			FPICOXRHMDModule::GetPluginWrapper().SetConfigUint64(PxrConfigType::PXR_MRC_TEXTURE_WIDTH, RawCameraDateFromXML.width);
+			FPICOXRHMDModule::GetPluginWrapper().SetConfigUint64(PxrConfigType::PXR_MRC_TEXTURE_HEIGHT, RawCameraDateFromXML.height);
 			RawCameraDateFromXML.refreshed = true;
 			return true;
 		}
@@ -366,7 +365,7 @@ void FPICOXRMRCModule::OnInitialWorldCreated(UWorld* NewWorld)
 	PXR_LOGI(LogMRC, "OnInitialWorldCreated");
 #if PLATFORM_ANDROID
 	int CurrentVersion = 0;
-	Pxr_GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
+	FPICOXRHMDModule::GetPluginWrapper().GetConfigInt(PxrConfigType::PXR_API_VERSION, &CurrentVersion);
 	PXR_LOGI(LogMRC, "Current Version:%d,MRC Support Version:%d", CurrentVersion, MRCSupportVersion);
 	if (CurrentVersion < MRCSupportVersion)
 	{

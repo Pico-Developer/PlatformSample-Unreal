@@ -1,4 +1,14 @@
-﻿// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+﻿/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -104,12 +114,6 @@ public:
 	/// <param name="PageIdx">Defines which page of pending room invites to return. The first page index is `0`.</param>
 	/// <param name="PageSize">Defines the number of pending room invites returned on each page.</param>
 	/// <param name="OnRoomInviteNotificationsCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>  
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Notification")
 	static void GetRoomInviteNotifications(UObject* WorldContextObject, int PageIdx, int PageSize, FNotificationRoomInviteNotifications OnRoomInviteNotificationsCallback);
 
@@ -118,12 +122,6 @@ public:
 	/// <param name ="WorldContextObject">Used to get the information about the current world.</param>
 	/// <param name="NotificationID">The ID of the notificaiton to mark.</param>
 	/// <param name="OnMarkAsReadCallback">Will be executed when the request has been completed. Delegate will contain the requested object class.</param>
-	/// <returns>Bool:
-	/// <ul>
-	/// <li>`true`: success</li>
-	/// <li>`false`: failure</li>
-	/// </ul>
-	/// </returns>
 	UFUNCTION(BlueprintCallable, meta = (WorldContext = "WorldContextObject"), Category = "OnlinePico|Notification")
 	static void MarkAsRead(UObject* WorldContextObject, const FString& NotificationID, FNotificationMarkAsRead OnMarkAsReadCallback);
 };

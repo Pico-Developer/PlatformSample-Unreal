@@ -88,7 +88,7 @@ struct FPICOKeyNames
 	static const FName PICOHand_Right_PinkyPinchStrength;
 };
 
-struct FPICOTouchKey
+struct PICOXRINPUT_API FPICOTouchKey
 {
 	// PICO Touch Controller
 	static const FKey PICOTouch_Left_X_Click;

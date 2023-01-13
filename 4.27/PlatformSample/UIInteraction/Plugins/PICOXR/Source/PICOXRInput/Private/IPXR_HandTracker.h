@@ -2,10 +2,7 @@
 
 #pragma once
 #include "CoreMinimal.h"
-
-#if PLATFORM_ANDROID
-#include "PxrInput.h"
-#endif
+#include "PXR_PluginWrapper.h"
 
 enum class EPICOXRHandTrackingConfidence : uint8;
 enum class EPICOXRHandFinger : uint8;

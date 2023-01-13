@@ -5,15 +5,7 @@
 #include "PXR_Utils.h"
 #include "XRThreadUtils.h"
 #include "Engine/Engine.h"
-
-#if PLATFORM_ANDROID
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJNI.h"
-#include "PxrApi.h"
-#include "XRTrackingSystemBase.h"
-#include "XRThreadUtils.h"
-#include "PxrTypes.h"
-#endif
+#include "PXR_HMDModule.h"
 
 UPICOXRBoundarySystem* UPICOXRBoundarySystem::BoundaryInstance = nullptr;
 UPICOXRBoundarySystem* UPICOXRBoundarySystem::GetInstance()
@@ -41,7 +33,7 @@ UPICOXRBoundarySystem::~UPICOXRBoundarySystem()
 #if PLATFORM_ANDROID
 	if (bIsStartCamera)
 	{
-		Pxr_StartCameraPreview(0);
+		FPICOXRHMDModule::GetPluginWrapper().StartCameraPreview(0);
 	}
 #endif
 }
@@ -50,7 +42,7 @@ bool UPICOXRBoundarySystem::UPxr_GetConfigured()
 {
 #if PLATFORM_ANDROID
 	bool ReturnValue = false;
-	ReturnValue = Pxr_GetBoundaryConfigured();
+	ReturnValue = FPICOXRHMDModule::GetPluginWrapper().GetBoundaryConfigured();
 	return ReturnValue;
 #endif
 	return  false;
@@ -60,7 +52,7 @@ bool UPICOXRBoundarySystem::UPxr_GetEnabled()
 {
 #if PLATFORM_ANDROID
 	bool ReturnValue = false;
-	ReturnValue = Pxr_GetBoundaryEnabled();
+	ReturnValue = FPICOXRHMDModule::GetPluginWrapper().GetBoundaryEnabled();
 	return ReturnValue;
 #endif
 	return  false;
@@ -69,7 +61,7 @@ bool UPICOXRBoundarySystem::UPxr_GetEnabled()
 void UPICOXRBoundarySystem::UPxr_SetVisible(bool NewVisible)
 {
 #if PLATFORM_ANDROID
-	Pxr_SetBoundaryVisible(NewVisible);
+	FPICOXRHMDModule::GetPluginWrapper().SetBoundaryVisible(NewVisible);
 #endif
 }
 
@@ -77,7 +69,7 @@ bool UPICOXRBoundarySystem::UPxr_GetVisible()
 {
 #if PLATFORM_ANDROID
 	bool ReturnValue = false;
-	ReturnValue = Pxr_GetBoundaryVisible();
+	FPICOXRHMDModule::GetPluginWrapper().GetBoundaryVisible();
 	return ReturnValue;
 #endif
 	return  false;
@@ -91,7 +83,7 @@ bool UPICOXRBoundarySystem::UPxr_TestNode(int DeviceType, bool bIsPlayArea, bool
 	PxrBoundaryTestNode node = static_cast<PxrBoundaryTestNode>(DeviceType);
 	PxrBoundaryTriggerInfo Info;
 
-	if (!Pxr_TestNodeIsInBoundary(node, bIsPlayArea, &Info))
+	if (!FPICOXRHMDModule::GetPluginWrapper().TestNodeIsInBoundary(node, bIsPlayArea, &Info))
 	{
 		IsTriggering = Info.isTriggering;
 		ClosestDistance = Info.closestDistance;
@@ -119,7 +111,7 @@ bool UPICOXRBoundarySystem::UPxr_TestPoint(FVector Point, bool bIsPlayArea, bool
 	newPoint.y = Point.Y;
 	newPoint.z = Point.Z;
 
-	if (!Pxr_TestPointIsInBoundary(&newPoint, bIsPlayArea, &Info))
+	if (!FPICOXRHMDModule::GetPluginWrapper().TestPointIsInBoundary(&newPoint, bIsPlayArea, &Info))
 	{
 		IsTriggering = Info.isTriggering;
 		ClosestDistance = Info.closestDistance;
@@ -141,7 +133,7 @@ TArray<FVector> UPICOXRBoundarySystem::UPxr_GetGeometry(bool bIsPlayArea)
 #if PLATFORM_ANDROID
 	uint32_t pointsCountOutput = -1;
 	PxrVector3f * outPointsFirst = nullptr;
-	if (Pxr_GetBoundaryGeometry(bIsPlayArea,0,&pointsCountOutput,outPointsFirst) == 0)
+	if (FPICOXRHMDModule::GetPluginWrapper().GetBoundaryGeometry(bIsPlayArea,0,&pointsCountOutput,outPointsFirst) == 0)
 	{
 		if (pointsCountOutput <= 0)
 		{
@@ -149,7 +141,7 @@ TArray<FVector> UPICOXRBoundarySystem::UPxr_GetGeometry(bool bIsPlayArea)
 		}
 
 		PxrVector3f * Data = new PxrVector3f[pointsCountOutput];
-		if (Pxr_GetBoundaryGeometry(bIsPlayArea, pointsCountOutput, &pointsCountOutput, Data) == 0)
+		if (FPICOXRHMDModule::GetPluginWrapper().GetBoundaryGeometry(bIsPlayArea, pointsCountOutput, &pointsCountOutput, Data) == 0)
 		{
 			for (uint32_t i = 0; i < pointsCountOutput; i++)
 			{
@@ -169,7 +161,7 @@ FVector UPICOXRBoundarySystem::UPxr_GetDimensions(bool bIsPlayArea)
 	FVector Dimensions = FVector::ZeroVector;
 #if PLATFORM_ANDROID
 	PxrVector3f NewDimensions;
-	Pxr_GetBoundaryDimensions(bIsPlayArea, &NewDimensions);
+	FPICOXRHMDModule::GetPluginWrapper().GetBoundaryDimensions(bIsPlayArea, &NewDimensions);
 	Dimensions.X = NewDimensions.x;
 	Dimensions.Y = NewDimensions.y;
 	Dimensions.Z = NewDimensions.z;
@@ -187,7 +179,7 @@ bool UPICOXRBoundarySystem::UPxr_GetSeeThroughData(int CameraType, UTexture2D*& 
         {         
           ExecuteOnRHIThread([]()
           {
-          Pxr_StartCameraPreview(1);
+				  FPICOXRHMDModule::GetPluginWrapper().StartCameraPreview(1);
           });
         });
 		FPlatformProcess::Sleep(0.1);
@@ -266,7 +258,7 @@ bool UPICOXRBoundarySystem::UPxr_GetSeeThroughData(int CameraType, UTexture2D*& 
 			   seeThoughData.exposure = exposure;
 			   seeThoughData.startTimeOfExposure = start_of_exposure_ts;
 			   seeThoughData.valid = ret;
-			   int result = Pxr_GetSeeThroughData(&seeThoughData);
+			   int result = FPICOXRHMDModule::GetPluginWrapper().GetSeeThroughData(&seeThoughData);
             });
         });
 		CameraImage = CameraTextureLeft;
@@ -344,7 +336,7 @@ bool UPICOXRBoundarySystem::UPxr_GetSeeThroughData(int CameraType, UTexture2D*& 
 			   seeThoughData.exposure = exposure;
 			   seeThoughData.startTimeOfExposure = start_of_exposure_ts;
 			   seeThoughData.valid = ret;
-			   int result = Pxr_GetSeeThroughData(&seeThoughData);
+			   int result = FPICOXRHMDModule::GetPluginWrapper().GetSeeThroughData(&seeThoughData);
             });
         });
 		CameraImage = CameraTextureRight;
@@ -360,7 +352,7 @@ bool UPICOXRBoundarySystem::UPxr_SetCameraImageSize(FIntPoint ImageSize)
 #if PLATFORM_ANDROID
 	uint32_t width = (uint32_t)ImageSize.X;
 	uint32_t height = (uint32_t)ImageSize.Y;
-	Pxr_SetSeeThroughImageExtent(width,height);
+	FPICOXRHMDModule::GetPluginWrapper().SetSeeThroughImageExtent(width,height);
 	CurrentImageSize = ImageSize;
 	return true;
 #endif
@@ -370,7 +362,7 @@ bool UPICOXRBoundarySystem::UPxr_SetCameraImageSize(FIntPoint ImageSize)
 int UPICOXRBoundarySystem::UPxr_SetSeeThroughBackground(bool Value)
 {
 #if PLATFORM_ANDROID
-	return Pxr_SetSeeThroughBackground(Value);
+	return FPICOXRHMDModule::GetPluginWrapper().SetSeeThroughBackground(Value);
 #endif
 	return 0;
 }

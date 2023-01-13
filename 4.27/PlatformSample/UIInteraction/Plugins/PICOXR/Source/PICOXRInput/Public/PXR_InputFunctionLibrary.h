@@ -205,6 +205,49 @@ struct PICOXRINPUT_API FPHFData : public FTableRowBase
 		FPHFDataContent PHFDataContent;
 };
 
+USTRUCT(BlueprintType)
+struct FPHFJsonFrameData
+{
+	GENERATED_USTRUCT_BODY();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFDataContent")
+		int64 frameseq;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFDataContent")
+		int play;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFDataContent")
+		int frequency;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFDataContent")
+		int loop;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFDataContent")
+		float gain;
+};
+
+USTRUCT(BlueprintType)
+struct PICOXRINPUT_API FPHFJsonData : public FTableRowBase
+{
+	GENERATED_BODY();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFData")
+		FString Name;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFData")
+		FString phfVersion;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFData")
+		int frameDuration;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFData")
+		TArray<FPHFJsonFrameData> patternData_L;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PXR|FPHFData")
+		TArray<FPHFJsonFrameData> patternData_R;
+	
+	FPHFJsonData()
+	{
+		Name = "FPHFJsonData";
+		phfVersion = "V0.0";
+		frameDuration = 20;
+		patternData_L.Empty();
+		patternData_R.Empty();
+	}
+};
+
 UCLASS()
 class PICOXRINPUT_API UPICOXRInputFunctionLibrary : public UBlueprintFunctionLibrary
 {
@@ -566,4 +609,29 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
 	static int PXR_UpdateVibrateParams(int SourceID, EPICOXRVibrateController slot, EPICOXRChannelFlip slotConfig, float AmpValue);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
+		static int PXR_CreateHapticStream(FString PHFVersion, int FrameDurationMs, int Slot, int Reversal, float Amp, float Speed, int& SourceID);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
+		static int PXR_RemovePHFHaptic(int SourceID);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
+		static int PXR_StartPHFHaptic(int SourceID);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
+		static int PXR_StopPHFHaptic(int SourceID);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
+		static int PXR_WriteHapticStream(int SourceID, const FPHFJsonData& frames, int From, int NumFrames);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
+		static int PXR_GetCurrentFrameSequence(int SourceID, int& FrameSequence);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
+		static int PXR_SetPHFHapticSpeed(int SourceID, float Speed);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRInput")
+		static int PXR_GetPHFHapticSpeed(int SourceID, float& Speed);
+
 };

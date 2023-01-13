@@ -7,7 +7,6 @@ FPXRGameFrame::FPXRGameFrame()
 	, predictedDisplayTimeMs(0)
 	, WorldToMetersScale(100)
 	, ShowFlags(ESFIM_All0)
-	, bHasWaited(false)
 {
 	Flags.Raw = 0;
 	Position = FVector::ZeroVector;

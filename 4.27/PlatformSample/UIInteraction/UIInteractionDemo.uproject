@@ -24,54 +24,23 @@
 		},
 		{
 			"Name": "OculusVR",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win32",
-				"Win64",
-				"Android"
-			]
+			"Enabled": false
 		},
 		{
 			"Name": "OpenXREyeTracker",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win32",
-				"Win64",
-				"Linux",
-				"HoloLens",
-				"Android"
-			]
+			"Enabled": false
 		},
 		{
 			"Name": "OpenXRHandTracking",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win32",
-				"Win64",
-				"Linux",
-				"HoloLens",
-				"Android"
-			]
+			"Enabled": false
 		},
 		{
 			"Name": "OpenXR",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win32",
-				"Win64",
-				"Linux",
-				"Android",
-				"HoloLens"
-			]
+			"Enabled": false
 		},
 		{
 			"Name": "SteamVR",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Win32",
-				"Win64",
-				"Linux"
-			]
+			"Enabled": false
 		},
 		{
 			"Name": "PICOXR",
@@ -83,11 +52,7 @@
 		},
 		{
 			"Name": "PicoSpatialAudio",
-			"Enabled": true,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Android"
-			]
+			"Enabled": true
 		},
 		{
 			"Name": "OnlineSubsystemNull",

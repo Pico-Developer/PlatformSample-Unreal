@@ -1,6 +1,8 @@
 //Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc. All rights reserved.
 
 #pragma once
+#include "PXR_HMDModule.h"
+#include "PXR_HMDSettings.h"
 #include "CoreMinimal.h"
 #include "PXR_Splash.h"
 #include "IStereoLayers.h"
@@ -15,12 +17,6 @@
 #include "Engine/Public/SceneUtils.h"
 #include "PXR_GameFrame.h"
 #include "PXR_DelayDeleteLayer.h"
-#if PLATFORM_ANDROID
-#include "Android/AndroidApplication.h"
-#include "Android/AndroidJNI.h"
-#include "Android/AndroidPlatformMisc.h"
-#include "PxrApi.h"
-#endif
 
 class FPICOXRRenderBridge;
 class UPICOContentResourceFinder;
@@ -97,6 +93,13 @@ struct FCurrentFrameValue
 	}
 };
 
+enum FRecenterTypes
+{
+	RecenterOrientation = 0x1,
+	RecenterPosition = 0x2,
+	RecenterOrientationAndPosition = 0x3
+};
+
 /**
  * PICOXR Head Mounted Display
  */
@@ -132,7 +135,7 @@ public:
 	/** IHeadMountedDisplay interface */
 	virtual void SetInterpupillaryDistance(float NewInterpupillaryDistance) override;
 	virtual float GetInterpupillaryDistance() const override;
-	virtual bool IsHMDConnected() override { return true; }
+	virtual bool IsHMDConnected() override;
 	virtual bool IsHMDEnabled() const override;
 	virtual void EnableHMD(bool allow = true) override;
 	virtual bool GetHMDMonitorInfo(MonitorInfo &MonitorDesc) override;
@@ -158,6 +161,9 @@ public:
 	virtual bool IsStereoEnabled() const override;
 	virtual bool EnableStereo(bool stereo = true) override;
 	virtual void AdjustViewRect(EStereoscopicPass StereoPass, int32& X, int32& Y, uint32& SizeX, uint32& SizeY) const override;
+#if ENGINE_MAJOR_VERSION ==5 || ENGINE_MINOR_VERSION >= 27
+	virtual void SetFinalViewRect(FRHICommandListImmediate& RHICmdList, const enum EStereoscopicPass StereoPass, const FIntRect& FinalViewRect) override;
+#endif
 	virtual FMatrix GetStereoProjectionMatrix(const enum EStereoscopicPass StereoPassType) const override;
 	virtual IStereoRenderTargetManager* GetRenderTargetManager() override { return this; }
 	virtual void RenderTexture_RenderThread(class FRHICommandListImmediate& RHICmdList, class FRHITexture2D* BackBuffer, class FRHITexture2D* SrcTexture, FVector2D WindowSize) const override;
@@ -225,28 +231,34 @@ public:
 
 	FPICOXRSplashPtr GetSplash() const {return  PICOSplash;};
 
-	bool Initialize();
-	void UnInitialize();
+	bool Startup();
+	void Shutdown();
+	bool InitializeSession();
+	void DoSessionShutdown();
+	void ShutdownSession();
+	bool InitDevice();
+	void ReleaseDevice();
+	void LoadFromSettings();
 	FPICOXRRenderBridge* GetCustomRenderBridge() const { return RenderBridge; }
-	void UPxr_EnableFoveation(bool enable);
 
 	void UPxr_GetAngularAcceleration(FVector& AngularAcceleration);
 	void UPxr_GetVelocity(FVector& Velocity);
 	void UPxr_GetAcceleration(FVector& Acceleration);
 	void UPxr_GetAngularVelocity(FVector& AngularVelocity);
+	int32 UPxr_SetFieldOfView(EPICOXREyeType Eye, float FovLeftInDegrees, float FovRightInDegrees, float FovUpInDegrees, float FovDownInDegrees);
+
 	FString UPxr_GetDeviceModel();
 	TSharedPtr<FPICOXREyeTracker> UPxr_GetEyeTracker();
 	void ClearTexture_RHIThread(FRHITexture2D* SrcTexture);
-	void UPxr_SetColorScaleAndOffset(FLinearColor ColorScale, FLinearColor ColorOffset, bool bApplyToAllLayers = false);
+	void SetColorScaleAndOffset(FLinearColor ColorScale, FLinearColor ColorOffset, bool bApplyToAllLayers = false);
 	uint32 CreateMRCStereoLayer(FTextureRHIRef BackgroundRTTexture, FTextureRHIRef ForegroundRTTexture);
 	void DestroyMRCLayer();
 
 	FString GetRHIString();
-	int32 GetMSAAValue() { return MobileMSAAValue; }
 
 	void OnPreLoadMap(const FString& MapName);
 	FDelegateHandle PreLoadLevelDelegate;
-	bool bIsSwitchingLevel;
+	bool bNeedDrawBlackEye;
 	void WaitFrame();
 	void LateUpdatePose();
 	void OnGameFrameBegin_GameThread();
@@ -255,9 +267,11 @@ public:
 	void OnRenderFrameEnd_RenderThread(FRHICommandListImmediate& RHICmdList);
 	void OnRHIFrameBegin_RenderThread();
 	void OnRHIFrameEnd_RHIThread();
+	FSettingsPtr CreateNewSettings() const;
 	FPXRGameFramePtr MakeNewGameFrame() const;
-	void RefreshStereoRenderingState();
+	void UpdateStereoRenderingParams();
 	// Game thread
+	FSettingsPtr GameSettings;
 	uint32 NextGameFrameNumber;
 	uint32 WaitedFrameNumber;
 	FPXRGameFramePtr GameFrame_GameThread;
@@ -266,23 +280,24 @@ public:
 	TMap<uint32, FPICOLayerPtr> PXRLayerMap;
 	FPICOLayerPtr CurrentMRCLayer;
 	// Render thread
+	FSettingsPtr GameSettings_RenderThread;
 	FPXRGameFramePtr GameFrame_RenderThread;
 	TArray<FPICOLayerPtr> PXRLayers_RenderThread;
 	FPICOLayerPtr PXREyeLayer_RenderThread;
 	// RHI thread
+	FSettingsPtr GameSettings_RHIThread;
 	FPXRGameFramePtr GameFrame_RHIThread;
 	TArray<FPICOLayerPtr> PXRLayers_RHIThread;
 	double CurrentFramePredictedTime = 0;
 	bool bWaitFrameVersion = false;
+	bool bSeeThroughIsShown=false;
 	float CachedWorldToMetersScale = 100.0f;
 
 
 	UPICOXREventManager* EventManager;
 	uint32 NextLayerId;
 	bool MRCEnabled=false;
-	FLinearColor GColorScale = FLinearColor(1.0,1.0,1.0,1.0);
-	FLinearColor GColorOffset = FLinearColor(0.0,0.0,0.0,0.0);
-    bool GbApplyToAllLayers = false;
+
 	bool bNeedReAllocateFoveationTexture_RenderThread = false;
 	bool bNeedReAllocateViewportRenderTarget;
 	bool inputFocusState = true;
@@ -290,20 +305,41 @@ public:
 	void PollEvent();
 	UPICOContentResourceFinder* GetContentResourceFinder(){return ContentResourceFinder;}
 	void AllocateEyeLayer();
-	bool IsMultiviewEnable() { return bIsMobileMultiViewEnabled; }
+	bool IsUsingMobileMultiView() { return bIsUsingMobileMultiView; }
 
 	FDelayDeleteLayerManager DelayDeletion;
-	void UpdateSensorValue(FPXRGameFrame* InFrame);
+	void UpdateSensorValue(const FGameSettings* InSettings, FPXRGameFrame* InFrame);
 	double DisplayRefreshRate;
+
+public:
+	void SetBaseOffsetInMeters(const FVector& BaseOffset);
+	FVector GetBaseOffsetInMeters() const;
+
+	PICOXRHMD_API bool ConvertPose(const PxrPosef& InPose, FPose& OutPose) const;
+	PICOXRHMD_API bool ConvertPose(const FPose& InPose, PxrPosef& OutPose) const;
+	PICOXRHMD_API static bool ConvertPose_Internal(const PxrPosef& InPose, FPose& OutPose, const FGameSettings* Settings, float WorldToMetersScale = 100.0f);
+	PICOXRHMD_API static bool ConvertPose_Internal(const FPose& InPose, PxrPosef& OutPose, const FGameSettings* Settings, float WorldToMetersScale = 100.0f);
+
 protected:
+	void Recenter(FRecenterTypes RecenterType, float Yaw);
 	void InitEyeLayer_RenderThread(FRHICommandListImmediate& RHICmdList);
+
+	union
+	{
+		struct
+		{
+			uint64 NeedSetTrackingOrigin : 1;
+			uint64 AppIsPaused : 1;
+		};
+		uint64 Raw;
+	} PICOFlags;
 
 private:
 #if PLATFORM_ANDROID
 	void ProcessEvent(int EventCount, PxrEventDataBuffer** EventData);
 	void ProcessControllerEvent( const PxrEventDataControllerChanged EventData);
 #endif
-	void OnSeeThroughStateChange(int32 SeeThroughState);
+	void OnSeeThroughStateChange(int SeeThroughState);
 	void OnFoveationLevelChange(int32 FoveationLevel);
 	void OnFrustumStateChange();
 	void OnRenderTextureChange(int32 Width,int32 Height);
@@ -314,16 +350,13 @@ private:
 	void EnableContentProtect(bool bEnable );
 	void SetRefreshRate();
 
-	bool bIsMobileMultiViewEnabled;
-	float PixelDensity;
+	bool bIsUsingMobileMultiView;
 	FIntPoint RTSize;
-	int32 MobileMSAAValue;
 	FVector NeckOffset;
 	FPICOXRFrustum LeftFrustum;
 	FPICOXRFrustum RightFrustum;
 	TRefCountPtr<FPICOXRRenderBridge> RenderBridge;
 	class UPICOXRSettings* PICOXRSetting;
-	bool bIsBindDelegate;
 	FString RHIString;
 	bool bIsEndGameFrame;
 	EHMDTrackingOrigin::Type TrackingOrigin;
@@ -333,5 +366,6 @@ private:
 	FPICOXRSplashPtr PICOSplash;
 	FString DeviceModel;
 	UPICOContentResourceFinder* ContentResourceFinder;
+	bool bShutdownRequestQueued;
 };
 

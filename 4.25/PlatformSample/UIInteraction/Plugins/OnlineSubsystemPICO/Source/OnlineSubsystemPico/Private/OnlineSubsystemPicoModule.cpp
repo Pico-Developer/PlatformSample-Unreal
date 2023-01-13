@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -75,7 +85,12 @@ void FOnlineSubsystemPicoModule::StartupModule()
     FString LibraryPath;
     LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/OnlineSubsystemPico/lib/Windows/libplatformsdk.dll"));
     WindowsLibraryHandle = !LibraryPath.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;
+
+    LibgccHandel = FPlatformProcess::GetDllHandle(*(BaseDir + "/Source/OnlineSubsystemPico/lib/Windows/libgcc_s_seh-1.dll"));
+    libstdcHandel = FPlatformProcess::GetDllHandle(*(BaseDir + "/Source/OnlineSubsystemPico/lib/Windows/libstdc++-6.dll"));
+    LibwinpthreadHandel = FPlatformProcess::GetDllHandle(*(BaseDir + "/Source/OnlineSubsystemPico/lib/Windows/libwinpthread-1.dll"));
 #endif
+
     PicoFactory = new FOnlineFactoryPico();
     PicoFactory->CreateSubsystem(FName(TEXT("Pico")));
     // Create and register our singleton factory with the main online subsystem for easy access
@@ -93,9 +108,26 @@ void FOnlineSubsystemPicoModule::ShutdownModule()
     delete PicoFactory;
     PicoFactory = nullptr;
     UnregisterSettings();
+
 #if WITH_EDITOR
     FPlatformProcess::FreeDllHandle(WindowsLibraryHandle);
     WindowsLibraryHandle = nullptr;
+
+    if (LibgccHandel)
+    {
+        FPlatformProcess::FreeDllHandle(LibgccHandel);
+        LibgccHandel = nullptr;
+    }
+    if (libstdcHandel)
+    {
+        FPlatformProcess::FreeDllHandle(libstdcHandel);
+        libstdcHandel = nullptr;
+    }
+    if (LibwinpthreadHandel)
+    {
+        FPlatformProcess::FreeDllHandle(LibwinpthreadHandel);
+        LibwinpthreadHandel = nullptr;
+    }
 #endif
 }
 

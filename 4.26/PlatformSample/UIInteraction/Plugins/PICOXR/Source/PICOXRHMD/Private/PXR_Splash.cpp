@@ -33,18 +33,6 @@ FPXRSplash::FPXRSplash(FPICOXRHMD* InPICOXRHMD)
 		BlackLayer = MakeShareable(new FPICOXRStereoLayer(InPICOXRHMD, InPICOXRHMD->NextLayerId++, LayerDesc));
 		BlackLayer->bSplashLayer = true;
 		BlackLayer->bSplashBlackProjectionLayer = true;
-		uint32 SizeX = 1;
-		uint32 SizeY = 1;
-		if (LayerDesc.Texture.IsValid())
-		{
-			FRHITexture2D* Texture2D = LayerDesc.Texture->GetTexture2D();
-			if (Texture2D)
-			{
-				SizeX = Texture2D->GetSizeX();
-				SizeY = Texture2D->GetSizeY();
-			}
-		}
-		BlackLayer->SetProjectionLayerParams(SizeX, SizeY, InPICOXRHMD->IsMultiviewEnable() ? 2 : 1, 1, 1, InPICOXRHMD->GetRHIString());
 	}
 
 	PXR_LOGI(PxrUnreal, "Splash FPXRSplash() Construct!");
@@ -92,11 +80,13 @@ void FPXRSplash::AddSplash(const FSplashDesc& InSplashDesc)
 
 void FPXRSplash::InitSplash()
 {
-	check(IsInGameThread());
+	CheckInGameThread();
 	if (!bInitialized)
 	{
+		Settings = PICOXRHMD->CreateNewSettings();
 		PXRFrame = PICOXRHMD->MakeNewGameFrame();
 		AddSplashFromPXRSettings();
+		PICOXRHMD->InitDevice();
 		bInitialized = true;
 	}
 }
@@ -134,17 +124,31 @@ void FPXRSplash::ShutDownSplash()
 	}
 }
 
+void FPXRSplash::ReleaseResources_RHIThread()
+{
+	for (int32 LayerIndex = 0; LayerIndex < PXRLayers_RenderThread.Num(); LayerIndex++)
+	{
+		PXRLayers_RenderThread[LayerIndex]->ReleaseResources_RHIThread();
+	}
+
+	for (int32 LayerIndex = 0; LayerIndex < PXRLayers_RHIThread.Num(); LayerIndex++)
+	{
+		PXRLayers_RHIThread[LayerIndex]->ReleaseResources_RHIThread();
+	}
+
+	PXRLayers_RenderThread.Reset();
+	PXRLayers_RHIThread.Reset();
+}
+
 void FPXRSplash::SplashTick_RenderThread(float DeltaTime)
 {
 	check(IsInRenderingThread());
 
-#if PLATFORM_ANDROID
-	if (!Pxr_IsRunning())
+	if (!FPICOXRHMDModule::GetPluginWrapper().IsRunning())
 	{
 		PXR_LOGV(PxrUnreal, "Splash Pxr_IsRunning == false!");
 		return;
 	}
-#endif
 
 	if (FramesOutstanding > 0)
 	{
@@ -378,21 +382,25 @@ void FPXRSplash::LoadTexture(FPXRSplashLayer& InSplashLayer)
 
 void FPXRSplash::RenderSplashFrame_RenderThread(FRHICommandListImmediate& RHICmdList)
 {
-	check(IsInRenderingThread());
+	CheckInRenderThread();
+
 	FScopeLock ScopeLock(&RenderThreadLock);
+
+	FSettingsPtr PXRSettings = Settings->Clone();
 	FPXRGameFramePtr SplashFrame = PXRFrame->CloneMyself();
 	SplashFrame->FrameNumber = PICOXRHMD->NextGameFrameNumber;
 	SplashFrame->predictedDisplayTimeMs = PICOXRHMD->CurrentFramePredictedTime + 1000.0f / PICOXRHMD->DisplayRefreshRate;
 	SplashFrame->ShowFlags.Rendering = true;
 	TArray<FPICOLayerPtr> SplashEntryLayers = PXRLayers_RenderThread_Entry;
-#if PLATFORM_ANDROID
-	if (Pxr_IsRunning() && PICOXRHMD->WaitedFrameNumber < SplashFrame->FrameNumber)
+
+	if (FPICOXRHMDModule::GetPluginWrapper().IsRunning() && PICOXRHMD->WaitedFrameNumber < SplashFrame->FrameNumber)
 	{
 		PXR_LOGV(PxrUnreal, "Splash WaitToBeginFrame %u", SplashFrame->FrameNumber);
 		if (PICOXRHMD->bWaitFrameVersion)
 		{
-			Pxr_WaitFrame();
-			Pxr_GetPredictedDisplayTime(&(PICOXRHMD->CurrentFramePredictedTime));
+			FPICOXRHMDModule::GetPluginWrapper().WaitFrame();
+			FPICOXRHMDModule::GetPluginWrapper().GetPredictedDisplayTime(&(PICOXRHMD->CurrentFramePredictedTime));
+			SplashFrame->predictedDisplayTimeMs = PICOXRHMD->CurrentFramePredictedTime;
 			PXR_LOGV(PxrUnreal, "Splash Pxr_GetPredictedDisplayTime after Pxr_WaitFrame:%f", PICOXRHMD->CurrentFramePredictedTime);
 		}
 		PICOXRHMD->WaitedFrameNumber = SplashFrame->FrameNumber;
@@ -403,11 +411,10 @@ void FPXRSplash::RenderSplashFrame_RenderThread(FRHICommandListImmediate& RHICmd
 	{
 		SplashFrame->ShowFlags.Rendering = false;
 	}
-#endif
 
 	if (SplashFrame->ShowFlags.Rendering)
 	{
-		PICOXRHMD->UpdateSensorValue(SplashFrame.Get());
+		PICOXRHMD->UpdateSensorValue(PXRSettings.Get(), SplashFrame.Get());
 	}
 
 	{
@@ -421,7 +428,7 @@ void FPXRSplash::RenderSplashFrame_RenderThread(FRHICommandListImmediate& RHICmd
 
 			if (LayerIdX < LayerIdY)
 			{
-				SplashEntryLayers[EntryLayer_i++]->InitPXRLayer_RenderThread(CustomRenderBridge, &PICOXRHMD->DelayDeletion, RHICmdList);
+				SplashEntryLayers[EntryLayer_i++]->InitPXRLayer_RenderThread(PXRSettings.Get(), CustomRenderBridge, &PICOXRHMD->DelayDeletion, RHICmdList);
 			}
 			else if (LayerIdX > LayerIdY)
 			{
@@ -429,13 +436,13 @@ void FPXRSplash::RenderSplashFrame_RenderThread(FRHICommandListImmediate& RHICmd
 			}
 			else
 			{
-				SplashEntryLayers[EntryLayer_i++]->InitPXRLayer_RenderThread(CustomRenderBridge, &PICOXRHMD->DelayDeletion, RHICmdList, PXRLayers_RenderThread[Layer_j_RenderThread++].Get());
+				SplashEntryLayers[EntryLayer_i++]->InitPXRLayer_RenderThread(PXRSettings.Get(), CustomRenderBridge, &PICOXRHMD->DelayDeletion, RHICmdList, PXRLayers_RenderThread[Layer_j_RenderThread++].Get());
 			}
 		}
 
 		while (EntryLayer_i < SplashEntryLayers.Num())
 		{
-			SplashEntryLayers[EntryLayer_i++]->InitPXRLayer_RenderThread(CustomRenderBridge, &PICOXRHMD->DelayDeletion, RHICmdList);
+			SplashEntryLayers[EntryLayer_i++]->InitPXRLayer_RenderThread(PXRSettings.Get(), CustomRenderBridge, &PICOXRHMD->DelayDeletion, RHICmdList);
 		}
 
 		while (Layer_j_RenderThread < PXRLayers_RenderThread.Num())
@@ -461,19 +468,18 @@ void FPXRSplash::RenderSplashFrame_RenderThread(FRHICommandListImmediate& RHICmd
 		SplashEntryLayers[i] = SplashEntryLayers[i]->CloneMyself();
 	}
 
-	ExecuteOnRHIThread_DoNotWait([this, SplashFrame, SplashEntryLayers]()
+	ExecuteOnRHIThread_DoNotWait([this, PXRSettings, SplashFrame, SplashEntryLayers]()
 		{
 			PXRLayers_RHIThread = SplashEntryLayers;
 			if (SplashFrame->ShowFlags.Rendering)
 			{
 				PXR_LOGV(PxrUnreal, "Splash BeginFrame %u", SplashFrame->FrameNumber);
-#if PLATFORM_ANDROID
-				if (Pxr_IsRunning())
+				if (FPICOXRHMDModule::GetPluginWrapper().IsRunning())
 				{
-					Pxr_BeginFrame();
+					FPICOXRHMDModule::GetPluginWrapper().BeginFrame();
 					if (!PICOXRHMD->bWaitFrameVersion)
 					{
-						Pxr_GetPredictedDisplayTime(&(PICOXRHMD->CurrentFramePredictedTime));
+						FPICOXRHMDModule::GetPluginWrapper().GetPredictedDisplayTime(&(PICOXRHMD->CurrentFramePredictedTime));
 						PXR_LOGV(PxrUnreal, "Splash Pxr_GetPredictedDisplayTime after Pxr_BeginFrame:%f", PICOXRHMD->CurrentFramePredictedTime);
 					}
 					for (int32 LayerIndex = 0; LayerIndex < PXRLayers_RHIThread.Num(); LayerIndex++)
@@ -485,7 +491,6 @@ void FPXRSplash::RenderSplashFrame_RenderThread(FRHICommandListImmediate& RHICmd
 				{
 					PXR_LOGE(PxrUnreal, "Splash Pxr Is Not Running!!!");
 				}
-#endif
 				FPlatformAtomics::InterlockedDecrement(&FramesOutstanding);
 			}
 
@@ -494,20 +499,18 @@ void FPXRSplash::RenderSplashFrame_RenderThread(FRHICommandListImmediate& RHICmd
 			if (SplashFrame->ShowFlags.Rendering)
 			{
 				PXR_LOGV(PxrUnreal, "Splash EndFrame %u", SplashFrame->FrameNumber);
-#if PLATFORM_ANDROID
-				if (Pxr_IsRunning())
+				if (FPICOXRHMDModule::GetPluginWrapper().IsRunning())
 				{
 					for (int32 LayerIndex = 0; LayerIndex < PXRLayers_RHIThread.Num(); LayerIndex++)
 					{
-						PXRLayers_RHIThread[LayerIndex]->SubmitLayer_RHIThread(SplashFrame.Get());
+						PXRLayers_RHIThread[LayerIndex]->SubmitLayer_RHIThread(PXRSettings.Get(), SplashFrame.Get());
 					}
-					Pxr_EndFrame();
+					FPICOXRHMDModule::GetPluginWrapper().EndFrame();
 				}
 				else
 				{
 					PXR_LOGE(PxrUnreal, "Splash Pxr Is Not Running!!!");
 				}
-#endif
 			}
 		});
 }

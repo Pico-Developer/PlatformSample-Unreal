@@ -1,4 +1,14 @@
-// Copyright 2022 Pico Technology Co., Ltd.All rights reserved.
+/*******************************************************************************
+Copyright © 2015-2022 PICO Technology Co., Ltd.All rights reserved.
+
+NOTICE：All information contained herein is, and remains the property of
+PICO Technology Co., Ltd. The intellectual and technical concepts
+contained herein are proprietary to PICO Technology Co., Ltd. and may be
+covered by patents, patents in process, and are protected by trade secret or
+copyright law. Dissemination of this information or reproduction of this
+material is strictly forbidden unless prior written permission is obtained from
+PICO Technology Co., Ltd.
+*******************************************************************************/
 // This plugin incorporates portions of the Unreal® Engine. Unreal® is a trademark or registered trademark of Epic Games, Inc.In the United States of America and elsewhere.
 // Unreal® Engine, Copyright 1998 – 2022, Epic Games, Inc.All rights reserved.
 
@@ -775,7 +785,7 @@ bool UOnlineSubsystemPicoManager::DestroySession(UObject* WorldContextObject, FN
         UOnlineSubsystemPicoManager::OnDestroySessionCompleteDelegate = OnCompleteDelegate;
         Subsystem->GetGameSessionInterface()->AddOnDestroySessionCompleteDelegate_Handle(
             FOnDestroySessionCompleteDelegate::CreateUObject(this, &UOnlineSubsystemPicoManager::OnDestroySessionComplete));
-        return (Subsystem->GetGameSessionInterface())->DestroySession(SessionName); // todo
+        return (Subsystem->GetGameSessionInterface())->DestroySession(SessionName);
     }
     return false;
 }
@@ -975,7 +985,7 @@ void UOnlineSubsystemPicoManager::SetOnlineSessionSearch(const FPicoOnlineSessio
         newResult.Session.OwningUserName = newSession.OwningUserName;
         ppfID RoomID = FCString::Strtoui64(*newSession.SessionInfoRoomID, NULL, 10);
         newResult.Session.SessionInfo = MakeShareable(new FOnlineSessionInfoPico(RoomID));
-        SetOnlineSessionSettings(newSession.SessionSettings); // todo 
+        SetOnlineSessionSettings(newSession.SessionSettings); 
         newResult.Session.SessionSettings = SessionSettings;
         newResult.Session.NumOpenPrivateConnections = newSession.NumOpenPrivateConnections;
         newResult.Session.NumOpenPublicConnections = newSession.NumOpenPublicConnections;
@@ -1026,7 +1036,7 @@ void UOnlineSubsystemPicoManager::SetOnlineSessionSettings(const FPicoOnlineSess
     }
 }
 
-// FOnlineSessionSettings -> FPicoOnlineSessionSettings // todo
+// FOnlineSessionSettings -> FPicoOnlineSessionSettings
 FPicoOnlineSessionSettings UOnlineSubsystemPicoManager::GetPicoOnlineSessionSettings(const FOnlineSessionSettings& UpdatedSessionSettings)
 {
     FPicoOnlineSessionSettings PicoSessionSettings;
@@ -1078,7 +1088,6 @@ bool UOnlineSubsystemPicoManager::FindSessionById(UObject* WorldContextObject, c
     FOnlineSubsystemPico* Subsystem = static_cast<FOnlineSubsystemPico*>(Online::GetSubsystem(GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull), PICO_SUBSYSTEM));
     if (Subsystem && Subsystem->GetGameSessionInterface())
     {
-        // todo 这里直接传了delegate进去，而不是用trigger的形式
         UOnlineSubsystemPicoManager::OnSingleSessionResultCompleteDelegate = CompletionDelegate;
         return Subsystem->GetGameSessionInterface()->FindSessionById(SearchingUserId, SessionId, FriendId, FOnSingleSessionResultCompleteDelegate::CreateUObject(this, &UOnlineSubsystemPicoManager::OnFindSessionByIdComplete));
     }
@@ -1912,7 +1921,7 @@ void UOnlineSubsystemPicoManager::RefreshPicoOnlineLeaderboardRead()
                 item.Value.GetValue(Int64Result);
                 Value.Value = FString::FromInt(Int64Result);
                 break;
-            default: // todo
+            default: 
                 break;
             }
             Row.Columns.Add(item.Key, Value);

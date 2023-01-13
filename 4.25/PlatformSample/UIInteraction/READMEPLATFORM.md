@@ -3,11 +3,11 @@
 - If you have any questions/comments, please visit [**Pico Developer Answers**](https://devanswers.pico-interactive.com/) and raise your question there.
 
 ## Unreal Engine & SDK Version
-Unreal Engine : 4.25 - 5.0
+Unreal Engine : 4.25 - 4.27
 
-Pico Unreal XR SDK: 2.1.2
+Pico Unreal XR SDK: 2.1.3
 
-Pico Unreal Platform SDK : 5.0
+Pico Unreal Platform SDK : 6.0
 
 
 ## Description:

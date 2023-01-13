@@ -2,13 +2,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PXR_PluginWrapper.h"
 #include "Engine/EngineBaseTypes.h"
 #include "IPXR_MRCModule.h"
 #include "PXR_Log.h"
-
-#if PLATFORM_ANDROID
-#include "PxrTypes.h"
-#endif // PLATFORM_ANDROID
 
 const int MRCSupportVersion = 0x2000300;
 

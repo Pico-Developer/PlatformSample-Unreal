@@ -5,7 +5,7 @@
 #include "TickableObjectRenderThread.h"
 #include "PXR_StereoLayer.h"
 #include "PXR_HMDTypes.h"
-#include "PXR_Settings.h"
+#include "PXR_HMDRuntimeSettings.h"
 #include "PXR_GameFrame.h"
 
 struct FPXRSplashLayer
@@ -48,6 +48,7 @@ public:
 
 	void InitSplash();
 	void ShutDownSplash();
+	void ReleaseResources_RHIThread();
 
 	void OnPreLoadMap(const FString& MapName);
 	void AutoShow(bool AutoShowSplash);
@@ -77,6 +78,7 @@ protected:
 	FPICOXRRenderBridge* CustomRenderBridge;
 	FDelegateHandle PostLoadLevelDelegate;
 	UPICOXRSettings* PICOSettings;
+	FSettingsPtr Settings;
 	FPXRGameFramePtr PXRFrame;
 	bool bIsShown;
 	bool bSplashNeedUpdateActiveState;

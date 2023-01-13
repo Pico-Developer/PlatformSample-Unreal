@@ -248,6 +248,18 @@ enum class EControllerPairTimeEnum : uint8
 	NEVER                      UMETA(DisplayName = "Never")
 };
 
+UENUM(BlueprintType)
+enum class ESkipInitSetting : uint8
+{
+	INIT_SETTING_NONE = 0,
+	INIT_SETTING_HANDLE_CONNECTION_TEACHING = 1,
+	INIT_SETTING_TRIGGER_KEY_TEACHING = 2,
+	INIT_SETTING_SELECT_LANGUAGE = 4,
+	INIT_SETTING_SELECT_COUNTRY = 8,
+	INIT_SETTING_WIFI_SETTING = 16,
+	INIT_SETTING_QUICK_SETTING = 32
+};
+
 USTRUCT(BlueprintType)
 struct FWifiDisplayModel
 {
@@ -329,6 +341,7 @@ DECLARE_DYNAMIC_DELEGATE_OneParam(FPICOGetSwitchSystemFunctionStatusDelegate, in
 DECLARE_DYNAMIC_DELEGATE_OneParam(FPICOCastInitDelegate, ECastInitResult, Result);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FPICOSetControllerPairTimeDelegate, int32, Result);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FPICOGetControllerPairTimeDelegate, EControllerPairTimeEnum, Result);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FPICOSetSystemCountryCodeDelegate, int32, Result);
 
 UCLASS(ClassGroup = (PXRComponent), meta = (BlueprintSpawnableComponent))
 class PICOXRHMD_API UPICOXRSystemAPI : public UActorComponent
@@ -636,5 +649,36 @@ public:
 	static FPICOGetControllerPairTimeDelegate GetControllerPairTimeDelegate;
 	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
 	void PXR_GetControllerPairTime(FPICOGetControllerPairTimeDelegate InGetControllerPairTimeDelegate, int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	int32 PXR_SetSystemLanguage(const FString& SystemLanguage, int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	FString PXR_GetSystemLanguage(int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	int32 PXR_ConfigWifi(const FString& Ssid, const FString& Pwd, int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	TArray<FString> PXR_GetConfiguredWifi(int32 Ext);
+	
+	static FPICOSetSystemCountryCodeDelegate SetSystemCountryCodeDelegate;
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	int32 PXR_SetSystemCountryCode(FPICOSetSystemCountryCodeDelegate InSetSystemCountryCodeDelegate, const FString& CountryCode, int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	FString PXR_GetSystemCountryCode(int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	int32 PXR_SetSkipInitSettingPage(int32 Flag, int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	int32 PXR_GetSkipInitSettingPage(int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	int32 PXR_IsInitSettingComplete(int32 Ext);
+
+	UFUNCTION(BlueprintCallable, Category = "PXR|PXRSystemAPI")
+	int32 PXR_StartActivity(const FString& PackageName, const FString& ClassName, const FString& Action, const FString& Extra, const TArray<FString>& Categories, const TArray<int32>& Flags, int32 Ext);
 };
 

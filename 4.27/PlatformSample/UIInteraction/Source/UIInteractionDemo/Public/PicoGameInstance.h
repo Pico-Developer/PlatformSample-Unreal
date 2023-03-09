@@ -17,6 +17,7 @@
 #endif
 
 #include "RTCPicoUserInterface.h"
+#include "PicoPresenceInterface.h"
 #include "OnlineSessionInterfacePico.h"
 #include "OnlineSubsystemTypes.h"
 #include "Delegates/DelegateCombinations.h"
@@ -50,6 +51,7 @@ protected:
     IOnlineLeaderboardsPtr LeaderboardInterface;
     IOnlineAchievementsPtr AchievementInterface;
     TSharedPtr<FPicoUserInterface> PicoUserInterface;
+    TSharedPtr<FPicoPresenceInterface> PicoPresenceInterface;
 
     virtual void Init() override;
 protected:
@@ -83,6 +85,16 @@ public:
     FOnlineSubsystemPico* PicoSubsystem;
 public:
 
+    void SaveLoadData(FArchive& Ar, float& TargetValue, int32& Num, FVector& TargetLocation);
+
+    UFUNCTION(BlueprintCallable)
+    bool NetworkingSendPacketToCurrentRoom(float TargetValue, int32 Num, FVector TargetLocation, bool bReliable);
+
+    UFUNCTION(BlueprintCallable)
+    bool NetworkingSendPacketToUser(const FString& UserID, float TargetValue, int32 Num, FVector TargetLocation, bool bReliable);
+
+    UFUNCTION(BlueprintCallable)
+    bool NetworkingReadPacket(float& OutValue, int32& OutNum, FVector& OutTargetLocation, FString& SendUserId);
 
     UFUNCTION(BlueprintCallable)
     void PicoLogin(FString LocalUserNum, FString InType, FString ID, FString InToken);
@@ -180,6 +192,8 @@ public:
     void OnRtcConnectStateChanged(const FString& StringMessage);
     void OnRtcUserStartAudioCapture(const FString& StringMessage);
     void OnRtcUserStopAudioCapture(const FString& StringMessage);
+
+    void OnJoinIntentChanged(const FString& DeeplinkMessage, const FString& DestinationApiName, const FString& LobbySessionId, const FString& MatchSessionId, const FString& Extra);
 
     // RTC Notify BP react
     UFUNCTION(BlueprintImplementableEvent)

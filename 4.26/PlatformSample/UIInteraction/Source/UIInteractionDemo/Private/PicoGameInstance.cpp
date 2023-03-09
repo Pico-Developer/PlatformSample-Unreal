@@ -3,6 +3,8 @@
 
 #include "PicoGameInstance.h"
 #include "OnlineSubsystem.h"
+#include "Core/Public/Serialization/BufferArchive.h"
+#include "Pico_Networking.h"
 
 
 UPicoGameInstance::UPicoGameInstance()
@@ -12,7 +14,7 @@ UPicoGameInstance::UPicoGameInstance()
 void UPicoGameInstance::Init()
 {
     DebugShowA = DebugShowB = TEXT("Not Get Pico");
-
+    UE_LOG(LogTemp, Log, TEXT("GameInstance  Init"));
     // Text Pico Use on the Mobile
     if (IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get())
     {
@@ -44,6 +46,7 @@ void UPicoGameInstance::Init()
             LeaderboardInterface = PicoSubsystem->GetLeaderboardsInterface();
             AchievementInterface = PicoSubsystem->GetAchievementsInterface();
             PicoUserInterface = PicoSubsystem->GetPicoUserInterface();
+            PicoPresenceInterface = PicoSubsystem->GetPicoPresenceInterface();
         }
         if (RtcInterface)
         {
@@ -76,6 +79,11 @@ void UPicoGameInstance::Init()
         if (PicoUserInterface)
         {
             GetAccessTokenDelegate.BindDynamic(this, &UPicoGameInstance::OnGetAccessTokenComplete);
+        }
+
+        if (PicoPresenceInterface)
+        {
+            PicoPresenceInterface->JoinIntentReceivedCallback.AddUObject(this, &UPicoGameInstance::OnJoinIntentChanged);
         }
     }
 }
@@ -112,6 +120,65 @@ void UPicoGameInstance::OnReadListComplete(int32 InLocalUserNum/*LocalUserNum*/,
         }
         BPReadFriendListComplete(InLocalUserNum, bWasSuccessful, ListName, ErrorStr);
     }
+}
+
+void UPicoGameInstance::SaveLoadData(FArchive& Ar, float& TargetValue, int32& Num, FVector& TargetLocation)
+{
+    Ar << TargetValue;
+
+    Ar << Num;
+
+    Ar << TargetLocation;
+}
+
+bool UPicoGameInstance::NetworkingSendPacketToCurrentRoom(float TargetValue, int32 Num, FVector TargetLocation, bool bReliable)
+{
+    FBufferArchive ToBinary;
+    SaveLoadData(ToBinary, TargetValue, Num, TargetLocation);
+    if (ToBinary.Num() <= 0)
+    {
+        return false;
+    }
+    bool SendResult = UOnlinePicoNetworkingFunction::SendPacketToCurrentRoom(this, ToBinary, bReliable);
+    ToBinary.FlushCache();
+    ToBinary.Empty();
+    return SendResult;
+}
+
+bool UPicoGameInstance::NetworkingSendPacketToUser(const FString& UserID, float TargetValue, int32 Num, FVector TargetLocation, bool bReliable)
+{
+    FBufferArchive ToBinary;
+    SaveLoadData(ToBinary, TargetValue, Num, TargetLocation);
+    if (ToBinary.Num() <= 0)
+    {
+        return false;
+    }
+    bool SendResult = UOnlinePicoNetworkingFunction::SendPacket(this, UserID, ToBinary, bReliable);
+    ToBinary.FlushCache();
+    ToBinary.Empty();
+    return SendResult;
+}
+
+
+
+bool UPicoGameInstance::NetworkingReadPacket(float& OutValue, int32& OutNum, FVector& OutTargetLocation, FString& SendUserId)
+{
+    TArray<uint8> BinaryArray;
+    bool ReadResult = UOnlinePicoNetworkingFunction::ReadPacket(this, BinaryArray, SendUserId);
+    if (ReadResult)
+    {
+        if (BinaryArray.Num() > 0)
+        {
+            FMemoryReader FromBinary = FMemoryReader(BinaryArray, true);
+            FromBinary.Seek(0);         
+            SaveLoadData(FromBinary, OutValue, OutNum, OutTargetLocation);
+            FromBinary.FlushCache();
+            BinaryArray.Empty();
+            FromBinary.Close();    
+            return true;
+        }
+    }
+    return false;
 }
 
 void UPicoGameInstance::PicoLogin(FString LocalUserNum, FString InType, FString ID, FString InToken)
@@ -266,6 +333,11 @@ void UPicoGameInstance::OnRtcUserStartAudioCapture(const FString& StringMessage)
 void UPicoGameInstance::OnRtcUserStopAudioCapture(const FString& StringMessage)
 {
     BPOnRtcUserStopAudioCapture(StringMessage);
+}
+
+void UPicoGameInstance::OnJoinIntentChanged(const FString& DeeplinkMessage, const FString& DestinationApiName, const FString& LobbySessionId, const FString& MatchSessionId, const FString& Extra)
+{
+    UE_LOG(LogTemp, Log, TEXT("UPicoGameInstance::OnJoinIntentChanged DeeplinkMessage: %s, DestinationApiName: %s, LobbySessionId: %s, MatchSessionId: %s, Extra: %s.!"), *DeeplinkMessage, *DestinationApiName, *LobbySessionId, *MatchSessionId, *Extra);
 }
 
 int UPicoGameInstance::RtcDestroyRoom(const FString& RoomId)
@@ -622,13 +694,14 @@ void UPicoGameInstance::OnSessionUserInviteAccepted(const bool bWasSuccessful, c
         OnGameSessionStateChanged(FString::Printf(TEXT("OnSessionUserInviteAccepted bWasSuccessful is false")));
         return;
     }
-    OnGameSessionStateChanged(FString::Printf(TEXT("OnSessionUserInviteAccepted Start Joining session....")));
-    if (!OnJoinSessionCompleteDelegate.IsBound()) {
-        OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnJoinSessionComplete);
-        GameInterface->AddOnJoinSessionCompleteDelegate_Handle(OnJoinSessionCompleteDelegate);
-    }
-    bool Result = GameInterface->JoinSession(ControllerId, TEXT("Game"), InviteResult);
-    OnGameSessionStateChanged(FString::Printf(TEXT("OnSessionUserInviteAccepted JoinSession return: %d"), Result));
+    OnGameSessionStateChanged(FString::Printf(TEXT("OnSessionUserInviteAccepted RoomID: %s"), *InviteResult.GetSessionIdStr()));
+    // OnGameSessionStateChanged(FString::Printf(TEXT("OnSessionUserInviteAccepted Start Joining session....")));
+    // if (!OnJoinSessionCompleteDelegate.IsBound()) {
+    //     OnJoinSessionCompleteDelegate = FOnJoinSessionCompleteDelegate::CreateUObject(this, &UPicoGameInstance::OnJoinSessionComplete);
+    //     GameInterface->AddOnJoinSessionCompleteDelegate_Handle(OnJoinSessionCompleteDelegate);
+    // }
+    // bool Result = GameInterface->JoinSession(ControllerId, TEXT("Game"), InviteResult);
+    // OnGameSessionStateChanged(FString::Printf(TEXT("OnSessionUserInviteAccepted JoinSession return: %d"), Result));
 }
 
 // Game tool
@@ -1345,7 +1418,7 @@ void UPicoGameInstance::WriteAchievements(const FString& AchievementName, const 
         WriteObject->SetPicoIntStat(*AchievementName, FCString::Atoi(*Value));
         FOnlineAchievementsWriteRef WriteObjectRef = WriteObject.ToSharedRef();
         AchievementInterface->WriteAchievements(
-            *UserId.Get(),
+            *UserId,
             WriteObjectRef,
             FOnAchievementsWrittenDelegate::CreateUObject(this, &UPicoGameInstance::OnAchievementsWriteComplete));
     }

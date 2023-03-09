@@ -5,7 +5,7 @@ This repo contains samples demonstrating the usage of the Unreal Platform SDK.
 
 | Environment          | Version             |
 |----------------------|---------------------|
-| Unreal Engine        | &ge; 4.25 4.26 4.27 |
+| Unreal Engine        |   4.25 4.26 4.27    |
 | Pico Integration SDK | &ge;2.1.4           |
 | Pico ROM             | &ge;4.6.0           |
 

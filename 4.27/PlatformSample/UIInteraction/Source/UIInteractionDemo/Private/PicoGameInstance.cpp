@@ -13,6 +13,7 @@ UPicoGameInstance::UPicoGameInstance()
 
 void UPicoGameInstance::Init()
 {
+    Super::Init();	
     DebugShowA = DebugShowB = TEXT("Not Get Pico");
     UE_LOG(LogTemp, Log, TEXT("GameInstance  Init"));
     // Text Pico Use on the Mobile

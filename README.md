@@ -8,9 +8,9 @@ For detailed instructions, visit [Demo documentation](https://developer-cn.pico-
 
 | Environment          | Version             |
 |----------------------|---------------------|
-| Unreal Engine        |   4.25 4.26 4.27    |
-| PICO Integration SDK | &ge;2.1.4           |
-| PICO device system     | &ge;4.6.0    |
+| Unreal Engine        |    4.27 5.1 5.2     |
+| PICO Integration SDK | &ge;2.3.0           |
+| PICO device system     | &ge;5.7.0    |
 
 
 Download Unreal Integration SDK from this [link](https://developer-cn.pico-interactive.com/sdk?deviceId=1&platformId=2&itemId=13).
